@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="FlowWays icon">
+  <rect width="512" height="512" rx="112" fill="#f6f3ea"/>
+  <path d="M108 336c56 0 56-160 112-160s56 160 112 160 56-160 112-160" fill="none" stroke="#24352f" stroke-width="36" stroke-linecap="round"/>
+  <circle cx="108" cy="336" r="30" fill="#2f8f83"/>
+  <circle cx="220" cy="176" r="30" fill="#f2b84b"/>
+  <circle cx="332" cy="336" r="30" fill="#d85f4f"/>
+  <circle cx="444" cy="176" r="30" fill="#5577b8"/>
+</svg>

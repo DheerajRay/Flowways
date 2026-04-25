@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f6f3ea" />
+    <meta
+      name="description"
+      content="FlowWays is a local-first minimalist task management PWA."
+    />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <title>FlowWays</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="app-shell">
+      <aside class="rail" aria-label="Primary">
+        <div class="brand" aria-label="FlowWays">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>FlowWays</span>
+        </div>
+        <nav class="nav-list" id="modeNav" aria-label="Views"></nav>
+        <button class="ghost-button" id="exportButton" type="button">Export</button>
+        <label class="ghost-button import-label" for="importInput">Import</label>
+        <input id="importInput" class="visually-hidden" type="file" accept="application/json" />
+      </aside>
+
+      <main class="workspace" id="main">
+        <header class="topbar">
+          <section class="composer" aria-label="Quick capture">
+            <input
+              id="quickInput"
+              type="text"
+              autocomplete="off"
+              placeholder="Capture a task, note, workflow card, or timed item"
+              aria-label="Quick capture"
+            />
+            <select id="kindSelect" aria-label="Item type">
+              <option value="auto">Auto</option>
+              <option value="checklist">Task</option>
+              <option value="journal">Note</option>
+              <option value="workflow">Card</option>
+              <option value="timeline">Timed</option>
+            </select>
+            <button class="primary-button" id="addButton" type="button">Add</button>
+          </section>
+          <section class="status-strip" aria-label="App status">
+            <span id="syncStatus" class="status-pill">Local only</span>
+            <button class="icon-text-button" id="notifyButton" type="button">Reminders</button>
+          </section>
+        </header>
+
+        <section class="dashboard-band" aria-label="Dashboard">
+          <article>
+            <span class="metric-label">Today</span>
+            <strong id="todayCount">0</strong>
+          </article>
+          <article>
+            <span class="metric-label">Upcoming</span>
+            <strong id="upcomingCount">0</strong>
+          </article>
+          <article>
+            <span class="metric-label">Overdue</span>
+            <strong id="overdueCount">0</strong>
+          </article>
+          <article>
+            <span class="metric-label">Complete</span>
+            <strong id="completeCount">0%</strong>
+          </article>
+        </section>
+
+        <section class="controls-band" aria-label="Search and filters">
+          <input id="searchInput" type="search" placeholder="Search titles, notes, labels" aria-label="Search" />
+          <div class="segmented" role="group" aria-label="Filter">
+            <button type="button" class="segment active" data-filter="active">Active</button>
+            <button type="button" class="segment" data-filter="all">All</button>
+            <button type="button" class="segment" data-filter="done">Done</button>
+          </div>
+        </section>
+
+        <section class="view-grid">
+          <section class="content-panel" aria-labelledby="viewTitle">
+            <div class="section-heading">
+              <div>
+                <p id="viewEyebrow"></p>
+                <h1 id="viewTitle">Dashboard</h1>
+              </div>
+              <button class="ghost-button" id="clearDoneButton" type="button">Clear Done</button>
+            </div>
+            <div id="itemsMount" class="items-mount"></div>
+          </section>
+
+          <aside class="city-panel" aria-labelledby="cityTitle">
+            <div class="section-heading compact">
+              <div>
+                <p>System view</p>
+                <h2 id="cityTitle">City Flow</h2>
+              </div>
+            </div>
+            <div id="cityView" class="city-view" aria-hidden="true"></div>
+            <div id="fallbackSummary" class="fallback-summary"></div>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="reminderDialog">
+      <form method="dialog">
+        <div class="dialog-header">
+          <h2>Reminder Center</h2>
+          <button class="icon-button" value="close" aria-label="Close reminders">×</button>
+        </div>
+        <p class="muted-copy">
+          System notifications are optional. FlowWays keeps reminder data local and requests permission only after this action.
+        </p>
+        <div id="reminderList" class="reminder-list"></div>
+        <button class="primary-button" id="permissionButton" type="button">Enable System Notifications</button>
+      </form>
+    </dialog>
+
+    <template id="emptyTemplate">
+      <div class="empty-state">
+        <h2>No items here yet</h2>
+        <p>Use quick capture to add something. Short imperatives become tasks, longer notes become journal entries, status words become workflow cards, and dates become timeline items.</p>
+      </div>
+    </template>
+
+    <script src="/src/domain.js"></script>
+    <script src="/src/app.js"></script>
+  </body>
+</html>
