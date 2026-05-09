@@ -1,4 +1,4 @@
-name: Vercel Preview
+﻿name: Vercel Preview
 
 on:
   pull_request:
@@ -12,9 +12,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
       - run: npm test
       - run: npm run build
       - run: npm install -g vercel@50.28.0
       - run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
       - run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
       - run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+
+
+

@@ -1,4 +1,4 @@
-const DB_NAME = "flowways-db";
+﻿const DB_NAME = "flowways-db";
 const DB_VERSION = 1;
 const STORE_NAME = "items";
 
@@ -247,7 +247,7 @@ function renderItem(item) {
   const remove = document.createElement("button");
   remove.className = "icon-button";
   remove.type = "button";
-  remove.textContent = "×";
+  remove.textContent = "Ã—";
   remove.setAttribute("aria-label", `Delete ${item.title}`);
   remove.addEventListener("click", () => updateItem(item.id, { deletedAt: new Date().toISOString() }));
 
@@ -319,7 +319,7 @@ function formatMeta(item) {
   if (item.status && item.kind === "workflow") parts.push(item.status);
   if (item.dueAt) parts.push(`due ${new Date(item.dueAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}`);
   if (item.labels?.length) parts.push(item.labels.map((label) => `#${label}`).join(" "));
-  return parts.join(" · ");
+  return parts.join(" Â· ");
 }
 
 function toLocalDateTimeValue(value) {
@@ -384,3 +384,4 @@ function updateNetworkStatus() {
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 }
+

@@ -1,4 +1,4 @@
-(function initDomain(global) {
+﻿(function initDomain(global) {
   const MODES = [
     { id: "dashboard", label: "Dashboard", tone: "neutral" },
     { id: "checklist", label: "Checklist", tone: "green" },
@@ -180,3 +180,4 @@
     module.exports = global.FlowDomain;
   }
 })(typeof globalThis !== "undefined" ? globalThis : window);
+

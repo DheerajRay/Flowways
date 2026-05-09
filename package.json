@@ -1,18 +1,36 @@
 {
-  "name": "flowways",
-  "version": "0.1.0",
-  "private": true,
-  "description": "Local-first minimalist task management PWA.",
-  "scripts": {
-    "dev": "node scripts/dev-server.js",
-    "build": "node scripts/build.js",
-    "test": "node tests/domain.test.js"
-  },
-  "keywords": [
-    "pwa",
-    "tasks",
-    "local-first"
-  ],
-  "author": "",
-  "license": "UNLICENSED"
+    "name":  "flowways",
+    "version":  "1.0.0",
+    "private":  true,
+    "description":  "AI-assisted task memory app with Next.js, Supabase, and OpenAI.",
+    "scripts":  {
+                    "dev":  "next dev",
+                    "build":  "next build",
+                    "start":  "next start",
+                    "lint":  "next lint",
+                    "typecheck":  "tsc --noEmit",
+                    "test":  "vitest run",
+                    "test:watch":  "vitest",
+                    "release:patch":  "powershell -ExecutionPolicy Bypass -File scripts/release.ps1 -Bump patch",
+                    "release:minor":  "powershell -ExecutionPolicy Bypass -File scripts/release.ps1 -Bump minor",
+                    "release:major":  "powershell -ExecutionPolicy Bypass -File scripts/release.ps1 -Bump major"
+                },
+    "dependencies":  {
+                         "@supabase/ssr":  "^0.5.2",
+                         "@supabase/supabase-js":  "^2.49.8",
+                         "next":  "15.3.2",
+                         "openai":  "^4.104.0",
+                         "react":  "19.1.0",
+                         "react-dom":  "19.1.0",
+                         "zod":  "^3.24.4"
+                     },
+    "devDependencies":  {
+                            "@types/node":  "^22.15.17",
+                            "@types/react":  "^19.1.4",
+                            "@types/react-dom":  "^19.1.4",
+                            "eslint":  "^9.26.0",
+                            "eslint-config-next":  "15.3.2",
+                            "typescript":  "^5.8.3",
+                            "vitest":  "^3.1.2"
+                        }
 }

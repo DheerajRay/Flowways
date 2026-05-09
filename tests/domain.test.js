@@ -1,4 +1,4 @@
-const assert = require("assert");
+﻿const assert = require("assert");
 const domain = require("../src/domain");
 
 const baseDate = new Date("2026-04-24T12:00:00-04:00");
@@ -38,3 +38,4 @@ assert.equal(filtered.length, 1);
 assert.equal(filtered[0].id, "note");
 
 console.log("Domain tests passed.");
+

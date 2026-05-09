@@ -1,0 +1,4 @@
+src/app.js
+src/domain.js
+scripts/*.js
+tests/domain.test.js
