@@ -10,12 +10,15 @@ interface DbItem {
   body: string;
   labels: string[];
   due_at: string | null;
-  created_at?: string;
+  checked?: boolean;
 }
 
 export default function HomePage() {
   const [sourceText, setSourceText] = useState("");
   const [items, setItems] = useState<DbItem[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
   const [authRequired, setAuthRequired] = useState(true);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -61,9 +64,7 @@ export default function HomePage() {
       }
     });
 
-    return () => {
-      subscription.subscription.unsubscribe();
-    };
+    return () => subscription.subscription.unsubscribe();
   }, []);
 
   async function submitItem() {
@@ -78,14 +79,8 @@ export default function HomePage() {
     });
 
     if (!response.ok) {
-      let detail = "Save failed.";
-      try {
-        const errorBody = await response.json();
-        if (errorBody?.error) detail = String(errorBody.error);
-      } catch {
-        detail = `Save failed with status ${response.status}.`;
-      }
-      setSubmitMessage(detail);
+      const body = await response.json().catch(() => ({}));
+      setSubmitMessage(body.error || `Save failed (${response.status}).`);
       setBusy(false);
       return;
     }
@@ -95,6 +90,41 @@ export default function HomePage() {
     setSourceText("");
     await loadItems();
     setBusy(false);
+  }
+
+  async function updateItem(id: string, patch: Record<string, unknown>) {
+    const response = await fetch(`/api/items/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch)
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      setSubmitMessage(body.error || "Update failed.");
+      return;
+    }
+    await loadItems();
+  }
+
+  async function deleteItem(id: string) {
+    const response = await fetch(`/api/items/${id}`, { method: "DELETE" });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      setSubmitMessage(body.error || "Delete failed.");
+      return;
+    }
+    await loadItems();
+  }
+
+  function startEdit(item: DbItem) {
+    setEditingId(item.id);
+    setEditTitle(item.title);
+    setEditBody(item.body || "");
+  }
+
+  async function saveEdit(id: string) {
+    await updateItem(id, { title: editTitle.trim() || "Untitled", body: editBody });
+    setEditingId(null);
   }
 
   async function signInOrUp() {
@@ -114,7 +144,7 @@ export default function HomePage() {
       } else {
         const signInAttempt = await supabase.auth.signInWithPassword({ email, password });
         if (signInAttempt.error) {
-          setAuthMessage("Account created. If signup requires email confirmation, sign in after confirmation.");
+          setAuthMessage("Account created. Sign in after confirmation if required.");
           setAuthMode("signin");
         } else {
           setAuthMessage("Account created and signed in.");
@@ -142,9 +172,7 @@ export default function HomePage() {
           </div>
           <input type="email" placeholder="Email" value={email} onChange={(event) => setEmail(event.target.value)} />
           <input type="password" placeholder="Password" value={password} onChange={(event) => setPassword(event.target.value)} />
-          <button type="button" onClick={signInOrUp} disabled={busy || !email || !password}>
-            {busy ? "Please wait..." : authMode === "signin" ? "Sign In" : "Create Account"}
-          </button>
+          <button type="button" onClick={signInOrUp} disabled={busy || !email || !password}>{busy ? "Please wait..." : authMode === "signin" ? "Sign In" : "Create Account"}</button>
           <p className="message">{authMessage}</p>
         </section>
       </main>
@@ -154,21 +182,17 @@ export default function HomePage() {
   return (
     <main className="page">
       <header className="topbar">
-        <h1>FlowWays</h1>
+        <div>
+          <h1>FlowWays</h1>
+          <p className="subtitle">Capture, classify, edit, and manage memory items.</p>
+        </div>
         <button type="button" onClick={signOut}>Sign Out</button>
       </header>
 
       <section className="capture">
         <label htmlFor="captureInput">Add memory</label>
-        <textarea
-          id="captureInput"
-          value={sourceText}
-          onChange={(event) => setSourceText(event.target.value)}
-          placeholder="Write anything: task, note, workflow, or timed item"
-        />
-        <button type="button" onClick={submitItem} disabled={busy || !sourceText.trim()}>
-          {busy ? "Saving..." : "Save"}
-        </button>
+        <textarea id="captureInput" value={sourceText} onChange={(event) => setSourceText(event.target.value)} placeholder="Write anything: task, note, workflow, or timed item" />
+        <button type="button" onClick={submitItem} disabled={busy || !sourceText.trim()}>{busy ? "Saving..." : "Save"}</button>
         <p className="message">{submitMessage}</p>
       </section>
 
@@ -177,10 +201,27 @@ export default function HomePage() {
         {items.map((item) => (
           <article key={item.id} className={`item item-${item.kind}`}>
             <div className="itemHead">
-              <strong>{item.title}</strong>
               <span className="kind">{item.kind}</span>
+              <div className="actions">
+                <button type="button" onClick={() => updateItem(item.id, { checked: !item.checked })}>{item.checked ? "Undo" : "Done"}</button>
+                {editingId === item.id ? <button type="button" onClick={() => saveEdit(item.id)}>Save</button> : <button type="button" onClick={() => startEdit(item)}>Edit</button>}
+                {editingId === item.id ? <button type="button" onClick={() => setEditingId(null)}>Cancel</button> : null}
+                <button type="button" className="danger" onClick={() => deleteItem(item.id)}>Delete</button>
+              </div>
             </div>
-            {item.body ? <p>{item.body}</p> : null}
+
+            {editingId === item.id ? (
+              <div className="editor">
+                <input value={editTitle} onChange={(event) => setEditTitle(event.target.value)} />
+                <textarea value={editBody} onChange={(event) => setEditBody(event.target.value)} />
+              </div>
+            ) : (
+              <>
+                <h3>{item.title}</h3>
+                {item.body ? <p>{item.body}</p> : null}
+              </>
+            )}
+
             <div className="meta">
               {item.due_at ? <span>{new Date(item.due_at).toLocaleString()}</span> : null}
               {item.labels?.map((label) => <span key={label}>#{label}</span>)}
