@@ -121,12 +121,19 @@ export default function HomePage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setAuthMessage(error.message);
     } else {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) {
         setAuthMessage(error.message);
+      } else if (data.session) {
+        setAuthMessage("Account created and signed in.");
       } else {
-        setAuthMessage("Account created. You can sign in now.");
-        setAuthMode("signin");
+        const signInAttempt = await supabase.auth.signInWithPassword({ email, password });
+        if (signInAttempt.error) {
+          setAuthMessage("Account created. Sign in after confirming email settings in Supabase.");
+          setAuthMode("signin");
+        } else {
+          setAuthMessage("Account created and signed in.");
+        }
       }
     }
 
@@ -151,8 +158,10 @@ export default function HomePage() {
   if (authRequired) {
     return (
       <main className="authGate">
-        <h1>FlowWays</h1>
-        <p>Email/password auth is required. Session stays remembered after login.</p>
+        <div className="authHero">
+          <h1>FlowWays</h1>
+          <p>City-like task memory. Sign in with email and password.</p>
+        </div>
         <div className="authCard">
           <div className="authTabs">
             <button type="button" className={authMode === "signin" ? "active" : ""} onClick={() => setAuthMode("signin")}>Sign In</button>
@@ -173,7 +182,16 @@ export default function HomePage() {
     <main className="app">
       <aside className="rail">
         <h1>FlowWays</h1>
-        <p>Task memory map</p>
+        <p className="subline">Task memory map</p>
+        <div className="miniMap" aria-hidden="true">
+          <span className="route route-a"></span>
+          <span className="route route-b"></span>
+          <span className="route route-c"></span>
+          <span className="hub hub-a"></span>
+          <span className="hub hub-b"></span>
+          <span className="hub hub-c"></span>
+          <span className="hub hub-d"></span>
+        </div>
         <div className="filters">
           <button className={filter === "active" ? "active" : ""} onClick={() => setFilter("active")}>Active</button>
           <button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>All</button>
@@ -183,7 +201,7 @@ export default function HomePage() {
       <section className="workspace">
         <header>
           <h2>Capture</h2>
-          <p>Write naturally; AI maps it into the right flow.</p>
+          <p>Write naturally. AI routes each item into the right lane.</p>
           <button type="button" className="signOut" onClick={signOut}>Sign Out</button>
         </header>
         <div className="composer">
