@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 
@@ -33,7 +33,7 @@ export default function HomePage() {
   }
 
   useEffect(() => {
-    loadItems();
+    void loadItems();
   }, []);
 
   useEffect(() => {
@@ -156,6 +156,7 @@ export default function HomePage() {
     </main>
   );
 }
+
 
 
 
