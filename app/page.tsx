@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { getSupabaseBrowserClient } from "@/shared/supabase-browser";
 
 interface DbItem {
   id: string;
@@ -19,7 +20,12 @@ export default function HomePage() {
   const [filter, setFilter] = useState<"active" | "all" | "done">("active");
   const [query, setQuery] = useState("");
   const [classifyPreview, setClassifyPreview] = useState("");
-  const [authRequired, setAuthRequired] = useState(false);
+  const [authRequired, setAuthRequired] = useState(true);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
+  const [busy, setBusy] = useState(false);
 
   async function loadItems() {
     const response = await fetch("/api/items");
@@ -30,10 +36,34 @@ export default function HomePage() {
     if (!response.ok) return;
     const data = await response.json();
     setItems(data.items || []);
+    setAuthRequired(false);
   }
 
   useEffect(() => {
-    void loadItems();
+    const supabase = getSupabaseBrowserClient();
+
+    void supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        setAuthRequired(false);
+        void loadItems();
+      } else {
+        setAuthRequired(true);
+      }
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setAuthRequired(false);
+        void loadItems();
+      } else {
+        setAuthRequired(true);
+        setItems([]);
+      }
+    });
+
+    return () => {
+      subscription.subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -49,7 +79,7 @@ export default function HomePage() {
       });
       if (!response.ok) return;
       const data = await response.json();
-      setClassifyPreview(`${data.result.kind} • ${data.result.title}`);
+      setClassifyPreview(`${data.result.kind} - ${data.result.title}`);
     }, 450);
 
     return () => clearTimeout(id);
@@ -65,7 +95,7 @@ export default function HomePage() {
     if (!response.ok) return;
     setSourceText("");
     setClassifyPreview("");
-    loadItems();
+    void loadItems();
   }
 
   async function toggleDone(item: DbItem) {
@@ -74,12 +104,38 @@ export default function HomePage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ checked: !item.checked, workflowStatus: !item.checked ? "Done" : item.workflow_status })
     });
-    loadItems();
+    void loadItems();
   }
 
   async function enableReminders() {
     if (!("Notification" in window)) return;
     await Notification.requestPermission();
+  }
+
+  async function signInOrUp() {
+    setBusy(true);
+    setAuthMessage("");
+    const supabase = getSupabaseBrowserClient();
+
+    if (authMode === "signin") {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) setAuthMessage(error.message);
+    } else {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        setAuthMessage(error.message);
+      } else {
+        setAuthMessage("Account created. You can sign in now.");
+        setAuthMode("signin");
+      }
+    }
+
+    setBusy(false);
+  }
+
+  async function signOut() {
+    const supabase = getSupabaseBrowserClient();
+    await supabase.auth.signOut();
   }
 
   const visible = useMemo(() => {
@@ -96,7 +152,19 @@ export default function HomePage() {
     return (
       <main className="authGate">
         <h1>FlowWays</h1>
-        <p>This workspace requires auth. Configure Supabase auth and sign in to use task memory features.</p>
+        <p>Email/password auth is required. Session stays remembered after login.</p>
+        <div className="authCard">
+          <div className="authTabs">
+            <button type="button" className={authMode === "signin" ? "active" : ""} onClick={() => setAuthMode("signin")}>Sign In</button>
+            <button type="button" className={authMode === "signup" ? "active" : ""} onClick={() => setAuthMode("signup")}>Create Account</button>
+          </div>
+          <input type="email" placeholder="Email" value={email} onChange={(event) => setEmail(event.target.value)} />
+          <input type="password" placeholder="Password" value={password} onChange={(event) => setPassword(event.target.value)} />
+          <button type="button" onClick={signInOrUp} disabled={busy || !email || !password}>
+            {busy ? "Please wait..." : authMode === "signin" ? "Sign In" : "Create Account"}
+          </button>
+          <p className="authMessage">{authMessage}</p>
+        </div>
       </main>
     );
   }
@@ -116,6 +184,7 @@ export default function HomePage() {
         <header>
           <h2>Capture</h2>
           <p>Write naturally; AI maps it into the right flow.</p>
+          <button type="button" className="signOut" onClick={signOut}>Sign Out</button>
         </header>
         <div className="composer">
           <textarea
@@ -156,7 +225,3 @@ export default function HomePage() {
     </main>
   );
 }
-
-
-
-

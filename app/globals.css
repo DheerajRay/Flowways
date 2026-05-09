@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #f6f3ea;
   --ink: #2a2f38;
   --panel: #fffdf8;
@@ -46,6 +46,16 @@ body {
 .filters button.active { background: #ece7d8; }
 
 .workspace { padding: var(--space-4); display: grid; gap: var(--space-3); }
+.workspace header { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+.workspace header p { grid-column: 1 / -1; margin: 0; }
+.signOut {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
 .composer {
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -92,6 +102,31 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
 .tone-workflow { border-left: 4px solid var(--workflow); }
 .tone-timeline { border-left: 4px solid var(--timeline); }
 
+.authGate { min-height: 100vh; display: grid; place-content: center; gap: 12px; padding: 24px; }
+.authCard {
+  width: min(420px, 94vw);
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 16px;
+}
+.authTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.authTabs button { border: 1px solid var(--line); background: #fff; padding: 8px; border-radius: 8px; cursor: pointer; }
+.authTabs button.active { background: #ece7d8; }
+.authCard > button {
+  background: #2e5f93;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+}
+.authCard > button:disabled { opacity: 0.7; cursor: not-allowed; }
+.authMessage { min-height: 20px; margin: 0; font-size: 13px; color: #45505f; }
+.composerActions button + button { background: #4f6a7e; }
+
 @media (max-width: 1040px) {
   .app { grid-template-columns: 1fr; }
   .rail { border-right: 0; border-bottom: 1px solid var(--line); }
@@ -105,10 +140,3 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-.authGate { min-height: 100vh; display: grid; place-content: center; gap: 12px; padding: 24px; }
-.composerActions button + button { background: #4f6a7e; }
-
-
-
-

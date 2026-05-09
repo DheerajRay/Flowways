@@ -89,3 +89,15 @@ Environment template with inline retrieval instructions: .env.local.example.
 
 Vercel setup guide: docs/vercel-setup.md.
 
+
+## Supabase Auth Setup (Email + Password Only)
+
+In Supabase Dashboard:
+
+1. Go to `Authentication -> Providers -> Email`.
+2. Keep `Enable Email provider` ON.
+3. Turn OFF magic link / email OTP sign-in options.
+4. Keep password sign-in enabled.
+5. Configure `URL Configuration` with your Vercel site URL and local callback URL.
+
+Result: users can create account and sign in with email/password, and browser session is remembered for re-login.
