@@ -78,7 +78,14 @@ export default function HomePage() {
     });
 
     if (!response.ok) {
-      setSubmitMessage("Save failed. Check auth/session and try again.");
+      let detail = "Save failed.";
+      try {
+        const errorBody = await response.json();
+        if (errorBody?.error) detail = String(errorBody.error);
+      } catch {
+        detail = `Save failed with status ${response.status}.`;
+      }
+      setSubmitMessage(detail);
       setBusy(false);
       return;
     }
