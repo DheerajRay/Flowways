@@ -142,9 +142,27 @@ textarea { min-height: 100px; resize: vertical; }
   color: #111;
   background: #fff;
 }
+.iconAction.compact {
+  width: 32px;
+  height: 32px;
+  border-width: 2px;
+}
 .item h3 { margin: 0; font-size: 20px; line-height: 1.2; }
 .item p { margin: 0; color: #33455f; font-size: 16px; line-height: 1.35; }
-.editor { display: grid; gap: 8px; }
+.editor {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #e2dccb;
+  border-radius: 12px;
+  padding: 10px;
+  background: #fcfbf7;
+}
+.editor > input {
+  max-width: 460px;
+}
+.editor textarea {
+  min-height: 84px;
+}
 .typeEditor {
   display: grid;
   gap: 8px;
@@ -158,6 +176,14 @@ textarea { min-height: 100px; resize: vertical; }
 .editRow label {
   font-size: 12px;
   font-weight: 600;
+  min-width: 74px;
+}
+.editRow input[type="text"],
+.editRow input[type="number"],
+.editRow input[type="datetime-local"],
+.editRow input:not([type]) {
+  width: 100%;
+  max-width: 100%;
 }
 .commentList {
   display: grid;
