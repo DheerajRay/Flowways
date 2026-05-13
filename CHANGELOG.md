@@ -7,7 +7,28 @@ Format follows Keep a Changelog style with practical engineering detail for this
 ## [Unreleased]
 
 ### Added
-- `CHANGELOG.md` introduced to track release and push history with implementation details.
+- Dynamic item action API route: `PATCH/DELETE /api/items/[id]`.
+- Branching/release governance document:
+- `docs/branching-and-release-policy.md`.
+
+### Changed
+- Classification system hardened:
+- richer workflow-vs-checklist fallback heuristics.
+- context-aware AI classification using recent memory hints from existing items.
+- README governance and environment formatting cleanup.
+
+### Fixed
+- Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.
+- Removed auth subtitle text on sign-in page per UX request.
+
+### Files
+- `app/api/items/[id]/route.ts`
+- `app/api/items/route.ts`
+- `src/server/ai/classifier-service.ts`
+- `src/shared/domain/classifier.ts`
+- `app/page.tsx`
+- `README.md`
+- `docs/branching-and-release-policy.md`
 
 ## [2026-05-13] - CRUD + UI iteration + auth polish
 
