@@ -30,6 +30,8 @@ export default function HomePage() {
   const [authMessage, setAuthMessage] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [petNotice, setPetNotice] = useState("");
+  const [petNoticeTone, setPetNoticeTone] = useState<"info" | "error">("info");
   const [showHidden, setShowHidden] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [nowMs, setNowMs] = useState(Date.now());
@@ -114,6 +116,8 @@ export default function HomePage() {
     if (!sourceText.trim() || authRequired) return;
     setBusy(true);
     setSubmitMessage("");
+    setPetNotice("");
+    setPetNoticeTone("info");
     try {
       const response = await fetch("/api/items", {
         method: "POST",
@@ -124,6 +128,10 @@ export default function HomePage() {
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
         setSubmitMessage(body.error || `Save failed (${response.status}).`);
+        if (response.status === 400 && String(body.error || "").toLowerCase().includes("invalid timeline input")) {
+          setPetNotice("Invalid timer. Please choose a future time.");
+          setPetNoticeTone("error");
+        }
         return;
       }
 
@@ -133,10 +141,13 @@ export default function HomePage() {
           ? `Merged into existing checklist.`
           : `Saved as ${data.classification.kind}: ${data.classification.title}`
       );
+      setPetNotice("");
       setSourceText("");
       await loadItems();
     } catch {
       setSubmitMessage("Save failed due to a network or server error.");
+      setPetNotice("Something went wrong. Try again.");
+      setPetNoticeTone("error");
     } finally {
       setBusy(false);
     }
@@ -437,9 +448,9 @@ export default function HomePage() {
     if (name === "show") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><circle cx="8" cy="8" r="1.5" /></svg>;
     if (name === "auto") return <svg {...common}><path d="M8 2.8v10.4" /><path d="M2.8 8h10.4" /><circle cx="8" cy="8" r="1.6" /></svg>;
     if (name === "timeline") return <svg {...common}><circle cx="8" cy="8" r="5.5" /><path d="M8 5v3.2l2.2 1.2" /></svg>;
-    if (name === "workflow") return <svg {...common}><path d="M2.8 4.2h10.4M2.8 8h10.4M2.8 11.8h10.4" /></svg>;
-    if (name === "journal") return <svg {...common}><rect x="3.2" y="2.8" width="9.6" height="10.4" rx="1.2" /><path d="M6 5.5h4M6 8h4M6 10.5h3" /></svg>;
-    if (name === "checklist") return <svg {...common}><path d="M6.5 5.2h5M6.5 8h5M6.5 10.8h5" /><path d="M3.2 5.2h.01M3.2 8h.01M3.2 10.8h.01" /></svg>;
+    if (name === "workflow") return <svg {...common}><path d="M3 4.5h4M7 4.5l2 2M7 4.5l2-2" /><path d="M3 11.5h4M7 11.5l2 2M7 11.5l2-2" /><path d="M11 4.5v7" /></svg>;
+    if (name === "journal") return <svg {...common}><path d="M4 2.8h7.5a1 1 0 0 1 1 1v8.4a1 1 0 0 1-1 1H4" /><path d="M4 2.8v10.4" /><path d="M6.2 5.6h4M6.2 8h4" /></svg>;
+    if (name === "checklist") return <svg {...common}><path d="M6.5 5.2h5M6.5 8h5M6.5 10.8h5" /><path d="M3.2 5.2 4 6l1.1-1.2M3.2 8 4 8.8l1.1-1.2M3.2 10.8 4 11.6l1.1-1.2" /></svg>;
     if (name === "backlog") return <svg {...common}><path d="M11.5 8H4.2" /><path d="M6.9 5.3 4.2 8l2.7 2.7" /></svg>;
     if (name === "ready") return <svg {...common}><path d="M5 4.2 11.8 8 5 11.8z" /></svg>;
     if (name === "progress") return <svg {...common}><path d="M5.8 4v8M10.2 4v8" /></svg>;
@@ -536,9 +547,9 @@ export default function HomePage() {
       </header>
 
       <section className="capture">
-        <div className={`pixelPal${busy ? " isBusy" : ""}`} aria-live="polite" aria-label={busy ? "Classifying task..." : "Idle"}>
-          <span className="pixelPalFace" aria-hidden="true">◕‿◕</span>
-          {busy ? <span className="pixelPalText">Classifying...</span> : null}
+        <div className={`pixelPal${busy ? " isBusy" : ""}${petNotice ? " hasNotice" : ""}${petNoticeTone === "error" ? " isError" : ""}`} aria-live="polite" aria-label={busy ? "Classifying task..." : petNotice || "Idle"}>
+          <span className="pixelPalFace" aria-hidden="true">{petNoticeTone === "error" ? "x_x" : "???"}</span>
+          {busy ? <span className="pixelPalText">Classifying...</span> : petNotice ? <span className="pixelPalText">{petNotice}</span> : null}
         </div>
         <div className="captureBar">
           <input id="captureInput" value={sourceText} onChange={(event) => setSourceText(event.target.value)} placeholder="Add task | Search" />

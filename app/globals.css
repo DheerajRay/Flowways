@@ -88,6 +88,15 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   transform: translateY(0);
   animation: palBounce 700ms ease-in-out infinite;
 }
+.pixelPal.hasNotice {
+  opacity: 1;
+  transform: translateY(0);
+}
+.pixelPal.isError {
+  background: #fff0f0;
+  border-color: #9f2f2f;
+  color: #7c2323;
+}
 .pixelPalFace {
   font-family: "Courier New", monospace;
   font-size: 12px;
@@ -115,11 +124,18 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
 }
 .modeActions {
   display: flex;
-  gap: 6px;
-  padding: 3px 6px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 9px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: #fff;
+  min-height: 44px;
+}
+.modeActions .iconAction.compact {
+  width: 30px;
+  height: 30px;
+  border-width: 2px;
 }
 label { font-weight: 700; font-size: 28px; }
 input,

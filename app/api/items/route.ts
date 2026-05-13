@@ -119,6 +119,18 @@ export async function POST(request: Request) {
       payload.clientNow ? new Date(payload.clientNow) : undefined
     );
     const item = buildItem(auth.user.id, payload.sourceText, (countResult.count || 0) + 1, classification);
+    const clientNow = payload.clientNow ? new Date(payload.clientNow) : new Date();
+
+    if (item.kind === "timeline") {
+      if (!item.dueAt) {
+        return NextResponse.json({ error: "Invalid timeline input: could not determine a due time." }, { status: 400 });
+      }
+      const dueMs = new Date(item.dueAt).getTime();
+      const nowMs = clientNow.getTime();
+      if (Number.isNaN(dueMs) || dueMs <= nowMs) {
+        return NextResponse.json({ error: "Invalid timeline input: due time must be in the future." }, { status: 400 });
+      }
+    }
 
     if (item.kind === "checklist") {
       const incomingList = parseListFromText(payload.sourceText);
