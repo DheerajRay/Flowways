@@ -10,12 +10,20 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - Dynamic item action API route: `PATCH/DELETE /api/items/[id]`.
 - Branching/release governance document:
 - `docs/branching-and-release-policy.md`.
+- Type-specific card behavior in UI:
+- checklist cards render interactive checkbox rows.
+- workflow cards include status movement controls (`Backlog`, `Ready`, `In Progress`, `Review`, `Done`).
+- timeline cards include quick due-date controls.
 
 ### Changed
 - Classification system hardened:
 - richer workflow-vs-checklist fallback heuristics.
 - context-aware AI classification using recent memory hints from existing items.
 - README governance and environment formatting cleanup.
+- Classification refined further:
+- idea-like inputs (for example `testing something`) bias to `journal` unless explicit checklist markers exist.
+- label canonicalization for related tags (for example `drift` and `config drift` -> `config-drift` in matching context).
+- Task card typography and layout tightened for more professional readability.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.
@@ -27,6 +35,7 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - `src/server/ai/classifier-service.ts`
 - `src/shared/domain/classifier.ts`
 - `app/page.tsx`
+- `app/globals.css`
 - `README.md`
 - `docs/branching-and-release-policy.md`
 
