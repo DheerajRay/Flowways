@@ -70,11 +70,11 @@ export function inferContextLabels(text: string, kind: ItemKind): string[] {
 export function parseDueAt(text: string, baseDate = new Date()): string | null {
   const normalized = normalizeText(text).toLowerCase();
   const result = new Date(baseDate);
-  const relative = normalized.match(/\bin\s+(\d+)\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/);
+  const relative = normalized.match(/\b(in|after|for)\s+(\d+)\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/);
 
   if (relative) {
-    const amount = Number(relative[1]);
-    const unit = relative[2];
+    const amount = Number(relative[2]);
+    const unit = relative[3];
     if (Number.isFinite(amount) && amount > 0) {
       const deltaMs =
         /day/.test(unit) ? amount * 24 * 60 * 60 * 1000 :
@@ -135,7 +135,7 @@ export function parseDueAt(text: string, baseDate = new Date()): string | null {
 function stripSyntax(text: string): string {
   return normalizeText(text)
     .replace(/\b(today|tomorrow|next week)\b/gi, "")
-    .replace(/\bin\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/gi, "")
+    .replace(/\b(in|after|for)\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/gi, "")
     .replace(/\b20\d{2}-\d{2}-\d{2}\b/g, "")
     .replace(/\b\d{1,2}(?::\d{2})?\s*(am|pm)\b/gi, "")
     .replace(/#[a-z0-9_-]+/gi, "")

@@ -89,6 +89,8 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - prevents list captures like `1. ... 2. ... 3. ...` from being misclassified as workflow due to isolated action verbs.
 - Checklist merge control visibility:
 - merge selector/action now appears on all open checklist cards when at least one other open checklist exists.
+- Timer phrase parsing fix:
+- timeline due parsing now supports `after X` and `for X` duration phrasings (in addition to `in X`), so timeline cards reliably receive `due_at` and show progress rails.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.

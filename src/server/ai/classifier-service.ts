@@ -69,7 +69,7 @@ export async function classifyWithAiOrFallback(
     const normalizedLabels = normalizeGeneratedLabels(parsed.labels, text, memoryLabels);
     const isIdeaLike = /\b(testing\b|test idea\b|idea\b|thought\b|hypothesis\b|explore\b)\b/i.test(text);
     const hasChecklistMarkers = /^(\[\s?\]|-|todo\b|fix\b|call\b|email\b|finish\b|buy\b|pick up\b)/i.test(text);
-    const reminderLike = /\b(remind|reminder|due|tomorrow|today|next week|in\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days))\b/i.test(text);
+    const reminderLike = /\b(remind|reminder|due|tomorrow|today|next week|(in|after|for)\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days))\b/i.test(text);
     const timeLike = /\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b\d{2}:\d{2}\b/i.test(text);
     const structuredListLike =
       ((text.match(/\d+\.\s+[^0-9]+(?=(\d+\.\s+)|$)/g)?.length || 0) >= 2) ||
@@ -101,7 +101,7 @@ export async function classifyWithAiOrFallback(
     if (
       refinedKind === "timeline" &&
       (timeLike || reminderLike) &&
-      !/\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b\d{2}:\d{2}\b|\bin\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/i.test(refinedTitle)
+      !/\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b\d{2}:\d{2}\b|\b(in|after|for)\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/i.test(refinedTitle)
     ) {
       refinedTitle = text.replace(/#[a-z0-9_-]+/gi, "").trim() || parsed.title;
     }
