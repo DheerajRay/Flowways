@@ -49,6 +49,11 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - added card entrance/attention motion: subtle card-in animation and overdue timeline pulse (with reduced-motion fallback).
 - standardized metadata chips (`date` and `#tags`) for cleaner scanability.
 - added workflow `time spent` display in metadata based on item age.
+- Timeline/local-time correction and compact card polish:
+- item creation now sends `clientNow` from browser and timeline parsing uses that local clock context to avoid server-timezone drift.
+- timeline title for time-based reminders preserves user time phrasing when AI strips it.
+- timeline due-progress rail aligned to trailing segment (mockup style) instead of full-width row.
+- reduced card vertical footprint (padding/gap/heading size) for denser feed readability.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.

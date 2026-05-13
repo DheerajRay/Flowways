@@ -107,7 +107,8 @@ export async function POST(request: Request) {
     const classification = await classifyWithAiOrFallback(
       payload.sourceText,
       payload.modeHint,
-      hintsResult.data || []
+      hintsResult.data || [],
+      payload.clientNow ? new Date(payload.clientNow) : undefined
     );
     const item = buildItem(auth.user.id, payload.sourceText, (countResult.count || 0) + 1, classification);
 

@@ -19,7 +19,8 @@ export const classificationResultSchema = z.object({
 
 export const createItemSchema = z.object({
   sourceText: z.string().min(1),
-  modeHint: z.enum(["auto", "checklist", "journal", "workflow", "timeline"]).default("auto")
+  modeHint: z.enum(["auto", "checklist", "journal", "workflow", "timeline"]).default("auto"),
+  clientNow: z.string().datetime().optional()
 });
 
 export const updateItemSchema = z.object({

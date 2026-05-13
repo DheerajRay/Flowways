@@ -93,7 +93,7 @@ export default function HomePage() {
     const response = await fetch("/api/items", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sourceText, modeHint: "auto" })
+      body: JSON.stringify({ sourceText, modeHint: "auto", clientNow: new Date().toISOString() })
     });
 
     if (!response.ok) {
@@ -435,9 +435,11 @@ export default function HomePage() {
                     <p className="timelineStatus">{item.checked ? "Completed" : (timeState?.label || "No due time set")}</p>
                     {!item.checked && item.due_at && !timeState?.done ? (
                       <div className="dueRailRow" aria-label="Due progress">
-                        <span className="dueLabel">Due Time</span>
-                        <div className="dueRail" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(timelineProgress(item))}>
-                          <span className="dueRailFill" style={{ width: `${timelineProgress(item)}%` }} />
+                        <span className="dueLabel">Due Time :</span>
+                        <div className="dueRailWrap">
+                          <div className="dueRail" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(timelineProgress(item))}>
+                            <span className="dueRailFill" style={{ width: `${timelineProgress(item)}%` }} />
+                          </div>
                         </div>
                       </div>
                     ) : null}

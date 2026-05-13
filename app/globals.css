@@ -87,10 +87,10 @@ textarea { min-height: 100px; resize: vertical; }
 .item {
   border: 2px solid #1d1d1d;
   border-radius: 24px;
-  padding: 20px 22px;
+  padding: 14px 16px;
   background: #fff;
   display: grid;
-  gap: 12px;
+  gap: 8px;
   animation: cardIn 260ms ease-out;
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
@@ -138,8 +138,7 @@ textarea { min-height: 100px; resize: vertical; }
   color: #111;
   background: #fff;
 }
-.item h3 { margin: 0; font-size: 28px; }
-.item h3 { margin: 0; font-size: 22px; line-height: 1.2; }
+.item h3 { margin: 0; font-size: 20px; line-height: 1.2; }
 .item p { margin: 0; color: #33455f; font-size: 16px; line-height: 1.35; }
 .editor { display: grid; gap: 8px; }
 .meta {
@@ -184,7 +183,7 @@ textarea { min-height: 100px; resize: vertical; }
 
 .checklistBlock {
   display: grid;
-  gap: 10px;
+  gap: 6px;
 }
 .checkRow {
   display: flex;
@@ -239,14 +238,17 @@ textarea { min-height: 100px; resize: vertical; }
   color: #9f2b2b;
 }
 .dueRailRow {
-  display: grid;
-  grid-template-columns: auto 1fr;
+  display: flex;
   align-items: center;
   gap: 12px;
 }
 .dueLabel {
   font-size: 13px;
   color: #333;
+}
+.dueRailWrap {
+  margin-left: auto;
+  width: min(340px, 52%);
 }
 .dueRail {
   width: 100%;

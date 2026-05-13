@@ -11,9 +11,14 @@ interface MemoryHint {
   labels?: string[] | null;
 }
 
-export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | ItemKind, memoryHints: MemoryHint[] = []): Promise<ClassificationResult> {
+export async function classifyWithAiOrFallback(
+  text: string,
+  modeHint: "auto" | ItemKind,
+  memoryHints: MemoryHint[] = [],
+  baseDate = new Date()
+): Promise<ClassificationResult> {
   if (!client) {
-    return fallbackClassify(text, modeHint);
+    return fallbackClassify(text, modeHint, baseDate);
   }
 
   try {
@@ -68,6 +73,7 @@ export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | 
     const timeLike = /\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b\d{2}:\d{2}\b/i.test(text);
 
     let refinedKind = parsed.kind;
+    let refinedTitle = parsed.title;
     let refinedBody = parsed.body;
     let refinedReason = parsed.reason;
 
@@ -77,7 +83,7 @@ export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | 
       refinedReason = `${parsed.reason} | post-rule: idea-like input mapped to journal`;
     }
 
-    const deterministicDueAt = parseDueAt(text);
+    const deterministicDueAt = parseDueAt(text, baseDate);
     const inferredDueAt = deterministicDueAt || parsed.due_at;
 
     if (modeHint === "auto" && (reminderLike || timeLike || parsed.kind === "timeline")) {
@@ -88,18 +94,23 @@ export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | 
       }
     }
 
+    if (refinedKind === "timeline" && timeLike && !/\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b\d{2}:\d{2}\b/i.test(refinedTitle)) {
+      refinedTitle = text.replace(/#[a-z0-9_-]+/gi, "").trim() || parsed.title;
+    }
+
     const finalLabels = normalizedLabels.length ? normalizedLabels : inferContextLabels(text, refinedKind);
 
     return {
       ...parsed,
       kind: refinedKind,
+      title: refinedTitle || parsed.title,
       body: refinedBody,
       due_at: modeHint === "auto" && (reminderLike || timeLike || parsed.kind === "timeline") ? inferredDueAt : parsed.due_at,
       labels: finalLabels,
       reason: refinedReason
     };
   } catch {
-    return fallbackClassify(text, modeHint);
+    return fallbackClassify(text, modeHint, baseDate);
   }
 }
 
