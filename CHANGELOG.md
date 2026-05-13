@@ -91,6 +91,7 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - merge selector/action now appears on all open checklist cards when at least one other open checklist exists.
 - Timer phrase parsing fix:
 - timeline due parsing now supports `after X` and `for X` duration phrasings (in addition to `in X`), so timeline cards reliably receive `due_at` and show progress rails.
+- added regression coverage for `Timer for 10 minutes` to ensure timeline classification + due parsing remain stable.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.

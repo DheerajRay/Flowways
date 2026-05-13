@@ -40,6 +40,10 @@ describe("classifier fallback", () => {
     const e = fallbackClassify("Check on Rex at 4 PM", "auto", base);
     expect(e.kind).toBe("timeline");
     expect(e.due_at).toBeTruthy();
+
+    const f = fallbackClassify("Timer for 10 minutes", "auto", base);
+    expect(f.kind).toBe("timeline");
+    expect(f.due_at).toBeTruthy();
   });
 
   it("classifies workflow items", () => {
