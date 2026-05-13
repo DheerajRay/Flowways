@@ -97,6 +97,11 @@ textarea { min-height: 100px; resize: vertical; }
 .item-journal { border-left-color: var(--journal); }
 .item-workflow { border-left-color: var(--workflow); }
 .item-timeline { border-left-color: var(--timeline); }
+.item-timeline-alert {
+  border-color: #e39a9a;
+  background: linear-gradient(90deg, #fff6f6, #ffffff 24%);
+  box-shadow: 0 0 0 1px rgba(210, 79, 79, 0.18), 0 10px 24px rgba(40, 54, 74, 0.08);
+}
 
 .itemHead {
   display: flex;
@@ -184,6 +189,10 @@ textarea { min-height: 100px; resize: vertical; }
 .timelineBlock {
   display: grid;
   gap: 10px;
+}
+.item-timeline-alert .checkRow span {
+  color: #9f2b2b;
+  font-weight: 700;
 }
 .timeActions {
   display: flex;

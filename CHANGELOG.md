@@ -33,6 +33,10 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - Timeline classification strengthened:
 - relative reminders like `in 15 minutes` now parse to concrete `due_at`.
 - reminder-like inputs (`remind`, `due tomorrow`, etc.) are post-corrected to `timeline` when a due time can be inferred.
+- Timeline handling polished:
+- time-only reminders like `Check on Rex at 4 PM` now resolve to `timeline` with day rollover when the same-day time has already passed.
+- timeline cards are now prioritized in feed ordering when overdue, with visual alert styling until marked done.
+- timeline cards show a live due-state countdown and clearer completion state text.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.
@@ -55,6 +59,7 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - `README.md`
 - `docs/branching-and-release-policy.md`
 - `tests/unit/classifier.test.ts`
+- `app/globals.css`
 
 ## [2026-05-13] - CRUD + UI iteration + auth polish
 

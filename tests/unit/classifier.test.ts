@@ -15,6 +15,7 @@ describe("classifier fallback", () => {
   it("parses due dates", () => {
     expect(parseDueAt("tomorrow 3pm", base)).toBeTruthy();
     expect(parseDueAt("remind me in 15 minutes", base)).toBeTruthy();
+    expect(parseDueAt("check on rex at 4 pm", base)).toBeTruthy();
   });
 
   it("classifies timeline items", () => {
@@ -25,6 +26,10 @@ describe("classifier fallback", () => {
     const d = fallbackClassify("Remind me in 15 minutes to check build", "auto", base);
     expect(d.kind).toBe("timeline");
     expect(d.due_at).toBeTruthy();
+
+    const e = fallbackClassify("Check on Rex at 4 PM", "auto", base);
+    expect(e.kind).toBe("timeline");
+    expect(e.due_at).toBeTruthy();
   });
 
   it("classifies workflow items", () => {

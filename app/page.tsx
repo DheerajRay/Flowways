@@ -242,6 +242,23 @@ export default function HomePage() {
     return { done: false, label: `Due in ${hours}h ${remMins}m` };
   }
 
+  const sortedItems = [...items].sort((a, b) => {
+    const timelineRank = (item: DbItem) => {
+      if (item.kind !== "timeline") return 3;
+      if (item.checked) return 2;
+      if (!item.due_at) return 1;
+      return new Date(item.due_at).getTime() <= nowMs ? 0 : 1;
+    };
+
+    const rankDiff = timelineRank(a) - timelineRank(b);
+    if (rankDiff !== 0) return rankDiff;
+
+    if (a.kind === "timeline" && b.kind === "timeline" && a.due_at && b.due_at) {
+      return new Date(a.due_at).getTime() - new Date(b.due_at).getTime();
+    }
+    return 0;
+  });
+
   async function signInOrUp() {
     setBusy(true);
     setAuthMessage("");
@@ -312,8 +329,11 @@ export default function HomePage() {
 
       <section className="feed" aria-label="Saved items">
         {items.length === 0 ? <p className="empty">No items yet.</p> : null}
-        {items.map((item) => (
-          <article key={item.id} className={`item item-${item.kind}`}>
+        {sortedItems.map((item) => {
+          const timeState = item.kind === "timeline" ? timelineState(item.due_at) : null;
+          const isTimelineExpired = item.kind === "timeline" && !item.checked && Boolean(timeState?.done);
+          return (
+          <article key={item.id} className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}`}>
             <div className="itemHead">
               <span className="kind">{item.kind}</span>
               <div className="actions">
@@ -373,7 +393,7 @@ export default function HomePage() {
                         checked={Boolean(item.checked)}
                         onChange={() => updateItem(item.id, { checked: !item.checked })}
                       />
-                      <span>{timelineState(item.due_at).done ? "Completed" : timelineState(item.due_at).label}</span>
+                      <span>{item.checked ? "Completed" : (timeState?.label || "No due time set")}</span>
                     </label>
                     <div className="timeActions">
                       <button type="button" onClick={() => updateItem(item.id, { checked: true })}>Mark done</button>
@@ -416,7 +436,8 @@ export default function HomePage() {
               </div>
             )}
           </article>
-        ))}
+        );
+        })}
       </section>
     </main>
   );
