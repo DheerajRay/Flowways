@@ -155,6 +155,9 @@ textarea { min-height: 100px; resize: vertical; }
   background: #111;
   color: #fff;
 }
+.topbarAction {
+  margin-top: 2px;
+}
 .iconAction.compact {
   width: 32px;
   height: 32px;
