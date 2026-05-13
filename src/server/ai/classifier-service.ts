@@ -1,5 +1,5 @@
 ﻿import OpenAI from "openai";
-import { fallbackClassify } from "@/shared/domain/classifier";
+import { fallbackClassify, normalizeGeneratedLabels } from "@/shared/domain/classifier";
 import { classificationResultSchema } from "@/shared/types/schemas";
 import type { ClassificationResult, ItemKind } from "@/shared/types/item";
 
@@ -28,7 +28,7 @@ export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | 
         {
           role: "system",
           content:
-            "Classify user capture into checklist, journal, workflow, or timeline. Prefer workflow for professional project/action items (prepare, draft, plan, review, handoff, release, docs). Use checklist for simple personal actionable todos/lists. Use memory hints to keep consistent categorization with existing items. Return strict JSON with keys: kind,title,body,labels,due_at,workflow_status,confidence,reason,fallbackUsed."
+            "Classify user capture into checklist, journal, workflow, or timeline. Prefer workflow for professional project/action items (prepare, draft, plan, review, handoff, release, docs). Use checklist for simple personal actionable todos/lists. If input is exploratory/idea-like (for example 'testing something', 'test idea', 'thinking about'), prefer journal unless explicit task/list markers exist. Use memory hints to keep consistent categorization with existing items. Return strict JSON with keys: kind,title,body,labels,due_at,workflow_status,confidence,reason,fallbackUsed."
         },
         {
           role: "user",
@@ -59,8 +59,29 @@ export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | 
       }
     });
 
-    const parsed = JSON.parse(response.output_text || "{}");
-    return classificationResultSchema.parse(parsed);
+    const parsed = classificationResultSchema.parse(JSON.parse(response.output_text || "{}"));
+    const memoryLabels = memoryHints.flatMap((h) => h.labels || []);
+    const normalizedLabels = normalizeGeneratedLabels(parsed.labels, text, memoryLabels);
+    const isIdeaLike = /\b(testing\b|test idea\b|idea\b|thought\b|hypothesis\b|explore\b)\b/i.test(text);
+    const hasChecklistMarkers = /^(\[\s?\]|-|todo\b|fix\b|call\b|email\b|finish\b|buy\b|pick up\b)/i.test(text);
+
+    let refinedKind = parsed.kind;
+    let refinedBody = parsed.body;
+    let refinedReason = parsed.reason;
+
+    if (modeHint === "auto" && parsed.kind === "checklist" && isIdeaLike && !hasChecklistMarkers) {
+      refinedKind = "journal";
+      refinedBody = parsed.body || text;
+      refinedReason = `${parsed.reason} | post-rule: idea-like input mapped to journal`;
+    }
+
+    return {
+      ...parsed,
+      kind: refinedKind,
+      body: refinedBody,
+      labels: normalizedLabels,
+      reason: refinedReason
+    };
   } catch {
     return fallbackClassify(text, modeHint);
   }

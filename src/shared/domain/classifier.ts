@@ -4,6 +4,7 @@ const WORKFLOW_CUES = /\b(blocked|backlog|ready|review|handoff|in progress|kanba
 const CHECKLIST_CUES = /^(\[\s?\]|-|todo\b|fix\b|call\b|email\b|finish\b|buy\b|pick up\b)/i;
 const LIST_PATTERN = /(^|\s)\d+[.)]\s+\w+/i;
 const PROFESSIONAL_WORK_PATTERN = /\b(config|proposal|doc|draft|review|project|launch|release|migration|workflow|handoff|brief|spec|ticket)\b/i;
+const IDEA_OR_NOTE_CUES = /\b(testing\b|test idea\b|idea\b|thought\b|hypothesis\b|explore\b)\b/i;
 
 export function normalizeText(value: string): string {
   return String(value || "").trim().replace(/\s+/g, " ");
@@ -12,6 +13,34 @@ export function normalizeText(value: string): string {
 export function extractLabels(text: string): string[] {
   const matches = normalizeText(text).match(/#[a-z0-9_-]+/gi) || [];
   return matches.map((t) => t.slice(1).toLowerCase());
+}
+
+function slugLabel(value: string): string {
+  return normalizeText(value)
+    .toLowerCase()
+    .replace(/[_\s]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/^-|-$/g, "");
+}
+
+export function normalizeGeneratedLabels(labels: string[], text: string, memoryLabels: string[] = []): string[] {
+  const source = labels.map(slugLabel).filter(Boolean);
+  const memory = memoryLabels.map(slugLabel).filter(Boolean);
+  const hasConfigDriftContext = /\bconfig drift\b/i.test(text) || memory.includes("config-drift");
+
+  const mapped = source.map((label) => {
+    if (label === "config-drift" || label === "configdrift") return "config-drift";
+    if (label === "drift" && hasConfigDriftContext) return "config-drift";
+    if (label === "flow-ways") return "flowways";
+    return label;
+  });
+
+  if (hasConfigDriftContext && mapped.includes("drift") && !mapped.includes("config-drift")) {
+    mapped.push("config-drift");
+  }
+
+  return [...new Set(mapped)];
 }
 
 export function parseDueAt(text: string, baseDate = new Date()): string | null {
@@ -59,12 +88,14 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
   const clean = normalizeText(text);
   const dueAt = parseDueAt(clean, baseDate);
   const isJournal = clean.length > 140 || /\n|\. .+\./.test(text);
+  const isIdeaLike = IDEA_OR_NOTE_CUES.test(clean);
   const checklistSignals = Number(CHECKLIST_CUES.test(clean)) + Number(LIST_PATTERN.test(clean));
   const workflowSignals = Number(WORKFLOW_CUES.test(clean)) + Number(PROFESSIONAL_WORK_PATTERN.test(clean));
 
   let kind: ItemKind = "checklist";
   if (modeHint !== "auto") kind = modeHint;
   else if (dueAt) kind = "timeline";
+  else if (isIdeaLike && checklistSignals === 0) kind = "journal";
   else if (workflowSignals > checklistSignals) kind = "workflow";
   else if (isJournal) kind = "journal";
   else if (checklistSignals > 0) kind = "checklist";
@@ -76,7 +107,7 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
     kind,
     title: stripSyntax(clean) || clean || "Untitled item",
     body: kind === "journal" ? clean : "",
-    labels: extractLabels(clean),
+    labels: normalizeGeneratedLabels(extractLabels(clean), clean),
     due_at: dueAt,
     workflow_status: workflowStatus,
     confidence: kind === "workflow" ? 0.72 : 0.66,

@@ -91,7 +91,7 @@ textarea { min-height: 100px; resize: vertical; }
   padding: 12px;
   background: #fff;
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 .item-checklist { border-left-color: var(--checklist); }
 .item-journal { border-left-color: var(--journal); }
@@ -121,7 +121,8 @@ textarea { min-height: 100px; resize: vertical; }
   background: #fff5f5;
 }
 .item h3 { margin: 0; font-size: 28px; }
-.item p { margin: 0; color: #33455f; }
+.item h3 { margin: 0; font-size: 22px; line-height: 1.2; }
+.item p { margin: 0; color: #33455f; font-size: 16px; line-height: 1.35; }
 .editor { display: grid; gap: 8px; }
 .meta {
   display: flex;
@@ -131,6 +132,49 @@ textarea { min-height: 100px; resize: vertical; }
   color: var(--muted);
 }
 .empty { margin: 0; color: var(--muted); }
+
+.checklistBlock {
+  display: grid;
+  gap: 6px;
+}
+.checkRow {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 8px;
+  align-items: start;
+  font-size: 15px;
+}
+.checkRow input {
+  margin-top: 3px;
+}
+
+.workflowBlock {
+  display: grid;
+  gap: 10px;
+}
+.statusRail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.statusChip {
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+.statusChip.active {
+  background: #e7f0ff;
+  border-color: #9db8db;
+}
+
+.timelineBlock {
+  display: grid;
+  gap: 10px;
+}
+.timeActions {
+  display: flex;
+  gap: 8px;
+}
 
 .authGate {
   min-height: 100vh;
@@ -150,7 +194,8 @@ textarea { min-height: 100px; resize: vertical; }
   .page { padding: 14px; }
   .topbar { flex-direction: column; }
   label { font-size: 22px; }
-  .item h3 { font-size: 22px; }
+  .item h3 { font-size: 20px; }
+  .actions { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {

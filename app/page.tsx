@@ -11,6 +11,7 @@ interface DbItem {
   labels: string[];
   due_at: string | null;
   checked?: boolean;
+  workflow_status?: "Backlog" | "Ready" | "In Progress" | "Review" | "Done" | null;
 }
 
 export default function HomePage() {
@@ -26,6 +27,7 @@ export default function HomePage() {
   const [authMessage, setAuthMessage] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const workflowSteps = ["Backlog", "Ready", "In Progress", "Review", "Done"] as const;
 
   async function loadItems() {
     const response = await fetch("/api/items", { cache: "no-store" });
@@ -127,6 +129,49 @@ export default function HomePage() {
     setEditingId(null);
   }
 
+  function parseChecklistItems(body: string): { text: string; checked: boolean }[] {
+    const normalized = body.trim();
+    if (!normalized) return [];
+
+    const markdownMatches = normalized.match(/^- \[( |x)\] .+$/gim);
+    if (markdownMatches?.length) {
+      return markdownMatches.map((line) => {
+        const checked = /\[x\]/i.test(line);
+        const text = line.replace(/^- \[( |x)\]\s+/i, "").trim();
+        return { text, checked };
+      });
+    }
+
+    const numberedMatches = normalized.match(/\d+\.\s+[^0-9]+(?=(\d+\.\s+)|$)/g);
+    if (numberedMatches?.length) {
+      return numberedMatches.map((entry) => ({ text: entry.replace(/^\d+\.\s+/, "").trim(), checked: false }));
+    }
+
+    const lines = normalized.split("\n").map((l) => l.trim()).filter(Boolean);
+    if (lines.length > 1) {
+      return lines.map((line) => ({ text: line.replace(/^[-*]\s+/, ""), checked: false }));
+    }
+
+    return [];
+  }
+
+  async function toggleChecklistSubItem(item: DbItem, index: number) {
+    const entries = parseChecklistItems(item.body);
+    if (!entries.length) {
+      await updateItem(item.id, { checked: !item.checked });
+      return;
+    }
+
+    const updated = entries.map((entry, i) => (i === index ? { ...entry, checked: !entry.checked } : entry));
+    const body = updated.map((entry) => `- [${entry.checked ? "x" : " "}] ${entry.text}`).join("\n");
+    const allDone = updated.every((entry) => entry.checked);
+    await updateItem(item.id, { body, checked: allDone });
+  }
+
+  async function moveWorkflowStatus(item: DbItem, status: (typeof workflowSteps)[number]) {
+    await updateItem(item.id, { workflowStatus: status, checked: status === "Done" });
+  }
+
   async function signInOrUp() {
     setBusy(true);
     setAuthMessage("");
@@ -217,7 +262,49 @@ export default function HomePage() {
             ) : (
               <>
                 <h3>{item.title}</h3>
-                {item.body ? <p>{item.body}</p> : null}
+                {item.kind === "checklist" ? (
+                  <div className="checklistBlock">
+                    {parseChecklistItems(item.body).length ? (
+                      parseChecklistItems(item.body).map((entry, index) => (
+                        <label key={`${item.id}-${index}`} className="checkRow">
+                          <input type="checkbox" checked={entry.checked} onChange={() => toggleChecklistSubItem(item, index)} />
+                          <span>{entry.text}</span>
+                        </label>
+                      ))
+                    ) : (
+                      <label className="checkRow">
+                        <input type="checkbox" checked={Boolean(item.checked)} onChange={() => updateItem(item.id, { checked: !item.checked })} />
+                        <span>{item.body || item.title}</span>
+                      </label>
+                    )}
+                  </div>
+                ) : item.kind === "workflow" ? (
+                  <div className="workflowBlock">
+                    {item.body ? <p>{item.body}</p> : null}
+                    <div className="statusRail">
+                      {workflowSteps.map((step) => (
+                        <button
+                          type="button"
+                          key={`${item.id}-${step}`}
+                          className={item.workflow_status === step ? "statusChip active" : "statusChip"}
+                          onClick={() => moveWorkflowStatus(item, step)}
+                        >
+                          {step}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : item.kind === "timeline" ? (
+                  <div className="timelineBlock">
+                    {item.body ? <p>{item.body}</p> : null}
+                    <div className="timeActions">
+                      <button type="button" onClick={() => updateItem(item.id, { dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() })}>Due +1 day</button>
+                      <button type="button" onClick={() => updateItem(item.id, { dueAt: null })}>Clear Due</button>
+                    </div>
+                  </div>
+                ) : (
+                  item.body ? <p>{item.body}</p> : null
+                )}
               </>
             )}
 
