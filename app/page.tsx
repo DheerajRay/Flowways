@@ -421,35 +421,9 @@ export default function HomePage() {
                 ) : item.kind === "workflow" ? (
                   <div className="workflowBlock">
                     {item.body ? <p>{item.body}</p> : null}
-                    <div className="workflowRail">
-                      {workflowSteps.map((step) => (
-                        <button
-                          type="button"
-                          key={`${item.id}-${step}`}
-                          className={item.workflow_status === step ? "workflowDot active" : "workflowDot"}
-                          aria-label={step}
-                          title={step}
-                          onClick={() => moveWorkflowStatus(item, step)}
-                        >
-                          <Icon name={workflowIcon[step]} />
-                        </button>
-                      ))}
-                    </div>
                   </div>
                 ) : item.kind === "timeline" ? (
                   <div className="timelineBlock">
-                    {item.body ? <p>{item.body}</p> : null}
-                    <p className="timelineStatus">{item.checked ? "Completed" : (timeState?.label || "No due time set")}</p>
-                    {!item.checked && item.due_at && !timeState?.done ? (
-                      <div className="dueRailRow" aria-label="Due progress">
-                        <span className="dueLabel">Due Time :</span>
-                        <div className="dueRailWrap">
-                          <div className="dueRail" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(timelineProgress(item))}>
-                            <span className="dueRailFill" style={timelineProgressStyle(item)} />
-                          </div>
-                        </div>
-                      </div>
-                    ) : null}
                     {!item.checked && timeState?.done ? <span className="overduePill">OVER DUE</span> : null}
                   </div>
                 ) : (
@@ -458,10 +432,37 @@ export default function HomePage() {
               </>
             )}
 
-            <div className="meta metaRow">
+            <div className={`meta metaRow${item.kind === "timeline" ? " timelineMetaRow" : ""}`}>
               {item.due_at ? <span className="dateChip">{new Date(item.due_at).toLocaleString()}</span> : item.created_at ? <span className="dateChip">{new Date(item.created_at).toLocaleString()}</span> : null}
               {item.kind === "workflow" && formatTimeSpent(item) ? <span className="dateChip">{formatTimeSpent(item)}</span> : null}
               {item.labels?.map((label) => <span className="tagChip" key={label}>#{label}</span>)}
+              {item.kind === "timeline" ? <span className="dueTickChip">{item.checked ? "Completed" : (timeState?.label || "No due time set")}</span> : null}
+              {item.kind === "timeline" && !item.checked && item.due_at && !timeState?.done ? (
+                <div className="dueRailInline" aria-label="Due progress">
+                  <span className="dueLabel">Due Time :</span>
+                  <div className="dueRailWrap">
+                    <div className="dueRail" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(timelineProgress(item))}>
+                      <span className="dueRailFill" style={timelineProgressStyle(item)} />
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+              {item.kind === "workflow" ? (
+                <div className="workflowRailInline">
+                  {workflowSteps.map((step) => (
+                    <button
+                      type="button"
+                      key={`${item.id}-${step}`}
+                      className={item.workflow_status === step ? "workflowDot active" : "workflowDot"}
+                      aria-label={step}
+                      title={step}
+                      onClick={() => moveWorkflowStatus(item, step)}
+                    >
+                      <Icon name={workflowIcon[step]} />
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
             {shouldShowMergeControls(item) && (
               <div className="mergeRow">

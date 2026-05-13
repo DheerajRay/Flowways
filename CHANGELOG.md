@@ -62,6 +62,9 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - added support for second-level relative timers (`in 30 seconds`) in deterministic due parsing.
 - reminder-like phrases now force `timeline` kind in auto mode, preventing reminder entries from falling back to `workflow`.
 - timeline due rail now has stronger visibility (thicker track, rounded fill, minimum visible fill width when active).
+- Card layout simplification pass:
+- timeline cards now remove duplicate body/explanatory lines and show a single compact bottom row with date, tags, due-time ticker, and inline progress rail.
+- workflow cards now place date/tags and workflow status controls on the same bottom row.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.
