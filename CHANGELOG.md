@@ -54,6 +54,10 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - timeline title for time-based reminders preserves user time phrasing when AI strips it.
 - timeline due-progress rail aligned to trailing segment (mockup style) instead of full-width row.
 - reduced card vertical footprint (padding/gap/heading size) for denser feed readability.
+- Countdown/sorting and reminder-title polish:
+- timeline minute countdown now avoids upward rounding drift (`in 2 minutes` no longer appears as `3 min` at creation).
+- timeline cards preserve relative reminder phrasing in title when AI emits generic labels.
+- non-timeline items now sort by newest `created_at` when timeline priority tie is equal.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.

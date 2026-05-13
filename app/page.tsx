@@ -243,7 +243,7 @@ export default function HomePage() {
     if (Number.isNaN(dueMs)) return { done: false, label: "Invalid due time" };
     const delta = dueMs - nowMs;
     if (delta <= 0) return { done: true, label: "Timer done" };
-    const mins = Math.ceil(delta / 60000);
+    const mins = Math.max(1, Math.floor(delta / 60000));
     if (mins < 60) return { done: false, label: `Due in ${mins} min` };
     const hours = Math.floor(mins / 60);
     const remMins = mins % 60;
@@ -299,7 +299,9 @@ export default function HomePage() {
     if (a.kind === "timeline" && b.kind === "timeline" && a.due_at && b.due_at) {
       return new Date(a.due_at).getTime() - new Date(b.due_at).getTime();
     }
-    return 0;
+    const aCreated = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const bCreated = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return bCreated - aCreated;
   });
 
   async function signInOrUp() {

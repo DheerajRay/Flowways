@@ -94,7 +94,11 @@ export async function classifyWithAiOrFallback(
       }
     }
 
-    if (refinedKind === "timeline" && timeLike && !/\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b\d{2}:\d{2}\b/i.test(refinedTitle)) {
+    if (
+      refinedKind === "timeline" &&
+      (timeLike || reminderLike) &&
+      !/\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b\d{2}:\d{2}\b|\bin\s+\d+\s*(min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/i.test(refinedTitle)
+    ) {
       refinedTitle = text.replace(/#[a-z0-9_-]+/gi, "").trim() || parsed.title;
     }
 
