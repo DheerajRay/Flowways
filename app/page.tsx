@@ -424,7 +424,6 @@ export default function HomePage() {
                   </div>
                 ) : item.kind === "timeline" ? (
                   <div className="timelineBlock">
-                    {!item.checked && timeState?.done ? <span className="overduePill">OVER DUE</span> : null}
                   </div>
                 ) : (
                   item.body ? <p>{item.body}</p> : null
@@ -434,6 +433,7 @@ export default function HomePage() {
 
             <div className={`meta metaRow${item.kind === "timeline" ? " timelineMetaRow" : ""}`}>
               {item.due_at ? <span className="dateChip">{new Date(item.due_at).toLocaleString()}</span> : item.created_at ? <span className="dateChip">{new Date(item.created_at).toLocaleString()}</span> : null}
+              {item.kind === "timeline" && !item.checked && timeState?.done ? <span className="overdueTagChip">OVER DUE</span> : null}
               {item.kind === "workflow" && formatTimeSpent(item) ? <span className="dateChip">{formatTimeSpent(item)}</span> : null}
               {item.labels?.map((label) => <span className="tagChip" key={label}>#{label}</span>)}
               {item.kind === "timeline" && !item.checked && item.due_at && !timeState?.done ? (

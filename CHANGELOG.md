@@ -68,6 +68,9 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - Timeline meta-row cleanup:
 - removed redundant due-time chip from left-side timeline metadata.
 - right-side timer block now renders as `Time (<remaining>)` followed by progress bar, with only date/tags left-aligned.
+- Timeline chip/label polish:
+- overdue state now appears as a left-side inverted tag chip (`OVER DUE`) instead of a separate right-side pill.
+- right-side timer label is now forced to remain on one line beside the progress bar.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.
