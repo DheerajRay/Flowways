@@ -242,15 +242,6 @@ textarea { min-height: 100px; resize: vertical; }
   align-items: center;
   gap: 6px;
 }
-.dueTickChip {
-  border: 1px solid #202020;
-  border-radius: 999px;
-  padding: 4px 9px;
-  font-size: 12px;
-  line-height: 1;
-  background: #f7f9ff;
-  color: #243a56;
-}
 .dueRailInline {
   margin-left: auto;
   display: flex;
@@ -260,7 +251,8 @@ textarea { min-height: 100px; resize: vertical; }
 }
 .dueLabel {
   font-size: 13px;
-  color: #333;
+  color: #1f2e42;
+  font-weight: 600;
 }
 .dueRailWrap {
   width: min(320px, 100%);

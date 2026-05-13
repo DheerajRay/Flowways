@@ -436,10 +436,9 @@ export default function HomePage() {
               {item.due_at ? <span className="dateChip">{new Date(item.due_at).toLocaleString()}</span> : item.created_at ? <span className="dateChip">{new Date(item.created_at).toLocaleString()}</span> : null}
               {item.kind === "workflow" && formatTimeSpent(item) ? <span className="dateChip">{formatTimeSpent(item)}</span> : null}
               {item.labels?.map((label) => <span className="tagChip" key={label}>#{label}</span>)}
-              {item.kind === "timeline" ? <span className="dueTickChip">{item.checked ? "Completed" : (timeState?.label || "No due time set")}</span> : null}
               {item.kind === "timeline" && !item.checked && item.due_at && !timeState?.done ? (
                 <div className="dueRailInline" aria-label="Due progress">
-                  <span className="dueLabel">Due Time :</span>
+                  <span className="dueLabel">Time ({timeState?.label?.replace("Due in ", "") || "--"})</span>
                   <div className="dueRailWrap">
                     <div className="dueRail" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(timelineProgress(item))}>
                       <span className="dueRailFill" style={timelineProgressStyle(item)} />

@@ -65,6 +65,9 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - Card layout simplification pass:
 - timeline cards now remove duplicate body/explanatory lines and show a single compact bottom row with date, tags, due-time ticker, and inline progress rail.
 - workflow cards now place date/tags and workflow status controls on the same bottom row.
+- Timeline meta-row cleanup:
+- removed redundant due-time chip from left-side timeline metadata.
+- right-side timer block now renders as `Time (<remaining>)` followed by progress bar, with only date/tags left-aligned.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.
