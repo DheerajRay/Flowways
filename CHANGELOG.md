@@ -76,6 +76,9 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - Completed-card control simplification:
 - done items now show only `Undo` and `Delete` actions; edit/done controls are hidden until item is undone.
 - completed highlight is now border-only green (no internal/background tint changes).
+- Completed-item retention change:
+- replaced completed-state `Delete` action with `Hide` to avoid memory loss.
+- hidden completed cards are filtered from the feed and persisted in browser local storage.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.

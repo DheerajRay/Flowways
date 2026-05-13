@@ -30,6 +30,7 @@ export default function HomePage() {
   const [busy, setBusy] = useState(false);
   const [nowMs, setNowMs] = useState(Date.now());
   const [mergeTargetBySource, setMergeTargetBySource] = useState<Record<string, string>>({});
+  const [hiddenItemIds, setHiddenItemIds] = useState<string[]>([]);
   const workflowSteps = ["Backlog", "Ready", "In Progress", "Review", "Done"] as const;
   const workflowIcon: Record<(typeof workflowSteps)[number], "backlog" | "ready" | "progress" | "review" | "done"> = {
     Backlog: "backlog",
@@ -85,6 +86,21 @@ export default function HomePage() {
     return () => window.clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("flowways:hidden-items");
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) setHiddenItemIds(parsed.filter((v) => typeof v === "string"));
+    } catch {
+      // ignore local storage parse errors
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("flowways:hidden-items", JSON.stringify(hiddenItemIds));
+  }, [hiddenItemIds]);
+
   async function submitItem() {
     if (!sourceText.trim() || authRequired) return;
     setBusy(true);
@@ -136,6 +152,11 @@ export default function HomePage() {
       return;
     }
     await loadItems();
+  }
+
+  function hideItem(id: string) {
+    setHiddenItemIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    setSubmitMessage("Item hidden from view. Use Undo before completion to bring full actions back.");
   }
 
   function startEdit(item: DbItem) {
@@ -278,19 +299,20 @@ export default function HomePage() {
     return mins ? `${hours}h ${mins}m spent` : `${hours}h spent`;
   }
 
-  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "backlog" | "ready" | "progress" | "review" }) {
+  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "backlog" | "ready" | "progress" | "review" }) {
     const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
     if (name === "done" || name === "save") return <svg {...common}><path d="M3 8.5l3 3L13 4.5" /></svg>;
     if (name === "undo" || name === "cancel") return <svg {...common}><path d="M6 4L2.5 7.5 6 11" /><path d="M3 7.5h5.5A4.5 4.5 0 1 1 8.5 16" /></svg>;
     if (name === "edit") return <svg {...common}><path d="M10.8 2.2l3 3-7.8 7.8-3.6.6.6-3.6z" /></svg>;
     if (name === "delete") return <svg {...common}><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6" /></svg>;
+    if (name === "hide") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><path d="M1.5 1.5l13 13" /></svg>;
     if (name === "backlog") return <svg {...common}><path d="M11.5 8H4.2" /><path d="M6.9 5.3 4.2 8l2.7 2.7" /></svg>;
     if (name === "ready") return <svg {...common}><path d="M5 4.2 11.8 8 5 11.8z" /></svg>;
     if (name === "progress") return <svg {...common}><path d="M5.8 4v8M10.2 4v8" /></svg>;
     return <svg {...common}><circle cx="8" cy="8" r="5.2" /><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none" /></svg>;
   }
 
-  const sortedItems = [...items].sort((a, b) => {
+  const sortedItems = [...items].filter((item) => !hiddenItemIds.includes(item.id)).sort((a, b) => {
     const timelineRank = (item: DbItem) => {
       if (item.kind !== "timeline") return 3;
       if (item.checked) return 2;
@@ -391,7 +413,7 @@ export default function HomePage() {
                 {item.checked ? (
                   <>
                     <button type="button" className="iconAction" aria-label="Undo" title="Undo" onClick={() => updateItem(item.id, { checked: false })}><Icon name="undo" /></button>
-                    <button type="button" className="iconAction danger" aria-label="Delete" title="Delete" onClick={() => deleteItem(item.id)}><Icon name="delete" /></button>
+                    <button type="button" className="iconAction" aria-label="Hide" title="Hide" onClick={() => hideItem(item.id)}><Icon name="hide" /></button>
                   </>
                 ) : (
                   <>
