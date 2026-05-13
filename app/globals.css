@@ -100,7 +100,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
 }
 .captureBar {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: 10px;
   align-items: center;
 }
@@ -112,6 +112,14 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
 .captureActions {
   display: flex;
   gap: 8px;
+}
+.modeActions {
+  display: flex;
+  gap: 6px;
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
 }
 label { font-weight: 700; font-size: 28px; }
 input,

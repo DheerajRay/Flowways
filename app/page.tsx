@@ -16,7 +16,9 @@ interface DbItem {
 }
 
 export default function HomePage() {
+  type CaptureMode = "auto" | "timeline" | "workflow" | "journal" | "checklist";
   const [sourceText, setSourceText] = useState("");
+  const [captureMode, setCaptureMode] = useState<CaptureMode>("auto");
   const [items, setItems] = useState<DbItem[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
@@ -116,7 +118,7 @@ export default function HomePage() {
       const response = await fetch("/api/items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sourceText, modeHint: "auto", clientNow: new Date().toISOString() })
+        body: JSON.stringify({ sourceText, modeHint: captureMode, clientNow: new Date().toISOString() })
       });
 
       if (!response.ok) {
@@ -422,7 +424,7 @@ export default function HomePage() {
     return mins ? `${hours}h ${mins}m spent` : `${hours}h spent`;
   }
 
-  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" }) {
+  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "timeline" | "workflow" | "journal" | "checklist" | "auto" }) {
     const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
     if (name === "done" || name === "save") return <svg {...common}><path d="M3 8.5l3 3L13 4.5" /></svg>;
     if (name === "undo" || name === "cancel") return <svg {...common}><path d="M6 4L2.5 7.5 6 11" /><path d="M3 7.5h5.5A4.5 4.5 0 1 1 8.5 16" /></svg>;
@@ -433,6 +435,11 @@ export default function HomePage() {
     if (name === "add") return <svg {...common}><path d="M8 3.2v9.6M3.2 8h9.6" /></svg>;
     if (name === "search") return <svg {...common}><circle cx="7" cy="7" r="4.3" /><path d="M10.3 10.3 13.5 13.5" /></svg>;
     if (name === "show") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><circle cx="8" cy="8" r="1.5" /></svg>;
+    if (name === "auto") return <svg {...common}><path d="M8 2.8v10.4" /><path d="M2.8 8h10.4" /><circle cx="8" cy="8" r="1.6" /></svg>;
+    if (name === "timeline") return <svg {...common}><circle cx="8" cy="8" r="5.5" /><path d="M8 5v3.2l2.2 1.2" /></svg>;
+    if (name === "workflow") return <svg {...common}><path d="M2.8 4.2h10.4M2.8 8h10.4M2.8 11.8h10.4" /></svg>;
+    if (name === "journal") return <svg {...common}><rect x="3.2" y="2.8" width="9.6" height="10.4" rx="1.2" /><path d="M6 5.5h4M6 8h4M6 10.5h3" /></svg>;
+    if (name === "checklist") return <svg {...common}><path d="M6.5 5.2h5M6.5 8h5M6.5 10.8h5" /><path d="M3.2 5.2h.01M3.2 8h.01M3.2 10.8h.01" /></svg>;
     if (name === "backlog") return <svg {...common}><path d="M11.5 8H4.2" /><path d="M6.9 5.3 4.2 8l2.7 2.7" /></svg>;
     if (name === "ready") return <svg {...common}><path d="M5 4.2 11.8 8 5 11.8z" /></svg>;
     if (name === "progress") return <svg {...common}><path d="M5.8 4v8M10.2 4v8" /></svg>;
@@ -441,6 +448,7 @@ export default function HomePage() {
 
   const visibleItems = items
     .filter((item) => showHidden || !hiddenItemIds.includes(item.id))
+    .filter((item) => captureMode === "auto" ? true : item.kind === captureMode)
     .filter((item) => {
       if (!searchText) return true;
       const haystack = `${item.title} ${item.body} ${(item.labels || []).join(" ")}`.toLowerCase();
@@ -534,6 +542,13 @@ export default function HomePage() {
         </div>
         <div className="captureBar">
           <input id="captureInput" value={sourceText} onChange={(event) => setSourceText(event.target.value)} placeholder="Add task | Search" />
+          <div className="modeActions" aria-label="Classification mode">
+            <button type="button" className={`iconAction compact${captureMode === "auto" ? " active" : ""}`} aria-label="Auto mode" title="Auto mode" onClick={() => setCaptureMode("auto")}><Icon name="auto" /></button>
+            <button type="button" className={`iconAction compact${captureMode === "timeline" ? " active" : ""}`} aria-label="Timeline mode" title="Timeline mode" onClick={() => setCaptureMode("timeline")}><Icon name="timeline" /></button>
+            <button type="button" className={`iconAction compact${captureMode === "workflow" ? " active" : ""}`} aria-label="Workflow mode" title="Workflow mode" onClick={() => setCaptureMode("workflow")}><Icon name="workflow" /></button>
+            <button type="button" className={`iconAction compact${captureMode === "journal" ? " active" : ""}`} aria-label="Journal mode" title="Journal mode" onClick={() => setCaptureMode("journal")}><Icon name="journal" /></button>
+            <button type="button" className={`iconAction compact${captureMode === "checklist" ? " active" : ""}`} aria-label="Checklist mode" title="Checklist mode" onClick={() => setCaptureMode("checklist")}><Icon name="checklist" /></button>
+          </div>
           <div className="captureActions">
             <button type="button" className="iconAction" aria-label="Add task" title="Add task" onClick={() => void submitItem()} disabled={busy || !sourceText.trim()}><Icon name="add" /></button>
             <button type="button" className="iconAction" aria-label="Search tasks" title="Search tasks" onClick={runSearch}><Icon name="search" /></button>
