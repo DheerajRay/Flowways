@@ -31,6 +31,12 @@ export default function HomePage() {
   const [nowMs, setNowMs] = useState(Date.now());
   const [mergeTargetBySource, setMergeTargetBySource] = useState<Record<string, string>>({});
   const [hiddenItemIds, setHiddenItemIds] = useState<string[]>([]);
+  const [editChecklistEntries, setEditChecklistEntries] = useState<{ text: string; checked: boolean }[]>([]);
+  const [editTimelineDueAt, setEditTimelineDueAt] = useState("");
+  const [editTimelineOffsetMin, setEditTimelineOffsetMin] = useState("15");
+  const [editWorkflowSummary, setEditWorkflowSummary] = useState("");
+  const [editWorkflowComments, setEditWorkflowComments] = useState<string[]>([]);
+  const [newWorkflowComment, setNewWorkflowComment] = useState("");
   const workflowSteps = ["Backlog", "Ready", "In Progress", "Review", "Done"] as const;
   const workflowIcon: Record<(typeof workflowSteps)[number], "backlog" | "ready" | "progress" | "review" | "done"> = {
     Backlog: "backlog",
@@ -163,11 +169,65 @@ export default function HomePage() {
     setEditingId(item.id);
     setEditTitle(item.title);
     setEditBody(item.body || "");
+    setEditChecklistEntries(parseChecklistItems(item.body || item.title));
+    setEditTimelineDueAt(item.due_at ? toDatetimeLocal(item.due_at) : "");
+    const workflow = parseWorkflowBody(item.body || "");
+    setEditWorkflowSummary(workflow.summary);
+    setEditWorkflowComments(workflow.comments);
+    setNewWorkflowComment("");
   }
 
   async function saveEdit(id: string) {
+    const item = items.find((v) => v.id === id);
+    if (!item) return;
+
+    if (item.kind === "checklist") {
+      const normalized = editChecklistEntries.map((e) => ({ ...e, text: e.text.trim() })).filter((e) => e.text);
+      const body = toChecklistMarkdown(normalized);
+      await updateItem(id, { title: editTitle.trim() || "Untitled", body, checked: normalized.length ? normalized.every((e) => e.checked) : false });
+      setEditingId(null);
+      return;
+    }
+
+    if (item.kind === "timeline") {
+      const dueAt = editTimelineDueAt ? new Date(editTimelineDueAt).toISOString() : null;
+      await updateItem(id, { title: editTitle.trim() || "Untitled", dueAt });
+      setEditingId(null);
+      return;
+    }
+
+    if (item.kind === "workflow") {
+      const body = buildWorkflowBody(editWorkflowSummary, editWorkflowComments);
+      await updateItem(id, { title: editTitle.trim() || "Untitled", body });
+      setEditingId(null);
+      return;
+    }
+
     await updateItem(id, { title: editTitle.trim() || "Untitled", body: editBody });
     setEditingId(null);
+  }
+
+  function toDatetimeLocal(iso: string): string {
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function parseWorkflowBody(body: string): { summary: string; comments: string[] } {
+    const parts = body.split("\n\nComments:\n");
+    const summary = parts[0] || "";
+    const comments = (parts[1] || "")
+      .split("\n")
+      .map((line) => line.replace(/^- /, "").trim())
+      .filter(Boolean);
+    return { summary, comments };
+  }
+
+  function buildWorkflowBody(summary: string, comments: string[]): string {
+    const cleanSummary = summary.trim();
+    const cleanComments = comments.map((c) => c.trim()).filter(Boolean);
+    if (!cleanComments.length) return cleanSummary;
+    return `${cleanSummary}\n\nComments:\n${cleanComments.map((c) => `- ${c}`).join("\n")}`;
   }
 
   function toChecklistMarkdown(entries: { text: string; checked: boolean }[]): string {
@@ -429,7 +489,90 @@ export default function HomePage() {
             {editingId === item.id ? (
               <div className="editor">
                 <input value={editTitle} onChange={(event) => setEditTitle(event.target.value)} />
-                <textarea value={editBody} onChange={(event) => setEditBody(event.target.value)} />
+                {item.kind === "checklist" ? (
+                  <div className="typeEditor">
+                    {editChecklistEntries.map((entry, index) => (
+                      <div key={`${item.id}-edit-check-${index}`} className="editRow">
+                        <input
+                          type="checkbox"
+                          checked={entry.checked}
+                          onChange={(event) => setEditChecklistEntries((prev) => prev.map((v, i) => i === index ? { ...v, checked: event.target.checked } : v))}
+                        />
+                        <input
+                          value={entry.text}
+                          onChange={(event) => setEditChecklistEntries((prev) => prev.map((v, i) => i === index ? { ...v, text: event.target.value } : v))}
+                        />
+                        <button type="button" onClick={() => setEditChecklistEntries((prev) => prev.filter((_, i) => i !== index))}>Remove</button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => setEditChecklistEntries((prev) => [...prev, { text: "", checked: false }])}>Add Item</button>
+                  </div>
+                ) : item.kind === "timeline" ? (
+                  <div className="typeEditor">
+                    <div className="editRow">
+                      <label>Exact time</label>
+                      <input
+                        type="datetime-local"
+                        value={editTimelineDueAt}
+                        onChange={(event) => setEditTimelineDueAt(event.target.value)}
+                      />
+                    </div>
+                    <div className="editRow">
+                      <label>In minutes</label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={editTimelineOffsetMin}
+                        onChange={(event) => setEditTimelineOffsetMin(event.target.value)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const n = Number(editTimelineOffsetMin);
+                          if (!Number.isFinite(n) || n <= 0) return;
+                          setEditTimelineDueAt(toDatetimeLocal(new Date(Date.now() + n * 60000).toISOString()));
+                        }}
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  </div>
+                ) : item.kind === "workflow" ? (
+                  <div className="typeEditor">
+                    <textarea value={editWorkflowSummary} onChange={(event) => setEditWorkflowSummary(event.target.value)} />
+                    <div className="commentList">
+                      {editWorkflowComments.map((comment, index) => (
+                        <div key={`${item.id}-comment-${index}`} className="editRow">
+                          <input
+                            value={comment}
+                            onChange={(event) => setEditWorkflowComments((prev) => prev.map((v, i) => i === index ? event.target.value : v))}
+                          />
+                          <button type="button" onClick={() => setEditWorkflowComments((prev) => prev.filter((_, i) => i !== index))}>Remove</button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="editRow">
+                      <input
+                        placeholder="Add workflow comment"
+                        value={newWorkflowComment}
+                        onChange={(event) => setNewWorkflowComment(event.target.value)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = newWorkflowComment.trim();
+                          if (!next) return;
+                          setEditWorkflowComments((prev) => [...prev, next]);
+                          setNewWorkflowComment("");
+                        }}
+                      >
+                        Add Comment
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <textarea value={editBody} onChange={(event) => setEditBody(event.target.value)} />
+                )}
               </div>
             ) : (
               <>
@@ -452,7 +595,19 @@ export default function HomePage() {
                   </div>
                 ) : item.kind === "workflow" ? (
                   <div className="workflowBlock">
-                    {item.body ? <p>{item.body}</p> : null}
+                    {(() => {
+                      const wf = parseWorkflowBody(item.body || "");
+                      return (
+                        <>
+                          {wf.summary ? <p>{wf.summary}</p> : null}
+                          {wf.comments.length ? (
+                            <div className="workflowComments">
+                              {wf.comments.map((comment, idx) => <p key={`${item.id}-wf-comment-${idx}`}>- {comment}</p>)}
+                            </div>
+                          ) : null}
+                        </>
+                      );
+                    })()}
                   </div>
                 ) : item.kind === "timeline" ? (
                   <div className="timelineBlock">

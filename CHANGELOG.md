@@ -79,6 +79,11 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - Completed-item retention change:
 - replaced completed-state `Delete` action with `Hide` to avoid memory loss.
 - hidden completed cards are filtered from the feed and persisted in browser local storage.
+- Type-specific edit experience:
+- checklist edit now stays in checklist format with row-level edit/remove/add controls and checkbox state edits.
+- timeline edit now includes dedicated due-time controls (`datetime-local` and relative minutes apply).
+- workflow edit now includes summary + structured comment entries with add/remove support.
+- journal edit remains simple subject/details text editing.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.

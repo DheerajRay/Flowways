@@ -145,6 +145,28 @@ textarea { min-height: 100px; resize: vertical; }
 .item h3 { margin: 0; font-size: 20px; line-height: 1.2; }
 .item p { margin: 0; color: #33455f; font-size: 16px; line-height: 1.35; }
 .editor { display: grid; gap: 8px; }
+.typeEditor {
+  display: grid;
+  gap: 8px;
+}
+.editRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+.editRow label {
+  font-size: 12px;
+  font-weight: 600;
+}
+.commentList {
+  display: grid;
+  gap: 6px;
+}
+.workflowComments p {
+  font-size: 14px;
+  color: #3e4e64;
+}
 .meta {
   display: flex;
   flex-wrap: wrap;
