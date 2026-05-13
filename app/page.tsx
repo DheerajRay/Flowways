@@ -165,7 +165,6 @@ export default function HomePage() {
       <main className="authGate">
         <section className="authCard">
           <h1>FlowWays</h1>
-          <p>Email + password only</p>
           <div className="authTabs">
             <button type="button" className={authMode === "signin" ? "active" : ""} onClick={() => setAuthMode("signin")}>Sign In</button>
             <button type="button" className={authMode === "signup" ? "active" : ""} onClick={() => setAuthMode("signup")}>Create Account</button>
