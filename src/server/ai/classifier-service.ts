@@ -1,5 +1,5 @@
 ﻿import OpenAI from "openai";
-import { fallbackClassify, inferContextLabels, normalizeGeneratedLabels } from "@/shared/domain/classifier";
+import { fallbackClassify, inferContextLabels, normalizeGeneratedLabels, parseDueAt } from "@/shared/domain/classifier";
 import { classificationResultSchema } from "@/shared/types/schemas";
 import type { ClassificationResult, ItemKind } from "@/shared/types/item";
 
@@ -64,6 +64,7 @@ export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | 
     const normalizedLabels = normalizeGeneratedLabels(parsed.labels, text, memoryLabels);
     const isIdeaLike = /\b(testing\b|test idea\b|idea\b|thought\b|hypothesis\b|explore\b)\b/i.test(text);
     const hasChecklistMarkers = /^(\[\s?\]|-|todo\b|fix\b|call\b|email\b|finish\b|buy\b|pick up\b)/i.test(text);
+    const reminderLike = /\b(remind|reminder|due|tomorrow|today|next week|in\s+\d+\s*(min|mins|minute|minutes|hr|hrs|hour|hours|day|days))\b/i.test(text);
 
     let refinedKind = parsed.kind;
     let refinedBody = parsed.body;
@@ -75,12 +76,21 @@ export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | 
       refinedReason = `${parsed.reason} | post-rule: idea-like input mapped to journal`;
     }
 
+    if (modeHint === "auto" && reminderLike) {
+      const parsedDueAt = parsed.due_at || parseDueAt(text);
+      if (parsedDueAt) {
+        refinedKind = "timeline";
+        refinedReason = `${refinedReason} | post-rule: reminder-like input mapped to timeline`;
+      }
+    }
+
     const finalLabels = normalizedLabels.length ? normalizedLabels : inferContextLabels(text, refinedKind);
 
     return {
       ...parsed,
       kind: refinedKind,
       body: refinedBody,
+      due_at: modeHint === "auto" && reminderLike ? (parsed.due_at || parseDueAt(text)) : parsed.due_at,
       labels: finalLabels,
       reason: refinedReason
     };

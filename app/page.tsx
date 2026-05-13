@@ -27,6 +27,7 @@ export default function HomePage() {
   const [authMessage, setAuthMessage] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [nowMs, setNowMs] = useState(Date.now());
   const [mergeTargetBySource, setMergeTargetBySource] = useState<Record<string, string>>({});
   const workflowSteps = ["Backlog", "Ready", "In Progress", "Review", "Done"] as const;
   const genericLabels = new Set(["personal", "work", "idea", "list", "task"]);
@@ -69,6 +70,11 @@ export default function HomePage() {
     });
 
     return () => subscription.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowMs(Date.now()), 30000);
+    return () => window.clearInterval(timer);
   }, []);
 
   async function submitItem() {
@@ -223,6 +229,19 @@ export default function HomePage() {
     await updateItem(item.id, { workflowStatus: status, checked: status === "Done" });
   }
 
+  function timelineState(dueAt: string | null) {
+    if (!dueAt) return { done: false, label: "No due time set" };
+    const dueMs = new Date(dueAt).getTime();
+    if (Number.isNaN(dueMs)) return { done: false, label: "Invalid due time" };
+    const delta = dueMs - nowMs;
+    if (delta <= 0) return { done: true, label: "Timer done" };
+    const mins = Math.ceil(delta / 60000);
+    if (mins < 60) return { done: false, label: `Due in ${mins} min` };
+    const hours = Math.floor(mins / 60);
+    const remMins = mins % 60;
+    return { done: false, label: `Due in ${hours}h ${remMins}m` };
+  }
+
   async function signInOrUp() {
     setBusy(true);
     setAuthMessage("");
@@ -348,7 +367,16 @@ export default function HomePage() {
                 ) : item.kind === "timeline" ? (
                   <div className="timelineBlock">
                     {item.body ? <p>{item.body}</p> : null}
+                    <label className="checkRow">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(item.checked)}
+                        onChange={() => updateItem(item.id, { checked: !item.checked })}
+                      />
+                      <span>{timelineState(item.due_at).done ? "Completed" : timelineState(item.due_at).label}</span>
+                    </label>
                     <div className="timeActions">
+                      <button type="button" onClick={() => updateItem(item.id, { checked: true })}>Mark done</button>
                       <button type="button" onClick={() => updateItem(item.id, { dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() })}>Due +1 day</button>
                       <button type="button" onClick={() => updateItem(item.id, { dueAt: null })}>Clear Due</button>
                     </div>

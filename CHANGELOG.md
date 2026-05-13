@@ -16,6 +16,7 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - timeline cards include quick due-date controls.
 - Checklist merge controls for ambiguous cases:
 - per-checklist `Merge with existing list...` selector and `Merge` action in UI.
+- Timeline cards now show live due-state feedback (`Due in ...` and `Timer done`) with a completion checkbox.
 
 ### Changed
 - Classification system hardened:
@@ -29,6 +30,9 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - Checklist ingestion behavior:
 - if clear tag match exists on an open checklist, new checklist-like input auto-merges into existing list instead of creating a duplicate card.
 - Checklist tags now inferred when missing (for example grocery/shopping/work/idea contexts).
+- Timeline classification strengthened:
+- relative reminders like `in 15 minutes` now parse to concrete `due_at`.
+- reminder-like inputs (`remind`, `due tomorrow`, etc.) are post-corrected to `timeline` when a due time can be inferred.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.
@@ -50,6 +54,7 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - `src/shared/domain/classifier.ts`
 - `README.md`
 - `docs/branching-and-release-policy.md`
+- `tests/unit/classifier.test.ts`
 
 ## [2026-05-13] - CRUD + UI iteration + auth polish
 

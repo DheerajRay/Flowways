@@ -14,12 +14,17 @@ describe("classifier fallback", () => {
 
   it("parses due dates", () => {
     expect(parseDueAt("tomorrow 3pm", base)).toBeTruthy();
+    expect(parseDueAt("remind me in 15 minutes", base)).toBeTruthy();
   });
 
   it("classifies timeline items", () => {
     const c = fallbackClassify("Ship demo tomorrow 2pm #release", "auto", base);
     expect(c.kind).toBe("timeline");
     expect(c.labels).toContain("release");
+
+    const d = fallbackClassify("Remind me in 15 minutes to check build", "auto", base);
+    expect(d.kind).toBe("timeline");
+    expect(d.due_at).toBeTruthy();
   });
 
   it("classifies workflow items", () => {

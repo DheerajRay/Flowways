@@ -70,6 +70,19 @@ export function inferContextLabels(text: string, kind: ItemKind): string[] {
 export function parseDueAt(text: string, baseDate = new Date()): string | null {
   const normalized = normalizeText(text).toLowerCase();
   const result = new Date(baseDate);
+  const relative = normalized.match(/\bin\s+(\d+)\s*(min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/);
+
+  if (relative) {
+    const amount = Number(relative[1]);
+    const unit = relative[2];
+    if (Number.isFinite(amount) && amount > 0) {
+      const deltaMs =
+        /day/.test(unit) ? amount * 24 * 60 * 60 * 1000 :
+          /h|hr|hour/.test(unit) ? amount * 60 * 60 * 1000 :
+            amount * 60 * 1000;
+      return new Date(baseDate.getTime() + deltaMs).toISOString();
+    }
+  }
 
   if (/\btoday\b/.test(normalized)) {
     result.setHours(17, 0, 0, 0);
@@ -100,6 +113,7 @@ export function parseDueAt(text: string, baseDate = new Date()): string | null {
 function stripSyntax(text: string): string {
   return normalizeText(text)
     .replace(/\b(today|tomorrow|next week)\b/gi, "")
+    .replace(/\bin\s+\d+\s*(min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/gi, "")
     .replace(/\b20\d{2}-\d{2}-\d{2}\b/g, "")
     .replace(/\b\d{1,2}(?::\d{2})?\s*(am|pm)\b/gi, "")
     .replace(/#[a-z0-9_-]+/gi, "")
