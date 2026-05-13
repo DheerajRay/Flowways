@@ -261,6 +261,11 @@ export default function HomePage() {
     return Math.min(100, Math.max(0, (elapsed / span) * 100));
   }
 
+  function timelineProgressStyle(item: DbItem) {
+    const pct = timelineProgress(item);
+    return { width: `${pct}%`, minWidth: pct > 0 ? "10px" : "0px" };
+  }
+
   function formatTimeSpent(item: DbItem): string | null {
     if (item.kind !== "workflow" || !item.created_at) return null;
     const startMs = new Date(item.created_at).getTime();
@@ -440,7 +445,7 @@ export default function HomePage() {
                         <span className="dueLabel">Due Time :</span>
                         <div className="dueRailWrap">
                           <div className="dueRail" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(timelineProgress(item))}>
-                            <span className="dueRailFill" style={{ width: `${timelineProgress(item)}%` }} />
+                            <span className="dueRailFill" style={timelineProgressStyle(item)} />
                           </div>
                         </div>
                       </div>

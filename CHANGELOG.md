@@ -58,6 +58,10 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - timeline minute countdown now avoids upward rounding drift (`in 2 minutes` no longer appears as `3 min` at creation).
 - timeline cards preserve relative reminder phrasing in title when AI emits generic labels.
 - non-timeline items now sort by newest `created_at` when timeline priority tie is equal.
+- Reminder/timer classification and due-rail clarity:
+- added support for second-level relative timers (`in 30 seconds`) in deterministic due parsing.
+- reminder-like phrases now force `timeline` kind in auto mode, preventing reminder entries from falling back to `workflow`.
+- timeline due rail now has stronger visibility (thicker track, rounded fill, minimum visible fill width when active).
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.
