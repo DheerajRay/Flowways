@@ -30,7 +30,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Count query failed: ${countResult.error.message}` }, { status: 400 });
     }
 
-    const classification = await classifyWithAiOrFallback(payload.sourceText, payload.modeHint);
+    const hintsResult = await auth.supabase
+      .from("items")
+      .select("title,kind,labels")
+      .eq("user_id", auth.user.id)
+      .order("updated_at", { ascending: false })
+      .limit(12);
+
+    const classification = await classifyWithAiOrFallback(
+      payload.sourceText,
+      payload.modeHint,
+      hintsResult.data || []
+    );
     const item = buildItem(auth.user.id, payload.sourceText, (countResult.count || 0) + 1, classification);
 
     const insertResult = await auth.supabase.from("items").insert({

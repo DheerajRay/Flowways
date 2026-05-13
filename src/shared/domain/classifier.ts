@@ -1,7 +1,9 @@
 ﻿import type { ClassificationResult, ItemKind, WorkflowStatus } from "@/shared/types/item";
 
-const WORKFLOW_CUES = /\b(blocked|backlog|ready|review|handoff|in progress|kanban)\b/i;
-const TASK_CUES = /^(\[\s?\]|-|todo\b|fix\b|draft\b|call\b|email\b|finish\b)/i;
+const WORKFLOW_CUES = /\b(blocked|backlog|ready|review|handoff|in progress|kanban|prepare|draft|plan|implement|coordinate|dependency|handover|milestone|spec|confluence|jira|rollout|release|design doc)\b/i;
+const CHECKLIST_CUES = /^(\[\s?\]|-|todo\b|fix\b|call\b|email\b|finish\b|buy\b|pick up\b)/i;
+const LIST_PATTERN = /(^|\s)\d+[.)]\s+\w+/i;
+const PROFESSIONAL_WORK_PATTERN = /\b(config|proposal|doc|draft|review|project|launch|release|migration|workflow|handoff|brief|spec|ticket)\b/i;
 
 export function normalizeText(value: string): string {
   return String(value || "").trim().replace(/\s+/g, " ");
@@ -57,13 +59,16 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
   const clean = normalizeText(text);
   const dueAt = parseDueAt(clean, baseDate);
   const isJournal = clean.length > 140 || /\n|\. .+\./.test(text);
+  const checklistSignals = Number(CHECKLIST_CUES.test(clean)) + Number(LIST_PATTERN.test(clean));
+  const workflowSignals = Number(WORKFLOW_CUES.test(clean)) + Number(PROFESSIONAL_WORK_PATTERN.test(clean));
 
   let kind: ItemKind = "checklist";
   if (modeHint !== "auto") kind = modeHint;
   else if (dueAt) kind = "timeline";
-  else if (WORKFLOW_CUES.test(clean)) kind = "workflow";
+  else if (workflowSignals > checklistSignals) kind = "workflow";
   else if (isJournal) kind = "journal";
-  else if (TASK_CUES.test(clean)) kind = "checklist";
+  else if (checklistSignals > 0) kind = "checklist";
+  else if (workflowSignals > 0) kind = "workflow";
 
   const workflowStatus: WorkflowStatus | null = kind === "workflow" ? "Backlog" : null;
 
@@ -74,8 +79,8 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
     labels: extractLabels(clean),
     due_at: dueAt,
     workflow_status: workflowStatus,
-    confidence: 0.65,
-    reason: "Fallback deterministic classifier used",
+    confidence: kind === "workflow" ? 0.72 : 0.66,
+    reason: `Fallback deterministic classifier used (workflowSignals=${workflowSignals}, checklistSignals=${checklistSignals})`,
     fallbackUsed: true
   };
 }

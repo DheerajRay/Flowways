@@ -5,23 +5,34 @@ import type { ClassificationResult, ItemKind } from "@/shared/types/item";
 
 const client = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
-export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | ItemKind): Promise<ClassificationResult> {
+interface MemoryHint {
+  title: string;
+  kind: ItemKind;
+  labels?: string[] | null;
+}
+
+export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | ItemKind, memoryHints: MemoryHint[] = []): Promise<ClassificationResult> {
   if (!client) {
     return fallbackClassify(text, modeHint);
   }
 
   try {
+    const hintText = memoryHints
+      .slice(0, 8)
+      .map((h, i) => `${i + 1}. [${h.kind}] ${h.title}${h.labels?.length ? ` #${h.labels.join(" #")}` : ""}`)
+      .join("\n");
+
     const response = await client.responses.create({
       model: process.env.OPENAI_CLASSIFIER_MODEL || "gpt-4.1-mini",
       input: [
         {
           role: "system",
           content:
-            "Classify user capture into checklist, journal, workflow, or timeline. Return strict JSON with keys: kind,title,body,labels,due_at,workflow_status,confidence,reason,fallbackUsed."
+            "Classify user capture into checklist, journal, workflow, or timeline. Prefer workflow for professional project/action items (prepare, draft, plan, review, handoff, release, docs). Use checklist for simple personal actionable todos/lists. Use memory hints to keep consistent categorization with existing items. Return strict JSON with keys: kind,title,body,labels,due_at,workflow_status,confidence,reason,fallbackUsed."
         },
         {
           role: "user",
-          content: `modeHint=${modeHint}\ntext=${text}`
+          content: `modeHint=${modeHint}\ntext=${text}\n\nmemoryHints:\n${hintText || "(none)"}`
         }
       ],
       text: {
