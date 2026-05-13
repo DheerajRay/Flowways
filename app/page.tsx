@@ -28,6 +28,8 @@ export default function HomePage() {
   const [authMessage, setAuthMessage] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showHidden, setShowHidden] = useState(false);
+  const [searchText, setSearchText] = useState("");
   const [nowMs, setNowMs] = useState(Date.now());
   const [mergeTargetBySource, setMergeTargetBySource] = useState<Record<string, string>>({});
   const [hiddenItemIds, setHiddenItemIds] = useState<string[]>([]);
@@ -136,6 +138,10 @@ export default function HomePage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function runSearch() {
+    setSearchText(sourceText.trim().toLowerCase());
   }
 
   async function updateItem(id: string, patch: Record<string, unknown>) {
@@ -408,7 +414,7 @@ export default function HomePage() {
     return mins ? `${hours}h ${mins}m spent` : `${hours}h spent`;
   }
 
-  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" }) {
+  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" }) {
     const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
     if (name === "done" || name === "save") return <svg {...common}><path d="M3 8.5l3 3L13 4.5" /></svg>;
     if (name === "undo" || name === "cancel") return <svg {...common}><path d="M6 4L2.5 7.5 6 11" /><path d="M3 7.5h5.5A4.5 4.5 0 1 1 8.5 16" /></svg>;
@@ -416,13 +422,23 @@ export default function HomePage() {
     if (name === "delete") return <svg {...common}><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6" /></svg>;
     if (name === "hide") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><path d="M1.5 1.5l13 13" /></svg>;
     if (name === "add") return <svg {...common}><path d="M8 3.2v9.6M3.2 8h9.6" /></svg>;
+    if (name === "search") return <svg {...common}><circle cx="7" cy="7" r="4.3" /><path d="M10.3 10.3 13.5 13.5" /></svg>;
+    if (name === "show") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><circle cx="8" cy="8" r="1.5" /></svg>;
     if (name === "backlog") return <svg {...common}><path d="M11.5 8H4.2" /><path d="M6.9 5.3 4.2 8l2.7 2.7" /></svg>;
     if (name === "ready") return <svg {...common}><path d="M5 4.2 11.8 8 5 11.8z" /></svg>;
     if (name === "progress") return <svg {...common}><path d="M5.8 4v8M10.2 4v8" /></svg>;
     return <svg {...common}><circle cx="8" cy="8" r="5.2" /><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none" /></svg>;
   }
 
-  const sortedItems = [...items].filter((item) => !hiddenItemIds.includes(item.id)).sort((a, b) => {
+  const visibleItems = items
+    .filter((item) => showHidden || !hiddenItemIds.includes(item.id))
+    .filter((item) => {
+      if (!searchText) return true;
+      const haystack = `${item.title} ${item.body} ${(item.labels || []).join(" ")}`.toLowerCase();
+      return haystack.includes(searchText);
+    });
+
+  const sortedItems = [...visibleItems].sort((a, b) => {
     const timelineRank = (item: DbItem) => {
       if (item.kind !== "timeline") return 3;
       if (item.checked) return 2;
@@ -503,10 +519,14 @@ export default function HomePage() {
       </header>
 
       <section className="capture">
-        <label htmlFor="captureInput">Add memory</label>
-        <textarea id="captureInput" value={sourceText} onChange={(event) => setSourceText(event.target.value)} placeholder="Write anything: task, note, workflow, or timed item" />
-        <button type="button" onClick={submitItem} disabled={busy || !sourceText.trim()}>{busy ? "Saving..." : "Save"}</button>
-        <p className="message">{submitMessage}</p>
+        <div className="captureBar">
+          <input id="captureInput" value={sourceText} onChange={(event) => setSourceText(event.target.value)} placeholder="Add task | Search" />
+          <div className="captureActions">
+            <button type="button" className="iconAction" aria-label="Add task" title="Add task" onClick={() => void submitItem()} disabled={busy || !sourceText.trim()}><Icon name="add" /></button>
+            <button type="button" className="iconAction" aria-label="Search tasks" title="Search tasks" onClick={runSearch}><Icon name="search" /></button>
+            <button type="button" className={`iconAction${showHidden ? " active" : ""}`} aria-label={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} title={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} onClick={() => setShowHidden((prev) => !prev)}><Icon name={showHidden ? "show" : "hide"} /></button>
+          </div>
+        </div>
       </section>
 
       <section className="feed" aria-label="Saved items">

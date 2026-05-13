@@ -60,52 +60,58 @@ localStorage.removeItem('flowways:hidden-items');
 4. Refresh while signed in preserves session and reloads items.
 
 ### Capture and Save
-5. Empty capture input keeps Save disabled.
-6. Save a journal-like text; expect success message and new card.
+5. Empty capture input keeps Add (`+`) disabled.
+6. Save a journal-like text via Add (`+`); expect new card.
 7. Save a checklist-like text; expect checklist card with actionable rows.
 8. Save a timeline text (`in 10 mins`); expect due chip + due rail.
 9. Save a workflow text; expect workflow status rail and Backlog default.
-10. Save operation must always exit loading state (no stuck `Saving...`).
+10. Save operation must always complete without stuck add state.
+11. Search icon filters visible feed by input text (title/body/tags).
+12. Show/Hide icon toggles whether hidden items are included in feed.
 
 ### Checklist Behaviors
-11. Toggle single sub-item persists state.
-12. Toggle all sub-items marks card done.
-13. Done card shows only Undo/Hide actions.
-14. Undo restores active controls.
-15. Edit checklist title + entries (add/remove/rename) and save without corruption.
-16. Multi-line checklist edits remain separate rows (no text concatenation).
-17. Merge visible when at least two open checklist cards exist.
-18. Merge appends deduplicated items into target and removes source card intentionally.
+13. Toggle single sub-item persists state.
+14. Toggle all sub-items marks card done.
+15. Done card shows only Undo/Hide actions.
+16. Undo restores active controls.
+17. Edit checklist title + entries (add/remove/rename) and save without corruption.
+18. Multi-line checklist edits remain separate rows (no text concatenation).
+19. Merge visible when at least two open checklist cards exist.
+20. Merge appends deduplicated items into target and removes source card intentionally.
 
 ### Timeline Behaviors
-19. Edit timeline with exact datetime and save.
-20. Edit timeline with `In minutes` apply and save.
-21. Overdue timeline shows overdue state/chip while unchecked.
+21. Edit timeline with exact datetime and save.
+22. Edit timeline with `In minutes` apply and save.
+23. Timeline edit `In minutes` pre-fills from current due time (not static default).
+24. Overdue timeline shows overdue state/chip while unchecked.
 
 ### Workflow Behaviors
-22. Move workflow state across all dots.
-23. Setting workflow to Done marks item checked.
-24. Moving from Done back to non-Done unchecks item.
-25. Edit workflow summary/comments persists correctly.
+25. New workflow item is created with status `Backlog` regardless of classifier output.
+26. Workflow rail shows only `Backlog` (back), `Paused` (pause), `In Progress` (play).
+27. Workflow rail does not include `Done` status control.
+28. Setting top-card Done marks workflow checked and stops time-spent counter.
+29. Undo on done workflow reopens it (unchecked) and preserves workflow timing continuity.
+30. Time-spent chip appears only after workflow has entered `In Progress`.
+31. Edit workflow summary/comments persists correctly.
 
 ### Item Lifecycle and Feed
-26. Delete item removes it and does not reappear after refresh.
-27. Hide done item removes it from visible feed.
-28. If all cards are hidden, feed must show empty-state text (`No items yet.`), not a blank box.
-29. Sorting sanity: overdue timelines first, then timeline due order, then newest non-timeline.
+32. Delete item removes it and does not reappear after refresh.
+33. Hide done item removes it from visible feed.
+34. If all cards are hidden, feed must show empty-state text (`No items yet.`), not a blank box.
+35. Sorting sanity: overdue timelines first, then timeline due order, then newest non-timeline.
 
 ### API Contract Smoke
-30. `GET /api/items` returns 200 + `{ items: [...] }` when authenticated.
-31. `GET /api/items` returns 401 when unauthenticated.
-32. `POST /api/items` returns 200 + `item` + `classification` on valid payload.
-33. `PATCH /api/items/:id` persists valid fields and returns updated item.
-34. `DELETE /api/items/:id` returns `{ ok: true }`.
-35. `POST /api/classify` valid payload returns `{ result, remaining }`.
+36. `GET /api/items` returns 200 + `{ items: [...] }` when authenticated.
+37. `GET /api/items` returns 401 when unauthenticated.
+38. `POST /api/items` returns 200 + `item` + `classification` on valid payload.
+39. `PATCH /api/items/:id` persists valid fields and returns updated item.
+40. `DELETE /api/items/:id` returns `{ ok: true }`.
+41. `POST /api/classify` valid payload returns `{ result, remaining }`.
 
 ### Negative / Resilience
-36. Invalid `PATCH` payload is rejected; data unchanged.
-37. Invalid `POST /api/classify` payload is rejected.
-38. Simulated transient network failure during save shows user-facing failure message and does not leave Save stuck.
+42. Invalid `PATCH` payload is rejected; data unchanged.
+43. Invalid `POST /api/classify` payload is rejected.
+44. Simulated transient network failure during save shows user-facing failure message and does not leave add flow stuck.
 
 ## Suggested Seed Inputs
 - Checklist: `1. Buy milk 2. Buy bread 3. Buy onion #grocery`

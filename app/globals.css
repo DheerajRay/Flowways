@@ -61,6 +61,21 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   box-shadow: 0 10px 24px rgba(40, 54, 74, 0.08);
 }
 .capture { display: grid; gap: 10px; }
+.captureBar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+.captureBar input {
+  min-height: 46px;
+  border-radius: 999px;
+  padding: 10px 14px;
+}
+.captureActions {
+  display: flex;
+  gap: 8px;
+}
 label { font-weight: 700; font-size: 28px; }
 input,
 textarea {
@@ -72,12 +87,6 @@ textarea {
   background: #fff;
 }
 textarea { min-height: 100px; resize: vertical; }
-.capture > button {
-  background: linear-gradient(90deg, #2d6eb1, #4b8fd4);
-  color: #fff;
-  border: none;
-}
-.capture > button:disabled { opacity: 0.6; }
 .message { min-height: 18px; margin: 0; color: #3f4f66; }
 
 .feed {
@@ -141,6 +150,10 @@ textarea { min-height: 100px; resize: vertical; }
 .iconAction.danger {
   color: #111;
   background: #fff;
+}
+.iconAction.active {
+  background: #111;
+  color: #fff;
 }
 .iconAction.compact {
   width: 32px;

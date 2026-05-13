@@ -6,6 +6,48 @@ Format follows Keep a Changelog style with practical engineering detail for this
 
 ## [Unreleased]
 
+## [2026-05-13] - Interaction bar + workflow timing semantics + smoke governance
+
+### Added
+- Compact add/search interaction bar in app shell:
+- single-line input with icon actions for add (`+`), search, and show/hide hidden items.
+- New DB migration for workflow status compatibility:
+- `supabase/migrations/002_workflow_status_paused.sql` adds `Paused` to `items.workflow_status` check constraint.
+- Expanded smoke test governance:
+- updated external smoke scenarios under `tests/smoke/scenarios/smoke-test-scenarios.md` to cover add/search/show-hide and new workflow timing/status behavior.
+
+### Changed
+- Capture panel behavior:
+- removed inline save log under the add/search control row.
+- search now filters feed by title/body/tags using the current input text.
+- hidden-item visibility can be toggled directly from capture controls.
+- Workflow lifecycle semantics:
+- new workflow items are forced to `Backlog` at creation.
+- workflow rail now uses `Backlog`, `Paused`, `In Progress` only.
+- workflow rail no longer exposes a `Done` status action.
+- top card `Done/Undo` handles workflow completion/reopen behavior.
+- workflow time-spent now starts when first moved to `In Progress` and stops on `Done`.
+- timeline edit polish:
+- `In minutes` value pre-fills from actual remaining due time, not a static default.
+
+### Fixed
+- Edit mode action hygiene:
+- when editing active cards, only `Save` and `Cancel` are shown (no `Done`/`Delete`).
+- Checklist edit stability:
+- hardened checklist parsing for line-based markdown and safer numbered-list extraction.
+- Save operation resilience:
+- guarded add flow ensures busy/loading state is always cleared on error/success.
+
+### Files
+- `app/page.tsx`
+- `app/globals.css`
+- `src/server/db/item-builder.ts`
+- `src/shared/types/item.ts`
+- `src/shared/types/schemas.ts`
+- `supabase/migrations/002_workflow_status_paused.sql`
+- `tests/smoke/scenarios/smoke-test-scenarios.md`
+- `tests/smoke/results/flowways_full_test_report.md`
+
 ### Added
 - Dynamic item action API route: `PATCH/DELETE /api/items/[id]`.
 - Branching/release governance document:
