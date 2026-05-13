@@ -27,6 +27,7 @@ export default function HomePage() {
   const [authMessage, setAuthMessage] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [mergeTargetBySource, setMergeTargetBySource] = useState<Record<string, string>>({});
   const workflowSteps = ["Backlog", "Ready", "In Progress", "Review", "Done"] as const;
 
   async function loadItems() {
@@ -88,7 +89,11 @@ export default function HomePage() {
     }
 
     const data = await response.json();
-    setSubmitMessage(`Saved as ${data.classification.kind}: ${data.classification.title}`);
+    setSubmitMessage(
+      data.merged
+        ? `Merged into existing checklist (${data.mergedIntoId}).`
+        : `Saved as ${data.classification.kind}: ${data.classification.title}`
+    );
     setSourceText("");
     await loadItems();
     setBusy(false);
@@ -127,6 +132,39 @@ export default function HomePage() {
   async function saveEdit(id: string) {
     await updateItem(id, { title: editTitle.trim() || "Untitled", body: editBody });
     setEditingId(null);
+  }
+
+  function toChecklistMarkdown(entries: { text: string; checked: boolean }[]): string {
+    return entries.map((entry) => `- [${entry.checked ? "x" : " "}] ${entry.text}`).join("\n");
+  }
+
+  async function mergeChecklistIntoTarget(source: DbItem, targetId: string) {
+    if (!targetId || source.id === targetId) return;
+    const target = items.find((item) => item.id === targetId);
+    if (!target) return;
+
+    const sourceEntries = parseChecklistItems(source.body || source.title).map((entry) => ({
+      text: entry.text,
+      checked: false
+    }));
+    const targetEntries = parseChecklistItems(target.body || target.title);
+    const seen = new Set(targetEntries.map((entry) => entry.text.toLowerCase()));
+
+    const merged = [...targetEntries];
+    for (const entry of sourceEntries) {
+      const key = entry.text.toLowerCase();
+      if (!seen.has(key)) {
+        merged.push(entry);
+        seen.add(key);
+      }
+    }
+
+    const mergedBody = toChecklistMarkdown(merged);
+    const mergedLabels = [...new Set([...(target.labels || []), ...(source.labels || [])])];
+
+    await updateItem(target.id, { body: mergedBody, labels: mergedLabels });
+    await deleteItem(source.id);
+    setSubmitMessage(`Merged checklist into "${target.title}".`);
   }
 
   function parseChecklistItems(body: string): { text: string; checked: boolean }[] {
@@ -312,6 +350,30 @@ export default function HomePage() {
               {item.due_at ? <span>{new Date(item.due_at).toLocaleString()}</span> : null}
               {item.labels?.map((label) => <span key={label}>#{label}</span>)}
             </div>
+            {item.kind === "checklist" && !item.checked && (
+              <div className="mergeRow">
+                <select
+                  value={mergeTargetBySource[item.id] || ""}
+                  onChange={(event) => setMergeTargetBySource((prev) => ({ ...prev, [item.id]: event.target.value }))}
+                >
+                  <option value="">Merge with existing list...</option>
+                  {items
+                    .filter((candidate) => candidate.kind === "checklist" && !candidate.checked && candidate.id !== item.id)
+                    .map((candidate) => (
+                      <option key={`${item.id}-${candidate.id}`} value={candidate.id}>
+                        {candidate.title}
+                      </option>
+                    ))}
+                </select>
+                <button
+                  type="button"
+                  disabled={!mergeTargetBySource[item.id]}
+                  onClick={() => mergeChecklistIntoTarget(item, mergeTargetBySource[item.id])}
+                >
+                  Merge
+                </button>
+              </div>
+            )}
           </article>
         ))}
       </section>

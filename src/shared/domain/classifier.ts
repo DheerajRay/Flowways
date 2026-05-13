@@ -43,6 +43,30 @@ export function normalizeGeneratedLabels(labels: string[], text: string, memoryL
   return [...new Set(mapped)];
 }
 
+export function inferContextLabels(text: string, kind: ItemKind): string[] {
+  const lower = text.toLowerCase();
+  const inferred: string[] = [];
+
+  if (kind === "checklist") {
+    if (/\b(egg|milk|onion|tomato|rice|bread|grocery|shopping|vegetable|fruit|brinjal|potato)\b/.test(lower)) {
+      inferred.push("shopping", "grocery");
+    }
+    if (/\b(personal|home|house)\b/.test(lower)) inferred.push("personal");
+    if (/\b(work|office|confluence|jira|config|doc)\b/.test(lower)) inferred.push("work");
+  }
+
+  if (kind === "workflow") {
+    if (/\b(confluence|jira|doc|draft|spec)\b/.test(lower)) inferred.push("documentation");
+    if (/\b(release|rollout|deploy)\b/.test(lower)) inferred.push("release");
+  }
+
+  if (kind === "journal") {
+    if (/\b(idea|testing|thought|hypothesis)\b/.test(lower)) inferred.push("idea");
+  }
+
+  return [...new Set(inferred.map((t) => slugLabel(t)).filter(Boolean))];
+}
+
 export function parseDueAt(text: string, baseDate = new Date()): string | null {
   const normalized = normalizeText(text).toLowerCase();
   const result = new Date(baseDate);
@@ -107,7 +131,10 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
     kind,
     title: stripSyntax(clean) || clean || "Untitled item",
     body: kind === "journal" ? clean : "",
-    labels: normalizeGeneratedLabels(extractLabels(clean), clean),
+    labels: (() => {
+      const normalized = normalizeGeneratedLabels(extractLabels(clean), clean);
+      return normalized.length ? normalized : inferContextLabels(clean, kind);
+    })(),
     due_at: dueAt,
     workflow_status: workflowStatus,
     confidence: kind === "workflow" ? 0.72 : 0.66,

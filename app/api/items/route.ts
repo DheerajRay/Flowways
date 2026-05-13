@@ -4,6 +4,70 @@ import { requireAuth } from "@/server/api/auth";
 import { classifyWithAiOrFallback } from "@/server/ai/classifier-service";
 import { buildItem } from "@/server/db/item-builder";
 
+function normalizeListLine(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/^[-*\d.)\s]+/, "")
+    .replace(/^\[( |x)\]\s*/i, "")
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseListFromText(value: string): string[] {
+  const source = value.trim();
+  if (!source) return [];
+
+  const numbered = source.match(/\d+\.\s+[^\n]+/g)?.map((entry) => entry.replace(/^\d+\.\s+/, "").trim()) || [];
+  if (numbered.length >= 2) return numbered;
+
+  const lines = source
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.replace(/^[-*]\s+/, "").trim());
+
+  if (lines.length >= 2) return lines;
+
+  if (source.includes(",")) {
+    const comma = source.split(",").map((token) => token.trim()).filter(Boolean);
+    if (comma.length >= 2) return comma;
+  }
+
+  return [];
+}
+
+function mergeChecklistBody(existingBody: string, incomingItems: string[]): string {
+  const existingLines = existingBody
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const existingEntries = existingLines.length
+    ? existingLines.map((line) => {
+        const checked = /\[x\]/i.test(line);
+        const text = line.replace(/^- \[( |x)\]\s+/i, "").replace(/^[-*\d.)\s]+/, "").trim();
+        return { checked, text };
+      })
+    : [];
+
+  const seen = new Set(existingEntries.map((entry) => normalizeListLine(entry.text)));
+  for (const item of incomingItems) {
+    const key = normalizeListLine(item);
+    if (key && !seen.has(key)) {
+      existingEntries.push({ checked: false, text: item });
+      seen.add(key);
+    }
+  }
+
+  return existingEntries.map((entry) => `- [${entry.checked ? "x" : " "}] ${entry.text}`).join("\n");
+}
+
+function hasAnyTagMatch(labelsA: string[], labelsB: string[]): boolean {
+  const right = new Set(labelsB);
+  return labelsA.some((tag) => right.has(tag));
+}
+
 export async function GET() {
   const auth = await requireAuth();
   if (auth.error) return auth.error;
@@ -43,6 +107,50 @@ export async function POST(request: Request) {
       hintsResult.data || []
     );
     const item = buildItem(auth.user.id, payload.sourceText, (countResult.count || 0) + 1, classification);
+
+    if (item.kind === "checklist") {
+      const incomingList = parseListFromText(payload.sourceText);
+      if (incomingList.length) {
+        const openChecklistsResult = await auth.supabase
+          .from("items")
+          .select("id,title,body,labels,updated_at")
+          .eq("user_id", auth.user.id)
+          .eq("kind", "checklist")
+          .eq("checked", false)
+          .order("updated_at", { ascending: false })
+          .limit(20);
+
+        if (!openChecklistsResult.error && openChecklistsResult.data?.length) {
+          const open = openChecklistsResult.data;
+          const strongMatch = open.find((candidate) => hasAnyTagMatch(item.labels || [], candidate.labels || []));
+          if (strongMatch) {
+            const mergedBody = mergeChecklistBody(strongMatch.body || "", incomingList);
+            const mergedResult = await auth.supabase
+              .from("items")
+              .update({
+                body: mergedBody,
+                updated_at: new Date().toISOString()
+              })
+              .eq("id", strongMatch.id)
+              .eq("user_id", auth.user.id)
+              .select("*")
+              .single();
+
+            if (!mergedResult.error) {
+              return NextResponse.json({
+                item: mergedResult.data,
+                classification: {
+                  ...classification,
+                  reason: `${classification.reason} | auto-merged into existing checklist`
+                },
+                merged: true,
+                mergedIntoId: strongMatch.id
+              });
+            }
+          }
+        }
+      }
+    }
 
     const insertResult = await auth.supabase.from("items").insert({
       id: item.id,

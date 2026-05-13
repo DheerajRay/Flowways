@@ -14,6 +14,8 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - checklist cards render interactive checkbox rows.
 - workflow cards include status movement controls (`Backlog`, `Ready`, `In Progress`, `Review`, `Done`).
 - timeline cards include quick due-date controls.
+- Checklist merge controls for ambiguous cases:
+- per-checklist `Merge with existing list...` selector and `Merge` action in UI.
 
 ### Changed
 - Classification system hardened:
@@ -24,6 +26,9 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - idea-like inputs (for example `testing something`) bias to `journal` unless explicit checklist markers exist.
 - label canonicalization for related tags (for example `drift` and `config drift` -> `config-drift` in matching context).
 - Task card typography and layout tightened for more professional readability.
+- Checklist ingestion behavior:
+- if clear tag match exists on an open checklist, new checklist-like input auto-merges into existing list instead of creating a duplicate card.
+- Checklist tags now inferred when missing (for example grocery/shopping/work/idea contexts).
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.
@@ -36,6 +41,8 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - `src/shared/domain/classifier.ts`
 - `app/page.tsx`
 - `app/globals.css`
+- `src/server/ai/classifier-service.ts`
+- `src/shared/domain/classifier.ts`
 - `README.md`
 - `docs/branching-and-release-policy.md`
 

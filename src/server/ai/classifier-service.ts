@@ -1,5 +1,5 @@
 ﻿import OpenAI from "openai";
-import { fallbackClassify, normalizeGeneratedLabels } from "@/shared/domain/classifier";
+import { fallbackClassify, inferContextLabels, normalizeGeneratedLabels } from "@/shared/domain/classifier";
 import { classificationResultSchema } from "@/shared/types/schemas";
 import type { ClassificationResult, ItemKind } from "@/shared/types/item";
 
@@ -75,11 +75,13 @@ export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | 
       refinedReason = `${parsed.reason} | post-rule: idea-like input mapped to journal`;
     }
 
+    const finalLabels = normalizedLabels.length ? normalizedLabels : inferContextLabels(text, refinedKind);
+
     return {
       ...parsed,
       kind: refinedKind,
       body: refinedBody,
-      labels: normalizedLabels,
+      labels: finalLabels,
       reason: refinedReason
     };
   } catch {
