@@ -1,4 +1,4 @@
-﻿import { z } from "zod";
+import { z } from "zod";
 
 export const classifyInputSchema = z.object({
   text: z.string().min(1).max(5000),
@@ -11,7 +11,7 @@ export const classificationResultSchema = z.object({
   body: z.string(),
   labels: z.array(z.string()),
   due_at: z.string().datetime().nullable(),
-  workflow_status: z.enum(["Backlog", "Ready", "In Progress", "Review", "Done"]).nullable(),
+  workflow_status: z.enum(["Backlog", "Paused", "In Progress", "Ready", "Review", "Done"]).nullable(),
   confidence: z.number().min(0).max(1),
   reason: z.string(),
   fallbackUsed: z.boolean().default(false)
@@ -27,10 +27,11 @@ export const updateItemSchema = z.object({
   title: z.string().min(1).optional(),
   body: z.string().optional(),
   checked: z.boolean().optional(),
-  workflowStatus: z.enum(["Backlog", "Ready", "In Progress", "Review", "Done"]).nullable().optional(),
+  workflowStatus: z.enum(["Backlog", "Paused", "In Progress", "Ready", "Review", "Done"]).nullable().optional(),
   dueAt: z.string().datetime().nullable().optional(),
   labels: z.array(z.string()).optional(),
   position: z.number().int().positive().optional()
 });
+
 
 

@@ -12,7 +12,7 @@ interface DbItem {
   due_at: string | null;
   created_at?: string;
   checked?: boolean;
-  workflow_status?: "Backlog" | "Ready" | "In Progress" | "Review" | "Done" | null;
+  workflow_status?: "Backlog" | "Paused" | "In Progress" | "Ready" | "Review" | "Done" | null;
 }
 
 export default function HomePage() {
@@ -36,14 +36,14 @@ export default function HomePage() {
   const [editTimelineOffsetMin, setEditTimelineOffsetMin] = useState("15");
   const [editWorkflowSummary, setEditWorkflowSummary] = useState("");
   const [editWorkflowComments, setEditWorkflowComments] = useState<string[]>([]);
+  const [editWorkflowStartedAt, setEditWorkflowStartedAt] = useState<string | null>(null);
+  const [editWorkflowCompletedAt, setEditWorkflowCompletedAt] = useState<string | null>(null);
   const [newWorkflowComment, setNewWorkflowComment] = useState("");
-  const workflowSteps = ["Backlog", "Ready", "In Progress", "Review", "Done"] as const;
-  const workflowIcon: Record<(typeof workflowSteps)[number], "backlog" | "ready" | "progress" | "review" | "done"> = {
+  const workflowSteps = ["Backlog", "Paused", "In Progress"] as const;
+  const workflowIcon: Record<(typeof workflowSteps)[number], "backlog" | "progress" | "ready"> = {
     Backlog: "backlog",
-    Ready: "ready",
-    "In Progress": "progress",
-    Review: "review",
-    Done: "done"
+    Paused: "progress",
+    "In Progress": "ready"
   };
 
   async function loadItems() {
@@ -187,6 +187,8 @@ export default function HomePage() {
     const workflow = parseWorkflowBody(item.body || "");
     setEditWorkflowSummary(workflow.summary);
     setEditWorkflowComments(workflow.comments);
+    setEditWorkflowStartedAt(workflow.startedAt);
+    setEditWorkflowCompletedAt(workflow.completedAt);
     setNewWorkflowComment("");
   }
 
@@ -210,7 +212,7 @@ export default function HomePage() {
     }
 
     if (item.kind === "workflow") {
-      const body = buildWorkflowBody(editWorkflowSummary, editWorkflowComments);
+      const body = buildWorkflowBody(editWorkflowSummary, editWorkflowComments, editWorkflowStartedAt, editWorkflowCompletedAt);
       await updateItem(id, { title: editTitle.trim() || "Untitled", body });
       setEditingId(null);
       return;
@@ -226,21 +228,31 @@ export default function HomePage() {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
-  function parseWorkflowBody(body: string): { summary: string; comments: string[] } {
-    const parts = body.split("\n\nComments:\n");
+  function parseWorkflowBody(body: string): { summary: string; comments: string[]; startedAt: string | null; completedAt: string | null } {
+    const [main = "", meta = ""] = body.split("\n\nMeta:\n");
+    const parts = main.split("\n\nComments:\n");
     const summary = parts[0] || "";
     const comments = (parts[1] || "")
       .split("\n")
       .map((line) => line.replace(/^- /, "").trim())
       .filter(Boolean);
-    return { summary, comments };
+    const metaLines = meta.split("\n").map((line) => line.trim()).filter(Boolean);
+    const startedAt = metaLines.find((line) => line.toLowerCase().startsWith("startedat:"))?.replace(/^startedAt:\s*/i, "") || null;
+    const completedAt = metaLines.find((line) => line.toLowerCase().startsWith("completedat:"))?.replace(/^completedAt:\s*/i, "") || null;
+    return { summary, comments, startedAt, completedAt };
   }
 
-  function buildWorkflowBody(summary: string, comments: string[]): string {
+  function buildWorkflowBody(summary: string, comments: string[], startedAt: string | null, completedAt: string | null): string {
     const cleanSummary = summary.trim();
     const cleanComments = comments.map((c) => c.trim()).filter(Boolean);
-    if (!cleanComments.length) return cleanSummary;
-    return `${cleanSummary}\n\nComments:\n${cleanComments.map((c) => `- ${c}`).join("\n")}`;
+    const sections: string[] = [];
+    if (cleanSummary) sections.push(cleanSummary);
+    if (cleanComments.length) sections.push(`Comments:\n${cleanComments.map((c) => `- ${c}`).join("\n")}`);
+    const metaLines: string[] = [];
+    if (startedAt) metaLines.push(`startedAt: ${startedAt}`);
+    if (completedAt) metaLines.push(`completedAt: ${completedAt}`);
+    if (metaLines.length) sections.push(`Meta:\n${metaLines.join("\n")}`);
+    return sections.join("\n\n");
   }
 
   function toChecklistMarkdown(entries: { text: string; checked: boolean }[]): string {
@@ -323,7 +335,33 @@ export default function HomePage() {
   }
 
   async function moveWorkflowStatus(item: DbItem, status: (typeof workflowSteps)[number]) {
-    await updateItem(item.id, { workflowStatus: status, checked: status === "Done" });
+    const workflow = parseWorkflowBody(item.body || "");
+    let startedAt = workflow.startedAt;
+    let completedAt = workflow.completedAt;
+
+    if (status === "In Progress") {
+      if (!startedAt) startedAt = new Date().toISOString();
+      completedAt = null;
+    }
+
+    const body = buildWorkflowBody(workflow.summary, workflow.comments, startedAt, completedAt);
+    await updateItem(item.id, { workflowStatus: status, checked: false, body });
+  }
+
+  async function toggleWorkflowDone(item: DbItem, checked: boolean) {
+    const workflow = parseWorkflowBody(item.body || "");
+    let startedAt = workflow.startedAt;
+    let completedAt = workflow.completedAt;
+
+    if (checked) {
+      if (!startedAt) startedAt = new Date().toISOString();
+      completedAt = new Date().toISOString();
+    } else {
+      completedAt = null;
+    }
+
+    const body = buildWorkflowBody(workflow.summary, workflow.comments, startedAt, completedAt);
+    await updateItem(item.id, { checked, body });
   }
 
   function timelineState(dueAt: string | null) {
@@ -356,10 +394,13 @@ export default function HomePage() {
   }
 
   function formatTimeSpent(item: DbItem): string | null {
-    if (item.kind !== "workflow" || !item.created_at) return null;
-    const startMs = new Date(item.created_at).getTime();
+    if (item.kind !== "workflow") return null;
+    const workflow = parseWorkflowBody(item.body || "");
+    if (!workflow.startedAt) return null;
+    const startMs = new Date(workflow.startedAt).getTime();
     if (Number.isNaN(startMs)) return null;
-    const endMs = item.checked ? new Date().getTime() : nowMs;
+    const endMs = workflow.completedAt ? new Date(workflow.completedAt).getTime() : nowMs;
+    if (Number.isNaN(endMs) || endMs <= startMs) return null;
     const deltaMin = Math.max(1, Math.floor((endMs - startMs) / 60000));
     if (deltaMin < 60) return `${deltaMin}m spent`;
     const hours = Math.floor(deltaMin / 60);
@@ -481,7 +522,7 @@ export default function HomePage() {
               <div className="actions">
                 {item.checked ? (
                   <>
-                    <button type="button" className="iconAction" aria-label="Undo" title="Undo" onClick={() => updateItem(item.id, { checked: false })}><Icon name="undo" /></button>
+                    <button type="button" className="iconAction" aria-label="Undo" title="Undo" onClick={() => item.kind === "workflow" ? toggleWorkflowDone(item, false) : updateItem(item.id, { checked: false })}><Icon name="undo" /></button>
                     <button type="button" className="iconAction" aria-label="Hide" title="Hide" onClick={() => hideItem(item.id)}><Icon name="hide" /></button>
                   </>
                 ) : (
@@ -493,7 +534,7 @@ export default function HomePage() {
                       </>
                     ) : (
                       <>
-                        <button type="button" className="iconAction" aria-label="Done" title="Done" onClick={() => updateItem(item.id, { checked: true })}><Icon name="done" /></button>
+                        <button type="button" className="iconAction" aria-label="Done" title="Done" onClick={() => item.kind === "workflow" ? toggleWorkflowDone(item, true) : updateItem(item.id, { checked: true })}><Icon name="done" /></button>
                         <button type="button" className="iconAction" aria-label="Edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" /></button>
                         <button type="button" className="iconAction danger" aria-label="Delete" title="Delete" onClick={() => deleteItem(item.id)}><Icon name="delete" /></button>
                       </>

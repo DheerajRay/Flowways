@@ -1,5 +1,5 @@
-﻿export type ItemKind = "checklist" | "journal" | "workflow" | "timeline";
-export type WorkflowStatus = "Backlog" | "Ready" | "In Progress" | "Review" | "Done";
+export type ItemKind = "checklist" | "journal" | "workflow" | "timeline";
+export type WorkflowStatus = "Backlog" | "Paused" | "In Progress" | "Ready" | "Review" | "Done";
 
 export interface Item {
   id: string;
@@ -30,5 +30,6 @@ export interface ClassificationResult {
   reason: string;
   fallbackUsed: boolean;
 }
+
 
 

@@ -1,4 +1,4 @@
-﻿import { randomUUID } from "crypto";
+import { randomUUID } from "crypto";
 import type { ClassificationResult, Item } from "@/shared/types/item";
 
 export function buildItem(userId: string, sourceText: string, position: number, c: ClassificationResult): Item {
@@ -10,7 +10,7 @@ export function buildItem(userId: string, sourceText: string, position: number, 
     title: c.title,
     body: c.body,
     labels: c.labels,
-    workflowStatus: c.workflow_status,
+    workflowStatus: c.kind === "workflow" ? "Backlog" : null,
     checked: false,
     dueAt: c.due_at,
     position,
@@ -21,5 +21,6 @@ export function buildItem(userId: string, sourceText: string, position: number, 
     updatedAt: now
   };
 }
+
 
 
