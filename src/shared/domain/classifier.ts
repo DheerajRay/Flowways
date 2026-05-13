@@ -125,6 +125,22 @@ export function parseDueAt(text: string, baseDate = new Date()): string | null {
     return result.toISOString();
   }
 
+  if (/\bnoon\b/.test(normalized)) {
+    result.setHours(12, 0, 0, 0);
+    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && result.getTime() <= baseDate.getTime()) {
+      result.setDate(result.getDate() + 1);
+    }
+    return result.toISOString();
+  }
+
+  if (/\bmidnight\b/.test(normalized)) {
+    result.setHours(0, 0, 0, 0);
+    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && result.getTime() <= baseDate.getTime()) {
+      result.setDate(result.getDate() + 1);
+    }
+    return result.toISOString();
+  }
+
   if (/\b(today|tomorrow|next week)\b/.test(normalized) || /\b20\d{2}-\d{2}-\d{2}\b/.test(normalized)) {
     return result.toISOString();
   }

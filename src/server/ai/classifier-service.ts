@@ -113,12 +113,16 @@ export async function classifyWithAiOrFallback(
 
     const finalLabels = normalizedLabels.length ? normalizedLabels : inferContextLabels(text, refinedKind);
 
+    const finalDueAt = refinedKind === "timeline"
+      ? (deterministicDueAt || parsed.due_at)
+      : parsed.due_at;
+
     return {
       ...parsed,
       kind: refinedKind,
       title: refinedTitle || parsed.title,
       body: refinedBody,
-      due_at: modeHint === "auto" && (reminderLike || timeLike || parsed.kind === "timeline") ? inferredDueAt : parsed.due_at,
+      due_at: finalDueAt,
       labels: finalLabels,
       reason: refinedReason
     };

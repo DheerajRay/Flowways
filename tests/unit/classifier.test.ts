@@ -20,6 +20,8 @@ describe("classifier fallback", () => {
     expect(parseDueAt("timer for 10 minutes", base)).toBeTruthy();
     expect(parseDueAt("check on rex at 4 pm", base)).toBeTruthy();
     expect(parseDueAt("check on rex at 16:30", base)).toBeTruthy();
+    expect(parseDueAt("fix the build before noon", base)).toBeTruthy();
+    expect(parseDueAt("review logs at midnight", base)).toBeTruthy();
 
     const localTime = parseDueAt("check on baby at 4 pm", base);
     expect(localTime).toBeTruthy();
