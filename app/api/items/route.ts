@@ -63,9 +63,12 @@ function mergeChecklistBody(existingBody: string, incomingItems: string[]): stri
   return existingEntries.map((entry) => `- [${entry.checked ? "x" : " "}] ${entry.text}`).join("\n");
 }
 
-function hasAnyTagMatch(labelsA: string[], labelsB: string[]): boolean {
-  const right = new Set(labelsB);
-  return labelsA.some((tag) => right.has(tag));
+const GENERIC_LABELS = new Set(["personal", "work", "idea", "list", "task"]);
+
+function getSpecificOverlap(labelsA: string[], labelsB: string[]): string[] {
+  const left = new Set(labelsA.filter((tag) => !GENERIC_LABELS.has(tag)));
+  const right = new Set(labelsB.filter((tag) => !GENERIC_LABELS.has(tag)));
+  return [...left].filter((tag) => right.has(tag));
 }
 
 export async function GET() {
@@ -122,7 +125,15 @@ export async function POST(request: Request) {
 
         if (!openChecklistsResult.error && openChecklistsResult.data?.length) {
           const open = openChecklistsResult.data;
-          const strongMatch = open.find((candidate) => hasAnyTagMatch(item.labels || [], candidate.labels || []));
+          const scored = open
+            .map((candidate) => ({
+              candidate,
+              overlap: getSpecificOverlap(item.labels || [], candidate.labels || [])
+            }))
+            .filter((entry) => entry.overlap.length > 0)
+            .sort((a, b) => b.overlap.length - a.overlap.length);
+
+          const strongMatch = scored[0]?.candidate;
           if (strongMatch) {
             const mergedBody = mergeChecklistBody(strongMatch.body || "", incomingList);
             const mergedResult = await auth.supabase

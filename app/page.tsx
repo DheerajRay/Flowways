@@ -29,6 +29,7 @@ export default function HomePage() {
   const [busy, setBusy] = useState(false);
   const [mergeTargetBySource, setMergeTargetBySource] = useState<Record<string, string>>({});
   const workflowSteps = ["Backlog", "Ready", "In Progress", "Review", "Done"] as const;
+  const genericLabels = new Set(["personal", "work", "idea", "list", "task"]);
 
   async function loadItems() {
     const response = await fetch("/api/items", { cache: "no-store" });
@@ -91,7 +92,7 @@ export default function HomePage() {
     const data = await response.json();
     setSubmitMessage(
       data.merged
-        ? `Merged into existing checklist (${data.mergedIntoId}).`
+        ? `Merged into existing checklist.`
         : `Saved as ${data.classification.kind}: ${data.classification.title}`
     );
     setSourceText("");
@@ -165,6 +166,18 @@ export default function HomePage() {
     await updateItem(target.id, { body: mergedBody, labels: mergedLabels });
     await deleteItem(source.id);
     setSubmitMessage(`Merged checklist into "${target.title}".`);
+  }
+
+  function shouldShowMergeControls(item: DbItem): boolean {
+    if (item.kind !== "checklist" || item.checked) return false;
+    const candidates = items.filter((candidate) => candidate.kind === "checklist" && !candidate.checked && candidate.id !== item.id);
+    if (!candidates.length) return false;
+
+    const hasSpecificLabels = (item.labels || []).some((label) => !genericLabels.has(label));
+    const title = (item.title || "").toLowerCase();
+    const ambiguousTitle = title === "simple list" || title === "item list" || title === "untitled item";
+
+    return ambiguousTitle || !hasSpecificLabels;
   }
 
   function parseChecklistItems(body: string): { text: string; checked: boolean }[] {
@@ -350,7 +363,7 @@ export default function HomePage() {
               {item.due_at ? <span>{new Date(item.due_at).toLocaleString()}</span> : null}
               {item.labels?.map((label) => <span key={label}>#{label}</span>)}
             </div>
-            {item.kind === "checklist" && !item.checked && (
+            {shouldShowMergeControls(item) && (
               <div className="mergeRow">
                 <select
                   value={mergeTargetBySource[item.id] || ""}

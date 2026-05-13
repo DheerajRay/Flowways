@@ -33,6 +33,11 @@ Format follows Keep a Changelog style with practical engineering detail for this
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.
 - Removed auth subtitle text on sign-in page per UX request.
+- Checklist auto-merge false positives reduced:
+- auto-merge now ignores generic labels (`personal`, `work`, `idea`, etc.) and requires specific label overlap.
+- prevents unrelated lists from merging just because of broad tags.
+- Merge controls visibility tightened:
+- checklist `Merge with existing list...` UI now appears only for ambiguous lists with actual candidate targets.
 
 ### Files
 - `app/api/items/[id]/route.ts`
