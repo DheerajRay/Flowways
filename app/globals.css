@@ -97,6 +97,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   border-color: #9f2f2f;
   color: #7c2323;
 }
+.pixelPal.isGhost {
+  opacity: 1;
+  transform: translateY(0);
+  background: #f2f2f2;
+  border-color: #9a9a9a;
+  color: #6d6d6d;
+}
 .pixelPalFace {
   font-family: "Courier New", monospace;
   font-size: 12px;
