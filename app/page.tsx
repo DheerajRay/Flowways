@@ -548,13 +548,13 @@ export default function HomePage() {
 
       <section className="capture">
         <div className={`pixelPal${busy ? " isBusy" : ""}${petNotice ? " hasNotice" : ""}${petNoticeTone === "error" ? " isError" : ""}${showHidden ? " isGhost" : ""}`} aria-live="polite" aria-label={busy ? "Classifying task..." : petNotice || (showHidden ? "Hidden tasks mode" : "Idle")}>
-          <span className="pixelPalFace" aria-hidden="true">{petNoticeTone === "error" ? "x_x" : "^_^"}</span>
+          <span className="pixelPalFace" aria-hidden="true">{petNoticeTone === "error" ? "x_x" : showHidden ? "(o_o)" : "^_^"}</span>
           {busy ? (
             <span className="pixelPalText">Classifying...</span>
           ) : petNotice ? (
             <span className="pixelPalText">{petNotice}</span>
           ) : showHidden ? (
-            <span className="pixelPalText">Hidden tasks mode</span>
+            <span className="pixelPalText">Hide mode</span>
           ) : null}
         </div>
         <div className="captureBar">
