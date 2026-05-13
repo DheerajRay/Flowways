@@ -73,6 +73,9 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - right-side timer label is now forced to remain on one line beside the progress bar.
 - Completion-state visual parity:
 - done/acknowledged items now render with a green-highlighted card treatment (similar emphasis model as overdue red).
+- Completed-card control simplification:
+- done items now show only `Undo` and `Delete` actions; edit/done controls are hidden until item is undone.
+- completed highlight is now border-only green (no internal/background tint changes).
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.

@@ -388,10 +388,19 @@ export default function HomePage() {
             <div className="itemHead">
               <span className="kind">{item.kind}</span>
               <div className="actions">
-                <button type="button" className="iconAction" aria-label={item.checked ? "Undo" : "Done"} title={item.checked ? "Undo" : "Done"} onClick={() => updateItem(item.id, { checked: !item.checked })}><Icon name={item.checked ? "undo" : "done"} /></button>
-                {editingId === item.id ? <button type="button" className="iconAction" aria-label="Save" title="Save" onClick={() => saveEdit(item.id)}><Icon name="save" /></button> : <button type="button" className="iconAction" aria-label="Edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" /></button>}
-                {editingId === item.id ? <button type="button" className="iconAction" aria-label="Cancel" title="Cancel" onClick={() => setEditingId(null)}><Icon name="cancel" /></button> : null}
-                <button type="button" className="iconAction danger" aria-label="Delete" title="Delete" onClick={() => deleteItem(item.id)}><Icon name="delete" /></button>
+                {item.checked ? (
+                  <>
+                    <button type="button" className="iconAction" aria-label="Undo" title="Undo" onClick={() => updateItem(item.id, { checked: false })}><Icon name="undo" /></button>
+                    <button type="button" className="iconAction danger" aria-label="Delete" title="Delete" onClick={() => deleteItem(item.id)}><Icon name="delete" /></button>
+                  </>
+                ) : (
+                  <>
+                    <button type="button" className="iconAction" aria-label="Done" title="Done" onClick={() => updateItem(item.id, { checked: true })}><Icon name="done" /></button>
+                    {editingId === item.id ? <button type="button" className="iconAction" aria-label="Save" title="Save" onClick={() => saveEdit(item.id)}><Icon name="save" /></button> : <button type="button" className="iconAction" aria-label="Edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" /></button>}
+                    {editingId === item.id ? <button type="button" className="iconAction" aria-label="Cancel" title="Cancel" onClick={() => setEditingId(null)}><Icon name="cancel" /></button> : null}
+                    <button type="button" className="iconAction danger" aria-label="Delete" title="Delete" onClick={() => deleteItem(item.id)}><Icon name="delete" /></button>
+                  </>
+                )}
               </div>
             </div>
 
