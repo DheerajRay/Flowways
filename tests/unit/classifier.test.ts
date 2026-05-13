@@ -18,6 +18,7 @@ describe("classifier fallback", () => {
     expect(parseDueAt("remind me in 30 seconds", base)).toBeTruthy();
     expect(parseDueAt("reminder after 10 mins", base)).toBeTruthy();
     expect(parseDueAt("timer for 10 minutes", base)).toBeTruthy();
+    expect(parseDueAt("10 mins", base)).toBeTruthy();
     expect(parseDueAt("check on rex at 4 pm", base)).toBeTruthy();
     expect(parseDueAt("check on rex at 16:30", base)).toBeTruthy();
     expect(parseDueAt("fix the build before noon", base)).toBeTruthy();

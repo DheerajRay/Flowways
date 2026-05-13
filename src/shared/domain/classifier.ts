@@ -71,10 +71,11 @@ export function parseDueAt(text: string, baseDate = new Date()): string | null {
   const normalized = normalizeText(text).toLowerCase();
   const result = new Date(baseDate);
   const relative = normalized.match(/\b(in|after|for)\s+(\d+)\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/);
+  const bareRelative = normalized.match(/^\s*(\d+)\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\s*$/);
 
-  if (relative) {
-    const amount = Number(relative[2]);
-    const unit = relative[3];
+  if (relative || bareRelative) {
+    const amount = Number(relative ? relative[2] : bareRelative?.[1]);
+    const unit = relative ? relative[3] : (bareRelative?.[2] || "");
     if (Number.isFinite(amount) && amount > 0) {
       const deltaMs =
         /day/.test(unit) ? amount * 24 * 60 * 60 * 1000 :
