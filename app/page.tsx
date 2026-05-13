@@ -382,8 +382,9 @@ export default function HomePage() {
         {sortedItems.map((item) => {
           const timeState = item.kind === "timeline" ? timelineState(item.due_at) : null;
           const isTimelineExpired = item.kind === "timeline" && !item.checked && Boolean(timeState?.done);
+          const isDone = Boolean(item.checked);
           return (
-          <article key={item.id} className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}`}>
+          <article key={item.id} className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}${isDone ? " item-done" : ""}`}>
             <div className="itemHead">
               <span className="kind">{item.kind}</span>
               <div className="actions">

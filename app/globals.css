@@ -104,6 +104,15 @@ textarea { min-height: 100px; resize: vertical; }
   box-shadow: 0 0 0 1px rgba(201, 52, 52, 0.2), 0 10px 24px rgba(40, 54, 74, 0.08);
   animation: overduePulse 1.8s ease-in-out infinite;
 }
+.item-done {
+  border-color: #2f9e66;
+  background: #f4fff8;
+  box-shadow: 0 0 0 1px rgba(47, 158, 102, 0.22), 0 10px 24px rgba(40, 54, 74, 0.08);
+}
+.item-done .kind,
+.item-done h3 {
+  color: #1f6f48;
+}
 
 .itemHead {
   display: flex;
