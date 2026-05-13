@@ -64,6 +64,15 @@ export function inferContextLabels(text: string, kind: ItemKind): string[] {
     if (/\b(idea|testing|thought|hypothesis)\b/.test(lower)) inferred.push("idea");
   }
 
+  const sourceNameMatch =
+    lower.match(/\bnote from\s+([a-z][a-z0-9_-]{1,20})\b/) ||
+    lower.match(/\bfrom\s+([a-z][a-z0-9_-]{1,20})\b/) ||
+    lower.match(/\b([a-z][a-z0-9_-]{1,20})\s+(said|called|told|asked|shared)\b/);
+  const sourceName = sourceNameMatch?.[1];
+  if (sourceName && !/^(note|task|timer|reminder|the|this|that)$/.test(sourceName)) {
+    inferred.push(sourceName);
+  }
+
   return [...new Set(inferred.map((t) => slugLabel(t)).filter(Boolean))];
 }
 

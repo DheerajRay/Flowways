@@ -54,6 +54,14 @@ describe("classifier fallback", () => {
     expect(c.kind).toBe("workflow");
     expect(c.workflow_status).toBe("Backlog");
   });
+
+  it("infers person/source tags from note phrasing", () => {
+    const c = fallbackClassify("note from jj, called to collect camera", "auto", base);
+    expect(c.labels).toContain("jj");
+
+    const d = fallbackClassify("jj said to collect something", "auto", base);
+    expect(d.labels).toContain("jj");
+  });
 });
 
 

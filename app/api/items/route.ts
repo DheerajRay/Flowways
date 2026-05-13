@@ -37,6 +37,23 @@ function parseListFromText(value: string): string[] {
   return [];
 }
 
+function isLikelySingleListItem(value: string): string | null {
+  const source = value.trim();
+  if (!source) return null;
+  if (source.includes(",") || source.includes(";") || source.includes("\n")) return null;
+  if (/\d+\.\s+/.test(source)) return null;
+  if (source.length > 28) return null;
+  if (/\b(remind|timer|today|tomorrow|next week|am|pm|:)\b/i.test(source)) return null;
+  return source;
+}
+
+function hasShoppingContext(candidate: { title?: string | null; body?: string | null; labels?: string[] | null }): boolean {
+  const labels = (candidate.labels || []).map((l) => l.toLowerCase());
+  if (labels.includes("shopping") || labels.includes("grocery")) return true;
+  const text = `${candidate.title || ""} ${candidate.body || ""}`.toLowerCase();
+  return /\b(shopping|grocery|groceries|milk|eggs|bread|vegetable|fruit|tomato|onion)\b/.test(text);
+}
+
 function mergeChecklistBody(existingBody: string, incomingItems: string[]): string {
   const existingLines = existingBody
     .split("\n")
@@ -149,6 +166,39 @@ export async function POST(request: Request) {
 
         if (!openChecklistsResult.error && openChecklistsResult.data?.length) {
           const open = openChecklistsResult.data;
+
+          if (!incomingList.length) {
+            const single = isLikelySingleListItem(payload.sourceText);
+            const shoppingCandidate = single
+              ? open.find((candidate) => hasShoppingContext(candidate))
+              : null;
+            if (shoppingCandidate) {
+              const mergedBody = mergeChecklistBody(shoppingCandidate.body || "", [single!]);
+              const mergedResult = await auth.supabase
+                .from("items")
+                .update({
+                  body: mergedBody,
+                  updated_at: new Date().toISOString()
+                })
+                .eq("id", shoppingCandidate.id)
+                .eq("user_id", auth.user.id)
+                .select("*")
+                .single();
+
+              if (!mergedResult.error) {
+                return NextResponse.json({
+                  item: mergedResult.data,
+                  classification: {
+                    ...classification,
+                    reason: `${classification.reason} | auto-merged single item into shopping checklist`
+                  },
+                  merged: true,
+                  mergedIntoId: shoppingCandidate.id
+                });
+              }
+            }
+          }
+
           const scored = open
             .map((candidate) => ({
               candidate,
