@@ -9,7 +9,7 @@ function normalizeListLine(value: string): string {
     .toLowerCase()
     .replace(/^[-*\d.)\s]+/, "")
     .replace(/^\[( |x)\]\s*/i, "")
-    .replace(/[^\w\s-]/g, "")
+    .replace(/[.,!?;:()[\]{}"']/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -63,6 +63,14 @@ function mergeChecklistBody(existingBody: string, incomingItems: string[]): stri
   return existingEntries.map((entry) => `- [${entry.checked ? "x" : " "}] ${entry.text}`).join("\n");
 }
 
+function toChecklistMarkdown(items: string[]): string {
+  return items
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => `- [ ] ${item}`)
+    .join("\n");
+}
+
 const GENERIC_LABELS = new Set(["personal", "work", "idea", "list", "task"]);
 
 function getSpecificOverlap(labelsA: string[], labelsB: string[]): string[] {
@@ -114,6 +122,9 @@ export async function POST(request: Request) {
 
     if (item.kind === "checklist") {
       const incomingList = parseListFromText(payload.sourceText);
+      if (incomingList.length) {
+        item.body = toChecklistMarkdown(incomingList);
+      }
       if (incomingList.length) {
         const openChecklistsResult = await auth.supabase
           .from("items")

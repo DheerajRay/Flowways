@@ -324,6 +324,14 @@ export default function HomePage() {
       return lines.map((line) => ({ text: line.replace(/^[-*]\s+/, ""), checked: false }));
     }
 
+    const splitByDelimiters = normalized
+      .split(/[;,]/)
+      .map((token) => token.trim())
+      .filter(Boolean);
+    if (splitByDelimiters.length >= 2) {
+      return splitByDelimiters.map((text) => ({ text, checked: false }));
+    }
+
     return [];
   }
 
