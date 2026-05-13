@@ -520,6 +520,10 @@ export default function HomePage() {
       </header>
 
       <section className="capture">
+        <div className={`pixelPal${busy ? " isBusy" : ""}`} aria-live="polite" aria-label={busy ? "Classifying task..." : "Idle"}>
+          <span className="pixelPalFace" aria-hidden="true">◕‿◕</span>
+          {busy ? <span className="pixelPalText">Classifying...</span> : null}
+        </div>
         <div className="captureBar">
           <input id="captureInput" value={sourceText} onChange={(event) => setSourceText(event.target.value)} placeholder="Add task | Search" />
           <div className="captureActions">
