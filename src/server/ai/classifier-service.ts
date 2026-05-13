@@ -65,6 +65,7 @@ export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | 
     const isIdeaLike = /\b(testing\b|test idea\b|idea\b|thought\b|hypothesis\b|explore\b)\b/i.test(text);
     const hasChecklistMarkers = /^(\[\s?\]|-|todo\b|fix\b|call\b|email\b|finish\b|buy\b|pick up\b)/i.test(text);
     const reminderLike = /\b(remind|reminder|due|tomorrow|today|next week|in\s+\d+\s*(min|mins|minute|minutes|hr|hrs|hour|hours|day|days))\b/i.test(text);
+    const timeLike = /\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b\d{2}:\d{2}\b/i.test(text);
 
     let refinedKind = parsed.kind;
     let refinedBody = parsed.body;
@@ -76,8 +77,10 @@ export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | 
       refinedReason = `${parsed.reason} | post-rule: idea-like input mapped to journal`;
     }
 
-    if (modeHint === "auto" && reminderLike) {
-      const parsedDueAt = parsed.due_at || parseDueAt(text);
+    const inferredDueAt = parsed.due_at || parseDueAt(text);
+
+    if (modeHint === "auto" && (reminderLike || timeLike || parsed.kind === "timeline")) {
+      const parsedDueAt = inferredDueAt;
       if (parsedDueAt) {
         refinedKind = "timeline";
         refinedReason = `${refinedReason} | post-rule: reminder-like input mapped to timeline`;
@@ -90,7 +93,7 @@ export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | 
       ...parsed,
       kind: refinedKind,
       body: refinedBody,
-      due_at: modeHint === "auto" && reminderLike ? (parsed.due_at || parseDueAt(text)) : parsed.due_at,
+      due_at: modeHint === "auto" && (reminderLike || timeLike || parsed.kind === "timeline") ? inferredDueAt : parsed.due_at,
       labels: finalLabels,
       reason: refinedReason
     };

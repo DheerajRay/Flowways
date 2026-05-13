@@ -16,6 +16,7 @@ describe("classifier fallback", () => {
     expect(parseDueAt("tomorrow 3pm", base)).toBeTruthy();
     expect(parseDueAt("remind me in 15 minutes", base)).toBeTruthy();
     expect(parseDueAt("check on rex at 4 pm", base)).toBeTruthy();
+    expect(parseDueAt("check on rex at 16:30", base)).toBeTruthy();
   });
 
   it("classifies timeline items", () => {

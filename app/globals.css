@@ -194,10 +194,6 @@ textarea { min-height: 100px; resize: vertical; }
   color: #9f2b2b;
   font-weight: 700;
 }
-.timeActions {
-  display: flex;
-  gap: 8px;
-}
 
 .authGate {
   min-height: 100vh;

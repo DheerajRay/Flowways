@@ -395,11 +395,6 @@ export default function HomePage() {
                       />
                       <span>{item.checked ? "Completed" : (timeState?.label || "No due time set")}</span>
                     </label>
-                    <div className="timeActions">
-                      <button type="button" onClick={() => updateItem(item.id, { checked: true })}>Mark done</button>
-                      <button type="button" onClick={() => updateItem(item.id, { dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() })}>Due +1 day</button>
-                      <button type="button" onClick={() => updateItem(item.id, { dueAt: null })}>Clear Due</button>
-                    </div>
                   </div>
                 ) : (
                   item.body ? <p>{item.body}</p> : null

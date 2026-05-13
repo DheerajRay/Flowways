@@ -37,6 +37,10 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - time-only reminders like `Check on Rex at 4 PM` now resolve to `timeline` with day rollover when the same-day time has already passed.
 - timeline cards are now prioritized in feed ordering when overdue, with visual alert styling until marked done.
 - timeline cards show a live due-state countdown and clearer completion state text.
+- Timeline parsing coverage extended:
+- AI timeline outputs with missing `due_at` now get deterministic due-date backfill from input text.
+- 24-hour time expressions (for example `16:30`) are now parsed for due time inference.
+- Timeline card controls simplified by removing duplicate bottom action buttons and keeping top-level actions plus inline completion indicator.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.

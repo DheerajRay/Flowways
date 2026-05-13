@@ -113,6 +113,17 @@ export function parseDueAt(text: string, baseDate = new Date()): string | null {
     return result.toISOString();
   }
 
+  const tm24 = normalized.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+  if (tm24) {
+    const h = Number(tm24[1]);
+    const m = Number(tm24[2]);
+    result.setHours(h, m, 0, 0);
+    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && result.getTime() <= baseDate.getTime()) {
+      result.setDate(result.getDate() + 1);
+    }
+    return result.toISOString();
+  }
+
   if (/\b(today|tomorrow|next week)\b/.test(normalized) || /\b20\d{2}-\d{2}-\d{2}\b/.test(normalized)) {
     return result.toISOString();
   }
