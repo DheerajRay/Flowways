@@ -110,29 +110,32 @@ export default function HomePage() {
     if (!sourceText.trim() || authRequired) return;
     setBusy(true);
     setSubmitMessage("");
+    try {
+      const response = await fetch("/api/items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sourceText, modeHint: "auto", clientNow: new Date().toISOString() })
+      });
 
-    const response = await fetch("/api/items", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sourceText, modeHint: "auto", clientNow: new Date().toISOString() })
-    });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        setSubmitMessage(body.error || `Save failed (${response.status}).`);
+        return;
+      }
 
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({}));
-      setSubmitMessage(body.error || `Save failed (${response.status}).`);
+      const data = await response.json();
+      setSubmitMessage(
+        data.merged
+          ? `Merged into existing checklist.`
+          : `Saved as ${data.classification.kind}: ${data.classification.title}`
+      );
+      setSourceText("");
+      await loadItems();
+    } catch {
+      setSubmitMessage("Save failed due to a network or server error.");
+    } finally {
       setBusy(false);
-      return;
     }
-
-    const data = await response.json();
-    setSubmitMessage(
-      data.merged
-        ? `Merged into existing checklist.`
-        : `Saved as ${data.classification.kind}: ${data.classification.title}`
-    );
-    setSourceText("");
-    await loadItems();
-    setBusy(false);
   }
 
   async function updateItem(id: string, patch: Record<string, unknown>) {
@@ -272,21 +275,22 @@ export default function HomePage() {
     const normalized = body.trim();
     if (!normalized) return [];
 
-    const markdownMatches = normalized.match(/^- \[( |x)\] .+$/gim);
-    if (markdownMatches?.length) {
-      return markdownMatches.map((line) => {
-        const checked = /\[x\]/i.test(line);
-        const text = line.replace(/^- \[( |x)\]\s+/i, "").trim();
-        return { text, checked };
-      });
+    const lines = normalized.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const markdownLines = lines.filter((line) => /^- \[( |x)\]\s+/i.test(line));
+    if (markdownLines.length && markdownLines.length === lines.length) {
+      return markdownLines.map((line) => ({
+        checked: /\[x\]/i.test(line),
+        text: line.replace(/^- \[( |x)\]\s+/i, "").trim()
+      }));
     }
 
-    const numberedMatches = normalized.match(/\d+\.\s+[^0-9]+(?=(\d+\.\s+)|$)/g);
-    if (numberedMatches?.length) {
-      return numberedMatches.map((entry) => ({ text: entry.replace(/^\d+\.\s+/, "").trim(), checked: false }));
+    const numberedInline = [...normalized.matchAll(/\d+\.\s+(.+?)(?=(?:\s+\d+\.\s+)|$)/g)]
+      .map((match) => (match[1] || "").trim())
+      .filter(Boolean);
+    if (numberedInline.length >= 2) {
+      return numberedInline.map((text) => ({ text, checked: false }));
     }
 
-    const lines = normalized.split("\n").map((l) => l.trim()).filter(Boolean);
     if (lines.length > 1) {
       return lines.map((line) => ({ text: line.replace(/^[-*]\s+/, ""), checked: false }));
     }

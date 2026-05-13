@@ -101,6 +101,15 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - prevents unrelated lists from merging just because of broad tags.
 - Merge controls visibility tightened:
 - checklist `Merge with existing list...` UI now appears only for ambiguous lists with actual candidate targets.
+- Save-button loading hang mitigation:
+- capture submit flow now uses guarded `try/catch/finally` so `Saving...` state is always cleared on success/error paths.
+- Checklist parser hardening for edit/save stability:
+- line-based markdown checkbox parsing and safer numbered-list extraction to reduce row concatenation/corruption during checklist edits.
+
+### Known Issues (From External Smoke Report - 2026-05-13)
+- Checklist edit corruption and checklist row concatenation were reported by external smoke testing.
+- A parser/update hardening patch has been applied, and targeted retest is required to confirm full resolution.
+- Tag-click filtering remains unimplemented by design in current UI and is tracked as a future enhancement.
 
 ### Files
 - `app/api/items/[id]/route.ts`
@@ -115,6 +124,8 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - `docs/branching-and-release-policy.md`
 - `tests/unit/classifier.test.ts`
 - `app/globals.css`
+- `tests/smoke/scenarios/smoke-test-scenarios.md`
+- `tests/smoke/results/flowways_full_test_report.md`
 
 ## [2026-05-13] - CRUD + UI iteration + auth polish
 
