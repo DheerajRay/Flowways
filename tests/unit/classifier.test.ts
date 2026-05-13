@@ -17,6 +17,12 @@ describe("classifier fallback", () => {
     expect(parseDueAt("remind me in 15 minutes", base)).toBeTruthy();
     expect(parseDueAt("check on rex at 4 pm", base)).toBeTruthy();
     expect(parseDueAt("check on rex at 16:30", base)).toBeTruthy();
+
+    const localTime = parseDueAt("check on baby at 4 pm", base);
+    expect(localTime).toBeTruthy();
+    const deltaHours = (new Date(localTime!).getTime() - base.getTime()) / (60 * 60 * 1000);
+    expect(deltaHours).toBeGreaterThan(3.5);
+    expect(deltaHours).toBeLessThan(4.5);
   });
 
   it("classifies timeline items", () => {

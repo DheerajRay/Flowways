@@ -41,6 +41,9 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - AI timeline outputs with missing `due_at` now get deterministic due-date backfill from input text.
 - 24-hour time expressions (for example `16:30`) are now parsed for due time inference.
 - Timeline card controls simplified by removing duplicate bottom action buttons and keeping top-level actions plus inline completion indicator.
+- Timeline acknowledgement and due-time consistency improved:
+- timeline cards now rely only on top action buttons (`Done`, `Edit`, `Delete`) and no longer show an extra checkbox acknowledgment control.
+- timeline `due_at` now prefers deterministic parser output over AI-provided dates for reminder/time inputs, preventing stale/far-future mismatches.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.

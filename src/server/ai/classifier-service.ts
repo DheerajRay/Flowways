@@ -77,7 +77,8 @@ export async function classifyWithAiOrFallback(text: string, modeHint: "auto" | 
       refinedReason = `${parsed.reason} | post-rule: idea-like input mapped to journal`;
     }
 
-    const inferredDueAt = parsed.due_at || parseDueAt(text);
+    const deterministicDueAt = parseDueAt(text);
+    const inferredDueAt = deterministicDueAt || parsed.due_at;
 
     if (modeHint === "auto" && (reminderLike || timeLike || parsed.kind === "timeline")) {
       const parsedDueAt = inferredDueAt;

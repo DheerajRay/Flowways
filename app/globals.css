@@ -190,9 +190,14 @@ textarea { min-height: 100px; resize: vertical; }
   display: grid;
   gap: 10px;
 }
-.item-timeline-alert .checkRow span {
+.timelineStatus {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #29486f;
+}
+.item-timeline-alert .timelineStatus {
   color: #9f2b2b;
-  font-weight: 700;
 }
 
 .authGate {

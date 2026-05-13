@@ -387,14 +387,7 @@ export default function HomePage() {
                 ) : item.kind === "timeline" ? (
                   <div className="timelineBlock">
                     {item.body ? <p>{item.body}</p> : null}
-                    <label className="checkRow">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(item.checked)}
-                        onChange={() => updateItem(item.id, { checked: !item.checked })}
-                      />
-                      <span>{item.checked ? "Completed" : (timeState?.label || "No due time set")}</span>
-                    </label>
+                    <p className="timelineStatus">{item.checked ? "Completed" : (timeState?.label || "No due time set")}</p>
                   </div>
                 ) : (
                   item.body ? <p>{item.body}</p> : null
