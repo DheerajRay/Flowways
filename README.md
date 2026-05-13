@@ -27,7 +27,9 @@ FlowWays is an AI-assisted task memory application built on Next.js App Router, 
 
 ## Environment
 
-Copy `.env.local.example` to `.env.local` and set:`n`n- `NEXT_PUBLIC_SUPABASE_URL`
+Copy `.env.local.example` to `.env.local` and set:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `OPENAI_API_KEY`
 - optional `OPENAI_CLASSIFIER_MODEL`
@@ -81,13 +83,11 @@ Automate these as scripted checks in local runs and CI-adjacent validation.
 
 ## Git and Versioning
 
-See docs/git-versioning-and-rollback.md for git connection setup, SemVer release tags, and rollback workflow.
+See `docs/git-versioning-and-rollback.md` for git connection setup, SemVer release tags, and rollback workflow.
+See `docs/branching-and-release-policy.md` for branch strategy, release flow, and rollback governance.
 
-
-Environment template with inline retrieval instructions: .env.local.example.
-
-
-Vercel setup guide: docs/vercel-setup.md.
+Environment template with inline retrieval instructions: `.env.local.example`.
+Vercel setup guide: `docs/vercel-setup.md`.
 
 
 ## Supabase Auth Setup (Email + Password Only)
