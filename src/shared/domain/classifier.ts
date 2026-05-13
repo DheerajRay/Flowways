@@ -195,7 +195,8 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
     body: kind === "journal" ? clean : "",
     labels: (() => {
       const normalized = normalizeGeneratedLabels(extractLabels(clean), clean);
-      return normalized.length ? normalized : inferContextLabels(clean, kind);
+      const inferred = inferContextLabels(clean, kind);
+      return [...new Set([...normalized, ...inferred])];
     })(),
     due_at: dueAt,
     workflow_status: workflowStatus,

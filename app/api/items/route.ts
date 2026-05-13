@@ -154,51 +154,51 @@ export async function POST(request: Request) {
       if (incomingList.length) {
         item.body = toChecklistMarkdown(incomingList);
       }
-      if (incomingList.length) {
-        const openChecklistsResult = await auth.supabase
-          .from("items")
-          .select("id,title,body,labels,updated_at")
-          .eq("user_id", auth.user.id)
-          .eq("kind", "checklist")
-          .eq("checked", false)
-          .order("updated_at", { ascending: false })
-          .limit(20);
+      const openChecklistsResult = await auth.supabase
+        .from("items")
+        .select("id,title,body,labels,updated_at")
+        .eq("user_id", auth.user.id)
+        .eq("kind", "checklist")
+        .eq("checked", false)
+        .order("updated_at", { ascending: false })
+        .limit(20);
 
-        if (!openChecklistsResult.error && openChecklistsResult.data?.length) {
-          const open = openChecklistsResult.data;
+      if (!openChecklistsResult.error && openChecklistsResult.data?.length) {
+        const open = openChecklistsResult.data;
 
-          if (!incomingList.length) {
-            const single = isLikelySingleListItem(payload.sourceText);
-            const shoppingCandidate = single
-              ? open.find((candidate) => hasShoppingContext(candidate))
-              : null;
-            if (shoppingCandidate) {
-              const mergedBody = mergeChecklistBody(shoppingCandidate.body || "", [single!]);
-              const mergedResult = await auth.supabase
-                .from("items")
-                .update({
-                  body: mergedBody,
-                  updated_at: new Date().toISOString()
-                })
-                .eq("id", shoppingCandidate.id)
-                .eq("user_id", auth.user.id)
-                .select("*")
-                .single();
+        if (!incomingList.length) {
+          const single = isLikelySingleListItem(payload.sourceText);
+          const shoppingCandidate = single
+            ? open.find((candidate) => hasShoppingContext(candidate))
+            : null;
+          if (shoppingCandidate) {
+            const mergedBody = mergeChecklistBody(shoppingCandidate.body || "", [single!]);
+            const mergedResult = await auth.supabase
+              .from("items")
+              .update({
+                body: mergedBody,
+                updated_at: new Date().toISOString()
+              })
+              .eq("id", shoppingCandidate.id)
+              .eq("user_id", auth.user.id)
+              .select("*")
+              .single();
 
-              if (!mergedResult.error) {
-                return NextResponse.json({
-                  item: mergedResult.data,
-                  classification: {
-                    ...classification,
-                    reason: `${classification.reason} | auto-merged single item into shopping checklist`
-                  },
-                  merged: true,
-                  mergedIntoId: shoppingCandidate.id
-                });
-              }
+            if (!mergedResult.error) {
+              return NextResponse.json({
+                item: mergedResult.data,
+                classification: {
+                  ...classification,
+                  reason: `${classification.reason} | auto-merged single item into shopping checklist`
+                },
+                merged: true,
+                mergedIntoId: shoppingCandidate.id
+              });
             }
           }
+        }
 
+        if (incomingList.length) {
           const scored = open
             .map((candidate) => ({
               candidate,

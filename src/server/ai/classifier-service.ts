@@ -111,7 +111,8 @@ export async function classifyWithAiOrFallback(
       refinedReason = `${refinedReason} | post-rule: structured list mapped to checklist`;
     }
 
-    const finalLabels = normalizedLabels.length ? normalizedLabels : inferContextLabels(text, refinedKind);
+    const inferredLabels = inferContextLabels(text, refinedKind);
+    const finalLabels = [...new Set([...normalizedLabels, ...inferredLabels])];
 
     const finalDueAt = refinedKind === "timeline"
       ? (deterministicDueAt || parsed.due_at)
