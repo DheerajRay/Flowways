@@ -87,6 +87,8 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - Classification guardrail for list-vs-workflow:
 - structured multi-item lists (numbered/bulleted) now default to `checklist` unless strong workflow markers are present.
 - prevents list captures like `1. ... 2. ... 3. ...` from being misclassified as workflow due to isolated action verbs.
+- Checklist merge control visibility:
+- merge selector/action now appears on all open checklist cards when at least one other open checklist exists.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.

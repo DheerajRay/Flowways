@@ -45,7 +45,6 @@ export default function HomePage() {
     Review: "review",
     Done: "done"
   };
-  const genericLabels = new Set(["personal", "work", "idea", "list", "task"]);
 
   async function loadItems() {
     const response = await fetch("/api/items", { cache: "no-store" });
@@ -266,13 +265,7 @@ export default function HomePage() {
   function shouldShowMergeControls(item: DbItem): boolean {
     if (item.kind !== "checklist" || item.checked) return false;
     const candidates = items.filter((candidate) => candidate.kind === "checklist" && !candidate.checked && candidate.id !== item.id);
-    if (!candidates.length) return false;
-
-    const hasSpecificLabels = (item.labels || []).some((label) => !genericLabels.has(label));
-    const title = (item.title || "").toLowerCase();
-    const ambiguousTitle = title === "simple list" || title === "item list" || title === "untitled item";
-
-    return ambiguousTitle || !hasSpecificLabels;
+    return candidates.length > 0;
   }
 
   function parseChecklistItems(body: string): { text: string; checked: boolean }[] {
