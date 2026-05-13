@@ -173,6 +173,17 @@ export default function HomePage() {
     setEditBody(item.body || "");
     setEditChecklistEntries(parseChecklistItems(item.body || item.title));
     setEditTimelineDueAt(item.due_at ? toDatetimeLocal(item.due_at) : "");
+    if (item.kind === "timeline" && item.due_at) {
+      const dueMs = new Date(item.due_at).getTime();
+      if (!Number.isNaN(dueMs)) {
+        const remainingMin = Math.max(1, Math.floor((dueMs - nowMs) / 60000));
+        setEditTimelineOffsetMin(String(remainingMin));
+      } else {
+        setEditTimelineOffsetMin("15");
+      }
+    } else {
+      setEditTimelineOffsetMin("15");
+    }
     const workflow = parseWorkflowBody(item.body || "");
     setEditWorkflowSummary(workflow.summary);
     setEditWorkflowComments(workflow.comments);
