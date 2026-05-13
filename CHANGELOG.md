@@ -84,6 +84,9 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - timeline edit now includes dedicated due-time controls (`datetime-local` and relative minutes apply).
 - workflow edit now includes summary + structured comment entries with add/remove support.
 - journal edit remains simple subject/details text editing.
+- Classification guardrail for list-vs-workflow:
+- structured multi-item lists (numbered/bulleted) now default to `checklist` unless strong workflow markers are present.
+- prevents list captures like `1. ... 2. ... 3. ...` from being misclassified as workflow due to isolated action verbs.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.

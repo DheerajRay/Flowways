@@ -71,6 +71,10 @@ export async function classifyWithAiOrFallback(
     const hasChecklistMarkers = /^(\[\s?\]|-|todo\b|fix\b|call\b|email\b|finish\b|buy\b|pick up\b)/i.test(text);
     const reminderLike = /\b(remind|reminder|due|tomorrow|today|next week|in\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days))\b/i.test(text);
     const timeLike = /\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b\d{2}:\d{2}\b/i.test(text);
+    const structuredListLike =
+      ((text.match(/\d+\.\s+[^0-9]+(?=(\d+\.\s+)|$)/g)?.length || 0) >= 2) ||
+      (text.split("\n").filter((line) => /^[-*]\s+/.test(line.trim())).length >= 2);
+    const hardWorkflowLike = /\b(blocked|review|in progress|handoff|dependency|milestone|jira|kanban)\b/i.test(text);
 
     let refinedKind = parsed.kind;
     let refinedTitle = parsed.title;
@@ -100,6 +104,11 @@ export async function classifyWithAiOrFallback(
       !/\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b\d{2}:\d{2}\b|\bin\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/i.test(refinedTitle)
     ) {
       refinedTitle = text.replace(/#[a-z0-9_-]+/gi, "").trim() || parsed.title;
+    }
+
+    if (modeHint === "auto" && structuredListLike && !hardWorkflowLike && refinedKind === "workflow") {
+      refinedKind = "checklist";
+      refinedReason = `${refinedReason} | post-rule: structured list mapped to checklist`;
     }
 
     const finalLabels = normalizedLabels.length ? normalizedLabels : inferContextLabels(text, refinedKind);
