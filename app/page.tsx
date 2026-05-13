@@ -10,6 +10,7 @@ interface DbItem {
   body: string;
   labels: string[];
   due_at: string | null;
+  created_at?: string;
   checked?: boolean;
   workflow_status?: "Backlog" | "Ready" | "In Progress" | "Review" | "Done" | null;
 }
@@ -30,6 +31,13 @@ export default function HomePage() {
   const [nowMs, setNowMs] = useState(Date.now());
   const [mergeTargetBySource, setMergeTargetBySource] = useState<Record<string, string>>({});
   const workflowSteps = ["Backlog", "Ready", "In Progress", "Review", "Done"] as const;
+  const workflowIcon: Record<(typeof workflowSteps)[number], "backlog" | "ready" | "progress" | "review" | "done"> = {
+    Backlog: "backlog",
+    Ready: "ready",
+    "In Progress": "progress",
+    Review: "review",
+    Done: "done"
+  };
   const genericLabels = new Set(["personal", "work", "idea", "list", "task"]);
 
   async function loadItems() {
@@ -242,6 +250,41 @@ export default function HomePage() {
     return { done: false, label: `Due in ${hours}h ${remMins}m` };
   }
 
+  function timelineProgress(item: DbItem): number {
+    if (!item.due_at) return 0;
+    const dueMs = new Date(item.due_at).getTime();
+    if (Number.isNaN(dueMs)) return 0;
+    const createdMs = item.created_at ? new Date(item.created_at).getTime() : nowMs - 60 * 60 * 1000;
+    const startMs = Number.isNaN(createdMs) ? nowMs - 60 * 60 * 1000 : createdMs;
+    const span = Math.max(dueMs - startMs, 1);
+    const elapsed = nowMs - startMs;
+    return Math.min(100, Math.max(0, (elapsed / span) * 100));
+  }
+
+  function formatTimeSpent(item: DbItem): string | null {
+    if (item.kind !== "workflow" || !item.created_at) return null;
+    const startMs = new Date(item.created_at).getTime();
+    if (Number.isNaN(startMs)) return null;
+    const endMs = item.checked ? new Date().getTime() : nowMs;
+    const deltaMin = Math.max(1, Math.floor((endMs - startMs) / 60000));
+    if (deltaMin < 60) return `${deltaMin}m spent`;
+    const hours = Math.floor(deltaMin / 60);
+    const mins = deltaMin % 60;
+    return mins ? `${hours}h ${mins}m spent` : `${hours}h spent`;
+  }
+
+  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "backlog" | "ready" | "progress" | "review" }) {
+    const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+    if (name === "done" || name === "save") return <svg {...common}><path d="M3 8.5l3 3L13 4.5" /></svg>;
+    if (name === "undo" || name === "cancel") return <svg {...common}><path d="M6 4L2.5 7.5 6 11" /><path d="M3 7.5h5.5A4.5 4.5 0 1 1 8.5 16" /></svg>;
+    if (name === "edit") return <svg {...common}><path d="M10.8 2.2l3 3-7.8 7.8-3.6.6.6-3.6z" /></svg>;
+    if (name === "delete") return <svg {...common}><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6" /></svg>;
+    if (name === "backlog") return <svg {...common}><path d="M11.5 8H4.2" /><path d="M6.9 5.3 4.2 8l2.7 2.7" /></svg>;
+    if (name === "ready") return <svg {...common}><path d="M5 4.2 11.8 8 5 11.8z" /></svg>;
+    if (name === "progress") return <svg {...common}><path d="M5.8 4v8M10.2 4v8" /></svg>;
+    return <svg {...common}><circle cx="8" cy="8" r="5.2" /><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none" /></svg>;
+  }
+
   const sortedItems = [...items].sort((a, b) => {
     const timelineRank = (item: DbItem) => {
       if (item.kind !== "timeline") return 3;
@@ -337,10 +380,10 @@ export default function HomePage() {
             <div className="itemHead">
               <span className="kind">{item.kind}</span>
               <div className="actions">
-                <button type="button" onClick={() => updateItem(item.id, { checked: !item.checked })}>{item.checked ? "Undo" : "Done"}</button>
-                {editingId === item.id ? <button type="button" onClick={() => saveEdit(item.id)}>Save</button> : <button type="button" onClick={() => startEdit(item)}>Edit</button>}
-                {editingId === item.id ? <button type="button" onClick={() => setEditingId(null)}>Cancel</button> : null}
-                <button type="button" className="danger" onClick={() => deleteItem(item.id)}>Delete</button>
+                <button type="button" className="iconAction" aria-label={item.checked ? "Undo" : "Done"} title={item.checked ? "Undo" : "Done"} onClick={() => updateItem(item.id, { checked: !item.checked })}><Icon name={item.checked ? "undo" : "done"} /></button>
+                {editingId === item.id ? <button type="button" className="iconAction" aria-label="Save" title="Save" onClick={() => saveEdit(item.id)}><Icon name="save" /></button> : <button type="button" className="iconAction" aria-label="Edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" /></button>}
+                {editingId === item.id ? <button type="button" className="iconAction" aria-label="Cancel" title="Cancel" onClick={() => setEditingId(null)}><Icon name="cancel" /></button> : null}
+                <button type="button" className="iconAction danger" aria-label="Delete" title="Delete" onClick={() => deleteItem(item.id)}><Icon name="delete" /></button>
               </div>
             </div>
 
@@ -371,15 +414,17 @@ export default function HomePage() {
                 ) : item.kind === "workflow" ? (
                   <div className="workflowBlock">
                     {item.body ? <p>{item.body}</p> : null}
-                    <div className="statusRail">
+                    <div className="workflowRail">
                       {workflowSteps.map((step) => (
                         <button
                           type="button"
                           key={`${item.id}-${step}`}
-                          className={item.workflow_status === step ? "statusChip active" : "statusChip"}
+                          className={item.workflow_status === step ? "workflowDot active" : "workflowDot"}
+                          aria-label={step}
+                          title={step}
                           onClick={() => moveWorkflowStatus(item, step)}
                         >
-                          {step}
+                          <Icon name={workflowIcon[step]} />
                         </button>
                       ))}
                     </div>
@@ -388,6 +433,15 @@ export default function HomePage() {
                   <div className="timelineBlock">
                     {item.body ? <p>{item.body}</p> : null}
                     <p className="timelineStatus">{item.checked ? "Completed" : (timeState?.label || "No due time set")}</p>
+                    {!item.checked && item.due_at && !timeState?.done ? (
+                      <div className="dueRailRow" aria-label="Due progress">
+                        <span className="dueLabel">Due Time</span>
+                        <div className="dueRail" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(timelineProgress(item))}>
+                          <span className="dueRailFill" style={{ width: `${timelineProgress(item)}%` }} />
+                        </div>
+                      </div>
+                    ) : null}
+                    {!item.checked && timeState?.done ? <span className="overduePill">OVER DUE</span> : null}
                   </div>
                 ) : (
                   item.body ? <p>{item.body}</p> : null
@@ -395,9 +449,10 @@ export default function HomePage() {
               </>
             )}
 
-            <div className="meta">
-              {item.due_at ? <span>{new Date(item.due_at).toLocaleString()}</span> : null}
-              {item.labels?.map((label) => <span key={label}>#{label}</span>)}
+            <div className="meta metaRow">
+              {item.due_at ? <span className="dateChip">{new Date(item.due_at).toLocaleString()}</span> : item.created_at ? <span className="dateChip">{new Date(item.created_at).toLocaleString()}</span> : null}
+              {item.kind === "workflow" && formatTimeSpent(item) ? <span className="dateChip">{formatTimeSpent(item)}</span> : null}
+              {item.labels?.map((label) => <span className="tagChip" key={label}>#{label}</span>)}
             </div>
             {shouldShowMergeControls(item) && (
               <div className="mergeRow">

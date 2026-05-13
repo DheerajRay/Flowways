@@ -44,6 +44,11 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - Timeline acknowledgement and due-time consistency improved:
 - timeline cards now rely only on top action buttons (`Done`, `Edit`, `Delete`) and no longer show an extra checkbox acknowledgment control.
 - timeline `due_at` now prefers deterministic parser output over AI-provided dates for reminder/time inputs, preventing stale/far-future mismatches.
+- Mockup alignment pass (task cards):
+- replaced symbol text buttons with stable inline SVG icon actions for card controls and workflow status controls.
+- added card entrance/attention motion: subtle card-in animation and overdue timeline pulse (with reduced-motion fallback).
+- standardized metadata chips (`date` and `#tags`) for cleaner scanability.
+- added workflow `time spent` display in metadata based on item age.
 
 ### Fixed
 - Broken CRUD item actions in production by restoring proper dynamic route mounting for `/api/items/[id]`.

@@ -85,22 +85,24 @@ textarea { min-height: 100px; resize: vertical; }
   gap: 12px;
 }
 .item {
-  border: 1px solid var(--line);
-  border-left-width: 5px;
-  border-radius: 12px;
-  padding: 12px;
+  border: 2px solid #1d1d1d;
+  border-radius: 24px;
+  padding: 20px 22px;
   background: #fff;
   display: grid;
-  gap: 8px;
+  gap: 12px;
+  animation: cardIn 260ms ease-out;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
-.item-checklist { border-left-color: var(--checklist); }
-.item-journal { border-left-color: var(--journal); }
-.item-workflow { border-left-color: var(--workflow); }
-.item-timeline { border-left-color: var(--timeline); }
+.item-checklist { border-left: 2px solid #1d1d1d; }
+.item-journal { border-left: 2px solid #1d1d1d; }
+.item-workflow { border-left: 2px solid #1d1d1d; }
+.item-timeline { border-left: 2px solid #1d1d1d; }
 .item-timeline-alert {
-  border-color: #e39a9a;
-  background: linear-gradient(90deg, #fff6f6, #ffffff 24%);
-  box-shadow: 0 0 0 1px rgba(210, 79, 79, 0.18), 0 10px 24px rgba(40, 54, 74, 0.08);
+  border-color: #c93434;
+  background: #fff8f8;
+  box-shadow: 0 0 0 1px rgba(201, 52, 52, 0.2), 0 10px 24px rgba(40, 54, 74, 0.08);
+  animation: overduePulse 1.8s ease-in-out infinite;
 }
 
 .itemHead {
@@ -120,10 +122,21 @@ textarea { min-height: 100px; resize: vertical; }
   flex-wrap: wrap;
   gap: 8px;
 }
-.actions .danger {
-  border-color: #d9a5a5;
-  color: #8f2f2f;
-  background: #fff5f5;
+.iconAction {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 3px solid #111;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 800;
+}
+.iconAction.danger {
+  color: #111;
+  background: #fff;
 }
 .item h3 { margin: 0; font-size: 28px; }
 .item h3 { margin: 0; font-size: 22px; line-height: 1.2; }
@@ -135,6 +148,23 @@ textarea { min-height: 100px; resize: vertical; }
   gap: 8px;
   font-size: 12px;
   color: var(--muted);
+}
+.metaRow {
+  align-items: center;
+  font-size: 13px;
+}
+.dateChip,
+.tagChip {
+  border: 1px solid #202020;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 12px;
+  line-height: 1;
+  background: #fff;
+  color: #1f2e42;
+}
+.tagChip {
+  background: #f8f8f8;
 }
 .mergeRow {
   display: flex;
@@ -154,36 +184,45 @@ textarea { min-height: 100px; resize: vertical; }
 
 .checklistBlock {
   display: grid;
-  gap: 6px;
+  gap: 10px;
 }
 .checkRow {
-  display: grid;
-  grid-template-columns: 20px 1fr;
+  display: flex;
   gap: 8px;
-  align-items: start;
-  font-size: 15px;
+  align-items: center;
+  font-size: 16px;
 }
 .checkRow input {
-  margin-top: 3px;
+  margin-top: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
 }
 
 .workflowBlock {
   display: grid;
   gap: 10px;
 }
-.statusRail {
+.workflowRail {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
 }
-.statusChip {
+.workflowDot {
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 12px;
+  border: 2px solid #111;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 800;
+  background: #fff;
 }
-.statusChip.active {
-  background: #e7f0ff;
-  border-color: #9db8db;
+.workflowDot.active {
+  background: #111;
+  color: #fff;
 }
 
 .timelineBlock {
@@ -198,6 +237,48 @@ textarea { min-height: 100px; resize: vertical; }
 }
 .item-timeline-alert .timelineStatus {
   color: #9f2b2b;
+}
+.dueRailRow {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+.dueLabel {
+  font-size: 13px;
+  color: #333;
+}
+.dueRail {
+  width: 100%;
+  height: 8px;
+  background: #c9c9c9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.dueRailFill {
+  display: block;
+  height: 100%;
+  background: #111;
+}
+.overduePill {
+  justify-self: end;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  padding: 8px 16px;
+  font-weight: 700;
+}
+
+@keyframes overduePulse {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(201, 52, 52, 0.2), 0 10px 24px rgba(40, 54, 74, 0.08); }
+  50% { box-shadow: 0 0 0 2px rgba(201, 52, 52, 0.35), 0 14px 28px rgba(40, 54, 74, 0.12); }
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .authGate {
@@ -223,5 +304,5 @@ textarea { min-height: 100px; resize: vertical; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; }
+  * { transition: none !important; animation: none !important; }
 }
