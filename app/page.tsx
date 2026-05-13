@@ -453,7 +453,7 @@ export default function HomePage() {
       </section>
 
       <section className="feed" aria-label="Saved items">
-        {items.length === 0 ? <p className="empty">No items yet.</p> : null}
+        {sortedItems.length === 0 ? <p className="empty">No items yet.</p> : null}
         {sortedItems.map((item) => {
           const timeState = item.kind === "timeline" ? timelineState(item.due_at) : null;
           const isTimelineExpired = item.kind === "timeline" && !item.checked && Boolean(timeState?.done);
