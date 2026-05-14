@@ -580,7 +580,18 @@ export default function HomePage() {
           ) : null}
         </div>
         <div className="captureBar">
-          <input id="captureInput" value={sourceText} onChange={(event) => setSourceText(event.target.value)} placeholder="Add task | Search" />
+          <input
+            id="captureInput"
+            value={sourceText}
+            onChange={(event) => setSourceText(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter") return;
+              event.preventDefault();
+              if (busy || !sourceText.trim()) return;
+              void submitItem();
+            }}
+            placeholder="Add task | Search"
+          />
           <div className="modeActions" aria-label="Classification mode">
             <button type="button" className={`iconAction compact${captureMode === "auto" ? " active" : ""}`} aria-label="Auto mode" title="Auto mode" onClick={() => setCaptureMode("auto")}><Icon name="auto" /></button>
             <button type="button" className={`iconAction compact${captureMode === "timeline" ? " active" : ""}`} aria-label="Timeline mode" title="Timeline mode" onClick={() => setCaptureMode("timeline")}><Icon name="timeline" /></button>
