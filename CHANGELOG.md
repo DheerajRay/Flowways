@@ -6,6 +6,30 @@ Format follows Keep a Changelog style with practical engineering detail for this
 
 ## [Unreleased]
 
+## [2026-05-14] - Feed-scrolling shell + themed scrollbar + color tagging UI
+
+### Added
+- Color tagging controls in capture bar:
+- new color tag picker button and compact popover palette.
+- selected color tag is applied to newly created items (`color-red`, `color-blue`, `color-green`, `color-amber`, `color-violet`).
+- search now also supports color-filter behavior by reusing selected color when running search.
+- Color-aware card metadata:
+- color labels render as tag chips with inline swatches.
+- cards with a color label get a subtle left inset accent for faster scanability.
+
+### Changed
+- Feed shell scrolling model:
+- app shell now stays viewport-locked while only the task feed scrolls.
+- input/capture area remains pinned and visible during long-list navigation.
+- Scrollbar visual treatment:
+- feed scrollbar now uses FlowWays palette styling and appears visually side-hung instead of embedded in-card.
+- Task card header polish:
+- kind indicator now renders as icon + text label for faster type recognition.
+
+### Files
+- `app/page.tsx`
+- `app/globals.css`
+
 ## [2026-05-13] - Interaction bar + workflow timing semantics + smoke governance
 
 ### Added
