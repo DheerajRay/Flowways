@@ -75,6 +75,7 @@ export async function classifyWithAiOrFallback(
     const weekdayLike = /\b(next\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(text);
     const followupActionLike = /\b(remind|follow up|follow-up|connect|call|meet|check with|book|collect|pick up|pickup|drop off|dropoff)\b/i.test(text);
     const personLike = /\b(note from|from\s+[a-z][a-z0-9_-]{1,20}\b|[a-z][a-z0-9_-]{1,20}\s+(said|asked|called|told))\b/i.test(text);
+    const directedActionLike = /\b(collect|bring|send|share|review|prepare|fix|connect|call|meet|follow up|follow-up|book|pick up|pickup)\b/i.test(text);
     const structuredListLike =
       ((text.match(/\d+\.\s+[^0-9]+(?=(\d+\.\s+)|$)/g)?.length || 0) >= 2) ||
       (text.split("\n").filter((line) => /^[-*]\s+/.test(line.trim())).length >= 2);
@@ -112,6 +113,11 @@ export async function classifyWithAiOrFallback(
     if (modeHint === "auto" && structuredListLike && !hardWorkflowLike && refinedKind === "workflow") {
       refinedKind = "checklist";
       refinedReason = `${refinedReason} | post-rule: structured list mapped to checklist`;
+    }
+
+    if (modeHint === "auto" && refinedKind === "checklist" && personLike && directedActionLike && !structuredListLike) {
+      refinedKind = "workflow";
+      refinedReason = `${refinedReason} | post-rule: directed request mapped to workflow`;
     }
 
     const inferredLabels = inferContextLabels(text, refinedKind);

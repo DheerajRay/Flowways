@@ -72,6 +72,9 @@ describe("classifier fallback", () => {
     const c = fallbackClassify("Blocked on review", "auto", base);
     expect(c.kind).toBe("workflow");
     expect(c.workflow_status).toBe("Backlog");
+
+    const d = fallbackClassify("collect book from jj", "auto", base);
+    expect(d.kind).toBe("workflow");
   });
 
   it("infers person/source tags from note phrasing", () => {
