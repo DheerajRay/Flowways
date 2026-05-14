@@ -46,6 +46,7 @@ export function normalizeGeneratedLabels(labels: string[], text: string, memoryL
 export function inferContextLabels(text: string, kind: ItemKind): string[] {
   const lower = text.toLowerCase();
   const inferred: string[] = [];
+  const weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
 
   if (kind === "checklist") {
     if (/\b(egg|milk|onion|tomato|rice|bread|grocery|shopping|vegetable|fruit|brinjal|potato)\b/.test(lower)) {
@@ -83,6 +84,21 @@ export function inferContextLabels(text: string, kind: ItemKind): string[] {
       const token = phrase.replace(/\b(?:for|to|at|in)\s+/, "").trim();
       if (token && !stopwords.has(token)) inferred.push(token);
     }
+
+    for (const day of weekdays) {
+      if (new RegExp(`\\b${day}\\b`).test(lower)) inferred.push(day);
+    }
+  }
+
+  const topicalNouns = lower.match(/\b[a-z][a-z0-9_-]{2,}\b/g) || [];
+  const topicalStopwords = new Set([
+    "note", "notes", "task", "tasks", "asked", "said", "told", "about", "with", "from", "this", "that",
+    "the", "and", "for", "into", "onto", "remind", "reminder", "notification", "timeline", "journal",
+    "workflow", "checklist", "connect", "called", "call", "follow", "followup", "follow-up", "monday",
+    "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
+  ]);
+  for (const token of topicalNouns) {
+    if (!topicalStopwords.has(token)) inferred.push(token);
   }
 
   const sourceNameMatch =
@@ -119,6 +135,22 @@ export function parseDueAt(text: string, baseDate = new Date(), clientTimezoneOf
               amount * 60 * 1000;
       return new Date(baseDate.getTime() + deltaMs).toISOString();
     }
+  }
+
+  const weekdayMatch = normalized.match(/\b(next\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/);
+  let hasWeekday = false;
+  if (weekdayMatch) {
+    const weekdayMap: Record<string, number> = {
+      sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6
+    };
+    const targetDay = weekdayMap[weekdayMatch[2]];
+    const localBase = toLocalFrame(baseDate);
+    const baseDay = localBase.getUTCDay();
+    let daysAhead = (targetDay - baseDay + 7) % 7;
+    if (daysAhead === 0 || weekdayMatch[1]) daysAhead += 7;
+    result.setUTCDate(result.getUTCDate() + daysAhead);
+    result.setUTCHours(9, 0, 0, 0);
+    hasWeekday = true;
   }
 
   if (/\btoday\b/.test(normalized)) {
@@ -177,7 +209,7 @@ export function parseDueAt(text: string, baseDate = new Date(), clientTimezoneOf
     return fromLocalFrame(result).toISOString();
   }
 
-  if (/\b(today|tomorrow|next week)\b/.test(normalized) || /\b20\d{2}-\d{2}-\d{2}\b/.test(normalized)) {
+  if (/\b(today|tomorrow|next week)\b/.test(normalized) || /\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) || hasWeekday) {
     return fromLocalFrame(result).toISOString();
   }
 
@@ -187,6 +219,7 @@ export function parseDueAt(text: string, baseDate = new Date(), clientTimezoneOf
 function stripSyntax(text: string): string {
   return normalizeText(text)
     .replace(/\b(today|tomorrow|next week)\b/gi, "")
+    .replace(/\b(next\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/gi, "")
     .replace(/\b(in|after|for)\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/gi, "")
     .replace(/\b20\d{2}-\d{2}-\d{2}\b/g, "")
     .replace(/\b\d{1,2}(?::\d{2})?\s*(am|pm)\b/gi, "")
@@ -203,10 +236,14 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
   const isIdeaLike = IDEA_OR_NOTE_CUES.test(clean);
   const checklistSignals = Number(CHECKLIST_CUES.test(clean)) + Number(LIST_PATTERN.test(clean));
   const workflowSignals = Number(WORKFLOW_CUES.test(clean)) + Number(PROFESSIONAL_WORK_PATTERN.test(clean));
+  const temporalCue = /\b(today|tomorrow|next week|(next\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)|\d{1,2}(?::\d{2})?\s*(am|pm)|\d{2}:\d{2})\b/i.test(clean);
+  const followupActionCue = /\b(remind|follow up|follow-up|connect|call|meet|check with|book|collect|pick up|pickup|drop off|dropoff)\b/i.test(clean);
+  const personCue = /\b(note from|from\s+[a-z][a-z0-9_-]{1,20}\b|[a-z][a-z0-9_-]{1,20}\s+(said|asked|called|told))\b/i.test(clean);
 
   let kind: ItemKind = "checklist";
   if (modeHint !== "auto") kind = modeHint;
   else if (dueAt) kind = "timeline";
+  else if (temporalCue && (followupActionCue || personCue)) kind = "timeline";
   else if (isIdeaLike && checklistSignals === 0) kind = "journal";
   else if (workflowSignals > checklistSignals) kind = "workflow";
   else if (isJournal) kind = "journal";

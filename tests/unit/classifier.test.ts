@@ -36,6 +36,12 @@ describe("classifier fallback", () => {
     const deltaMin = Math.round((new Date(dueBySevenPm!).getTime() - morning.getTime()) / 60000);
     expect(deltaMin).toBeGreaterThanOrEqual(790);
     expect(deltaMin).toBeLessThanOrEqual(800);
+
+    const dueMonday = parseDueAt("jj asked to connect on monday", morning, 240);
+    expect(dueMonday).toBeTruthy();
+    const mondayLocal = new Date(new Date(dueMonday!).getTime() - 240 * 60000);
+    expect(mondayLocal.getUTCDay()).toBe(1);
+    expect(mondayLocal.getUTCHours()).toBe(9);
   });
 
   it("classifies timeline items", () => {
@@ -74,6 +80,20 @@ describe("classifier fallback", () => {
 
     const d = fallbackClassify("jj said to collect something", "auto", base);
     expect(d.labels).toContain("jj");
+  });
+
+  it("promotes follow-up weekday notes to timeline with useful tags", () => {
+    const baseMorning = new Date("2026-05-14T06:00:00-04:00");
+    const c = fallbackClassify("jj asked to connect on monday", "auto", baseMorning, 240);
+    expect(c.kind).toBe("timeline");
+    expect(c.due_at).toBeTruthy();
+    expect(c.labels).toContain("jj");
+    expect(c.labels).toContain("monday");
+  });
+
+  it("keeps topical tags like tub", () => {
+    const c = fallbackClassify("note on filtering the tub", "auto", base);
+    expect(c.labels).toContain("tub");
   });
 });
 
