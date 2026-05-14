@@ -1,5 +1,5 @@
 ﻿import { describe, expect, it } from "vitest";
-import { extractLabels, fallbackClassify, normalizeText, parseDueAt } from "@/shared/domain/classifier";
+import { curateLabels, extractLabels, fallbackClassify, normalizeText, parseDueAt } from "@/shared/domain/classifier";
 
 describe("classifier fallback", () => {
   const base = new Date("2026-04-24T12:00:00-04:00");
@@ -94,6 +94,23 @@ describe("classifier fallback", () => {
   it("keeps topical tags like tub", () => {
     const c = fallbackClassify("note on filtering the tub", "auto", base);
     expect(c.labels).toContain("tub");
+  });
+
+  it("curates noisy tags and canonicalizes action tags", () => {
+    const timeline = curateLabels("timeline", ["jj", "meeting", "connect", "monday", "are", "thought"]);
+    expect(timeline).toContain("jj");
+    expect(timeline).toContain("meeting");
+    expect(timeline).toContain("monday");
+    expect(timeline).not.toContain("connect");
+    expect(timeline).not.toContain("are");
+    expect(timeline).not.toContain("thought");
+
+    const journal = curateLabels("journal", ["thought", "philosophy", "humans", "machines", "are"]);
+    expect(journal).toContain("philosophy");
+    expect(journal).toContain("humans");
+    expect(journal).toContain("machines");
+    expect(journal).not.toContain("thought");
+    expect(journal).not.toContain("are");
   });
 });
 

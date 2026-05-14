@@ -5,6 +5,18 @@ const CHECKLIST_CUES = /^(\[\s?\]|-|todo\b|fix\b|call\b|email\b|finish\b|buy\b|p
 const LIST_PATTERN = /(^|\s)\d+[.)]\s+\w+/i;
 const PROFESSIONAL_WORK_PATTERN = /\b(config|proposal|doc|draft|review|project|launch|release|migration|workflow|handoff|brief|spec|ticket)\b/i;
 const IDEA_OR_NOTE_CUES = /\b(testing\b|test idea\b|idea\b|thought\b|hypothesis\b|explore\b)\b/i;
+const GENERIC_LABELS = new Set([
+  "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "in", "is", "it", "me", "my", "of", "on", "or", "that", "the", "this", "to", "was", "with",
+  "note", "notes", "task", "tasks", "item", "items", "journal", "timeline", "workflow", "checklist", "reminder", "notification", "timer", "thought"
+]);
+const ACTION_CANONICAL: Record<string, string> = {
+  connect: "meeting",
+  meeting: "meeting",
+  meet: "meeting",
+  call: "meeting",
+  followup: "meeting",
+  "follow-up": "meeting"
+};
 
 export function normalizeText(value: string): string {
   return String(value || "").trim().replace(/\s+/g, " ");
@@ -22,6 +34,47 @@ function slugLabel(value: string): string {
     .replace(/-+/g, "-")
     .replace(/[^a-z0-9-]/g, "")
     .replace(/^-|-$/g, "");
+}
+
+function prioritizeLabel(label: string, kind: ItemKind): number {
+  const weekday = /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday|today|tomorrow)$/.test(label);
+  const person = /^[a-z]{2,20}$/.test(label) && !GENERIC_LABELS.has(label);
+  const action = /^(meeting|collect|book|pickup|dropoff|release|review|fix|buy)$/.test(label);
+  const topic = !weekday && !action && !GENERIC_LABELS.has(label);
+
+  if (kind === "timeline") {
+    if (person) return 100;
+    if (action) return 90;
+    if (weekday) return 80;
+    if (topic) return 70;
+  } else if (kind === "journal") {
+    if (topic) return 90;
+    if (person) return 80;
+    if (weekday) return 70;
+  } else if (kind === "checklist") {
+    if (label === "shopping" || label === "grocery") return 100;
+    if (topic) return 80;
+    if (person) return 70;
+  } else {
+    if (action) return 95;
+    if (topic) return 85;
+    if (person) return 80;
+  }
+  return 10;
+}
+
+export function curateLabels(kind: ItemKind, labels: string[]): string[] {
+  const canonical = labels
+    .map((l) => slugLabel(l))
+    .filter(Boolean)
+    .map((l) => ACTION_CANONICAL[l] || l)
+    .filter((l) => !GENERIC_LABELS.has(l))
+    .filter((l) => l.length >= 2);
+
+  const deduped = [...new Set(canonical)];
+  const sorted = deduped.sort((a, b) => prioritizeLabel(b, kind) - prioritizeLabel(a, kind));
+  const max = kind === "timeline" ? 4 : 5;
+  return sorted.slice(0, max);
 }
 
 export function normalizeGeneratedLabels(labels: string[], text: string, memoryLabels: string[] = []): string[] {
@@ -263,7 +316,7 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
     labels: (() => {
       const normalized = normalizeGeneratedLabels(extractLabels(clean), clean);
       const inferred = inferContextLabels(clean, kind);
-      return [...new Set([...normalized, ...inferred])];
+      return curateLabels(kind, [...new Set([...normalized, ...inferred])]);
     })(),
     due_at: dueAt,
     workflow_status: workflowStatus,

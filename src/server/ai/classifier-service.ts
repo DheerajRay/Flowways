@@ -1,5 +1,5 @@
 ﻿import OpenAI from "openai";
-import { fallbackClassify, inferContextLabels, normalizeGeneratedLabels, normalizeText, parseDueAt } from "@/shared/domain/classifier";
+import { curateLabels, fallbackClassify, inferContextLabels, normalizeGeneratedLabels, normalizeText, parseDueAt } from "@/shared/domain/classifier";
 import { classificationResultSchema } from "@/shared/types/schemas";
 import type { ClassificationResult, ItemKind } from "@/shared/types/item";
 
@@ -120,6 +120,7 @@ export async function classifyWithAiOrFallback(
       const inferredFromAiText = inferContextLabels(`${parsed.title} ${parsed.body}`, refinedKind);
       finalLabels = [...new Set(inferredFromAiText)];
     }
+    finalLabels = curateLabels(refinedKind, finalLabels);
     if (refinedKind === "timeline") {
       const genericTimelineLabels = new Set(["reminder", "notification", "timeline", "timer", "task", "note", "item"]);
       finalLabels = finalLabels.filter((label) => !genericTimelineLabels.has(label));
