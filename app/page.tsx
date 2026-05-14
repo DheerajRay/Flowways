@@ -463,10 +463,10 @@ export default function HomePage() {
     if (name === "show") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><circle cx="8" cy="8" r="1.5" /></svg>;
     if (name === "auto") return <svg {...common}><path d="M8 2.8v10.4" /><path d="M2.8 8h10.4" /><circle cx="8" cy="8" r="1.6" /></svg>;
     if (name === "timeline") return <svg {...common}><circle cx="8" cy="8" r="5.5" /><path d="M8 5v3.2l2.2 1.2" /></svg>;
-    if (name === "workflow") return <svg {...common}><path d="M3 4.5h4M7 4.5l2 2M7 4.5l2-2" /><path d="M3 11.5h4M7 11.5l2 2M7 11.5l2-2" /><path d="M11 4.5v7" /></svg>;
+    if (name === "workflow") return <svg {...common}><circle cx="8" cy="8" r="6.1" /><path d="M5.2 6.8h5.6a.7.7 0 0 1 .7.7v3.4a.7.7 0 0 1-.7.7H5.2a.7.7 0 0 1-.7-.7V7.5a.7.7 0 0 1 .7-.7z" /><path d="M6.3 6.8V5.9a.9.9 0 0 1 .9-.9h1.6a.9.9 0 0 1 .9.9v.9" /></svg>;
     if (name === "journal") return <svg {...common}><path d="M4 2.8h7.5a1 1 0 0 1 1 1v8.4a1 1 0 0 1-1 1H4" /><path d="M4 2.8v10.4" /><path d="M6.2 5.6h4M6.2 8h4" /></svg>;
     if (name === "checklist") return <svg {...common}><path d="M6.5 5.2h5M6.5 8h5M6.5 10.8h5" /><path d="M3.2 5.2 4 6l1.1-1.2M3.2 8 4 8.8l1.1-1.2M3.2 10.8 4 11.6l1.1-1.2" /></svg>;
-    if (name === "color") return <svg {...common}><path d="M3.5 10.8a2 2 0 1 0 2 2h3.7a3.8 3.8 0 1 0-3.7-3.8V3.8" /><path d="M9.2 3.8h3.3M10.8 2.2v3.2" /></svg>;
+    if (name === "color") return <svg {...common}><circle cx="8" cy="8" r="6.1" /><path d="M6.2 9.8 9.9 6.1a1.1 1.1 0 0 1 1.6 1.6L7.8 11.4a1.4 1.4 0 0 1-1 .4H5.9v-.9c0-.4.1-.8.3-1.1z" /><circle cx="10.8" cy="6.8" r=".6" /></svg>;
     if (name === "backlog") return <svg {...common}><path d="M11.5 8H4.2" /><path d="M6.9 5.3 4.2 8l2.7 2.7" /></svg>;
     if (name === "ready") return <svg {...common}><path d="M5 4.2 11.8 8 5 11.8z" /></svg>;
     if (name === "progress") return <svg {...common}><path d="M5.8 4v8M10.2 4v8" /></svg>;
