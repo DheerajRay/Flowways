@@ -621,7 +621,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="feed" aria-label="Saved items">
+      <section className="feedShell" aria-label="Saved items">
+        <div className="feed">
+        <div className="feedCards">
         {sortedItems.length === 0 ? <p className="empty">No items yet.</p> : null}
         {sortedItems.map((item) => {
           const timeState = item.kind === "timeline" ? timelineState(item.due_at) : null;
@@ -866,6 +868,8 @@ export default function HomePage() {
           </article>
         );
         })}
+        </div>
+        </div>
       </section>
     </main>
   );

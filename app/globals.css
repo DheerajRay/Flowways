@@ -56,7 +56,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
 }
 
 .capture,
-.feed,
+.feedShell,
 .authCard {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -197,27 +197,34 @@ textarea {
 textarea { min-height: 100px; resize: vertical; }
 .message { min-height: 18px; margin: 0; color: #3f4f66; }
 
+.feedShell {
+  padding: 0;
+}
+
 .feed {
   display: grid;
-  gap: 12px;
   min-height: 92px;
   max-height: calc(100dvh - 250px);
   overflow-y: auto;
   overscroll-behavior: contain;
-  align-content: start;
   position: relative;
-  padding-right: 28px;
-  margin-right: -26px;
+  padding: 16px 14px 16px 16px;
+  margin-right: -6px;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: #8b8b8b #ece6d8;
+}
+.feedCards {
+  display: grid;
+  gap: 12px;
+  margin-right: 16px;
 }
 .feed::after {
   content: "";
   position: absolute;
   top: 10px;
   bottom: 10px;
-  right: 14px;
+  right: 10px;
   width: 1px;
   background: #d8d1bf;
   border-radius: 999px;
@@ -607,13 +614,19 @@ textarea { min-height: 100px; resize: vertical; }
   }
 
   .capture,
-  .feed {
+  .feedShell {
     padding: 10px;
     border-radius: 14px;
   }
 
   .feed {
+    padding: 0 0 0 0;
     max-height: calc(100dvh - 220px);
+  }
+
+  .feedCards {
+    margin-right: 10px;
+    padding: 10px 8px 10px 10px;
   }
 
   .pixelPal {
