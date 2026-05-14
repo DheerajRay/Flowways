@@ -72,6 +72,9 @@ export async function classifyWithAiOrFallback(
     const hasChecklistMarkers = /^(\[\s?\]|-|todo\b|fix\b|call\b|email\b|finish\b|buy\b|pick up\b)/i.test(text);
     const reminderLike = /\b(remind|reminder|due|tomorrow|today|next week|(in|after|for)\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days))\b/i.test(text);
     const timeLike = /\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b\d{2}:\d{2}\b/i.test(text);
+    const weekdayLike = /\b(next\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(text);
+    const followupActionLike = /\b(remind|follow up|follow-up|connect|call|meet|check with|book|collect|pick up|pickup|drop off|dropoff)\b/i.test(text);
+    const personLike = /\b(note from|from\s+[a-z][a-z0-9_-]{1,20}\b|[a-z][a-z0-9_-]{1,20}\s+(said|asked|called|told))\b/i.test(text);
     const structuredListLike =
       ((text.match(/\d+\.\s+[^0-9]+(?=(\d+\.\s+)|$)/g)?.length || 0) >= 2) ||
       (text.split("\n").filter((line) => /^[-*]\s+/.test(line.trim())).length >= 2);
@@ -91,7 +94,7 @@ export async function classifyWithAiOrFallback(
     const deterministicDueAt = parseDueAt(text, baseDate, clientTimezoneOffsetMinutes);
     const inferredDueAt = deterministicDueAt || parsed.due_at;
 
-    if (modeHint === "auto" && (reminderLike || timeLike || parsed.kind === "timeline")) {
+    if (modeHint === "auto" && (reminderLike || timeLike || parsed.kind === "timeline" || (weekdayLike && (followupActionLike || personLike)) || Boolean(deterministicDueAt && (followupActionLike || personLike)))) {
       const parsedDueAt = inferredDueAt;
       refinedKind = "timeline";
       if (parsedDueAt) {
@@ -113,6 +116,10 @@ export async function classifyWithAiOrFallback(
 
     const inferredLabels = inferContextLabels(text, refinedKind);
     let finalLabels = [...new Set([...normalizedLabels, ...inferredLabels])];
+    if (finalLabels.length === 0) {
+      const inferredFromAiText = inferContextLabels(`${parsed.title} ${parsed.body}`, refinedKind);
+      finalLabels = [...new Set(inferredFromAiText)];
+    }
     if (refinedKind === "timeline") {
       const genericTimelineLabels = new Set(["reminder", "notification", "timeline", "timer", "task", "note", "item"]);
       finalLabels = finalLabels.filter((label) => !genericTimelineLabels.has(label));
