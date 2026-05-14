@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getSupabaseBrowserClient } from "@/shared/supabase-browser";
 
 interface DbItem {
@@ -35,6 +35,7 @@ export default function HomePage() {
   const [showHidden, setShowHidden] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedColorTag, setSelectedColorTag] = useState<string>("");
+  const selectedColorTagRef = useRef<string>("");
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [nowMs, setNowMs] = useState(Date.now());
   const [mergeTargetBySource, setMergeTargetBySource] = useState<Record<string, string>>({});
@@ -114,8 +115,14 @@ export default function HomePage() {
     window.localStorage.setItem("flowways:hidden-items", JSON.stringify(hiddenItemIds));
   }, [hiddenItemIds]);
 
+  function setColorTag(value: string) {
+    selectedColorTagRef.current = value;
+    setSelectedColorTag(value);
+  }
+
   async function submitItem() {
     if (!sourceText.trim() || authRequired) return;
+    const colorTagAtSubmit = selectedColorTagRef.current;
     setBusy(true);
     setSubmitMessage("");
     setPetNotice("");
@@ -144,10 +151,10 @@ export default function HomePage() {
 
       const data = await response.json();
       const createdId: string | undefined = data?.item?.id;
-      if (selectedColorTag && createdId) {
+      if (colorTagAtSubmit && createdId) {
         const existing = Array.isArray(data?.item?.labels) ? data.item.labels : [];
         const withoutOldColor = existing.filter((label: string) => !label.startsWith("color-"));
-        await updateItem(createdId, { labels: [...new Set([...withoutOldColor, selectedColorTag])] });
+        await updateItem(createdId, { labels: [...new Set([...withoutOldColor, colorTagAtSubmit])] });
       }
       setSubmitMessage(
         data.merged
@@ -588,7 +595,7 @@ export default function HomePage() {
                 title="Color tag"
                 onClick={() => {
                   if (selectedColorTag) {
-                    setSelectedColorTag("");
+                    setColorTag("");
                     setShowColorPicker(true);
                     return;
                   }
@@ -599,13 +606,13 @@ export default function HomePage() {
               </button>
               {showColorPicker ? (
                 <div className="colorPopover">
-                  <button type="button" className="colorDot clear" onClick={() => { setSelectedColorTag(""); setShowColorPicker(false); }} title="No color">×</button>
+                  <button type="button" className="colorDot clear" onClick={() => { setColorTag(""); setShowColorPicker(false); }} title="No color">×</button>
                   {["color-red", "color-blue", "color-green", "color-amber", "color-violet"].map((c) => (
                     <button
                       type="button"
                       key={c}
                       className={`colorDot ${c}${selectedColorTag === c ? " active" : ""}`}
-                      onClick={() => { setSelectedColorTag(c); setShowColorPicker(false); }}
+                      onClick={() => { setColorTag(c); setShowColorPicker(false); }}
                       title={c.replace("color-", "")}
                     />
                   ))}
