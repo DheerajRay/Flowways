@@ -15,7 +15,13 @@ export async function POST(request: Request) {
 
   const raw = await request.json();
   const payload = classifyInputSchema.parse(raw);
-  const result = await classifyWithAiOrFallback(payload.text, payload.modeHint);
+  const result = await classifyWithAiOrFallback(
+    payload.text,
+    payload.modeHint,
+    [],
+    payload.clientNow ? new Date(payload.clientNow) : undefined,
+    payload.clientTimezoneOffsetMinutes
+  );
 
   return NextResponse.json({ result, remaining: limited.remaining });
 }

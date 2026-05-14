@@ -133,7 +133,8 @@ export async function POST(request: Request) {
       payload.sourceText,
       payload.modeHint,
       hintsResult.data || [],
-      payload.clientNow ? new Date(payload.clientNow) : undefined
+      payload.clientNow ? new Date(payload.clientNow) : undefined,
+      payload.clientTimezoneOffsetMinutes
     );
     const item = buildItem(auth.user.id, payload.sourceText, (countResult.count || 0) + 1, classification);
     const clientNow = payload.clientNow ? new Date(payload.clientNow) : new Date();

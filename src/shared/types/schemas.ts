@@ -2,7 +2,9 @@ import { z } from "zod";
 
 export const classifyInputSchema = z.object({
   text: z.string().min(1).max(5000),
-  modeHint: z.enum(["auto", "checklist", "journal", "workflow", "timeline"]).default("auto")
+  modeHint: z.enum(["auto", "checklist", "journal", "workflow", "timeline"]).default("auto"),
+  clientNow: z.string().datetime().optional(),
+  clientTimezoneOffsetMinutes: z.number().int().min(-840).max(840).optional()
 });
 
 export const classificationResultSchema = z.object({
@@ -20,7 +22,8 @@ export const classificationResultSchema = z.object({
 export const createItemSchema = z.object({
   sourceText: z.string().min(1),
   modeHint: z.enum(["auto", "checklist", "journal", "workflow", "timeline"]).default("auto"),
-  clientNow: z.string().datetime().optional()
+  clientNow: z.string().datetime().optional(),
+  clientTimezoneOffsetMinutes: z.number().int().min(-840).max(840).optional()
 });
 
 export const updateItemSchema = z.object({

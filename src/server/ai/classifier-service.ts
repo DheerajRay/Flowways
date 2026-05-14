@@ -15,10 +15,11 @@ export async function classifyWithAiOrFallback(
   text: string,
   modeHint: "auto" | ItemKind,
   memoryHints: MemoryHint[] = [],
-  baseDate = new Date()
+  baseDate = new Date(),
+  clientTimezoneOffsetMinutes?: number
 ): Promise<ClassificationResult> {
   if (!client) {
-    return fallbackClassify(text, modeHint, baseDate);
+    return fallbackClassify(text, modeHint, baseDate, clientTimezoneOffsetMinutes);
   }
 
   try {
@@ -87,7 +88,7 @@ export async function classifyWithAiOrFallback(
       refinedReason = `${parsed.reason} | post-rule: idea-like input mapped to journal`;
     }
 
-    const deterministicDueAt = parseDueAt(text, baseDate);
+    const deterministicDueAt = parseDueAt(text, baseDate, clientTimezoneOffsetMinutes);
     const inferredDueAt = deterministicDueAt || parsed.due_at;
 
     if (modeHint === "auto" && (reminderLike || timeLike || parsed.kind === "timeline")) {
@@ -128,7 +129,7 @@ export async function classifyWithAiOrFallback(
       reason: refinedReason
     };
   } catch {
-    return fallbackClassify(text, modeHint, baseDate);
+    return fallbackClassify(text, modeHint, baseDate, clientTimezoneOffsetMinutes);
   }
 }
 

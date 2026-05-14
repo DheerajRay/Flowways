@@ -76,9 +76,14 @@ export function inferContextLabels(text: string, kind: ItemKind): string[] {
   return [...new Set(inferred.map((t) => slugLabel(t)).filter(Boolean))];
 }
 
-export function parseDueAt(text: string, baseDate = new Date()): string | null {
+export function parseDueAt(text: string, baseDate = new Date(), clientTimezoneOffsetMinutes?: number): string | null {
   const normalized = normalizeText(text).toLowerCase();
-  const result = new Date(baseDate);
+  const offsetMin = Number.isFinite(clientTimezoneOffsetMinutes as number)
+    ? Number(clientTimezoneOffsetMinutes)
+    : baseDate.getTimezoneOffset();
+  const toLocalFrame = (d: Date) => new Date(d.getTime() - offsetMin * 60000);
+  const fromLocalFrame = (d: Date) => new Date(d.getTime() + offsetMin * 60000);
+  const result = toLocalFrame(baseDate);
   const relative = normalized.match(/\b(in|after|for)\s+(\d+)\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/);
   const bareRelative = normalized.match(/^\s*(\d+)\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\s*$/);
 
@@ -96,18 +101,18 @@ export function parseDueAt(text: string, baseDate = new Date()): string | null {
   }
 
   if (/\btoday\b/.test(normalized)) {
-    result.setHours(17, 0, 0, 0);
+    result.setUTCHours(17, 0, 0, 0);
   } else if (/\btomorrow\b/.test(normalized)) {
-    result.setDate(result.getDate() + 1);
-    result.setHours(17, 0, 0, 0);
+    result.setUTCDate(result.getUTCDate() + 1);
+    result.setUTCHours(17, 0, 0, 0);
   } else if (/\bnext week\b/.test(normalized)) {
-    result.setDate(result.getDate() + 7);
-    result.setHours(9, 0, 0, 0);
+    result.setUTCDate(result.getUTCDate() + 7);
+    result.setUTCHours(9, 0, 0, 0);
   } else {
     const iso = normalized.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
     if (iso) {
-      result.setFullYear(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
-      result.setHours(9, 0, 0, 0);
+      result.setUTCFullYear(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+      result.setUTCHours(9, 0, 0, 0);
     }
   }
 
@@ -117,42 +122,42 @@ export function parseDueAt(text: string, baseDate = new Date()): string | null {
     const m = Number(tm[2] || 0);
     if (tm[3] === "pm" && h < 12) h += 12;
     if (tm[3] === "am" && h === 12) h = 0;
-    result.setHours(h, m, 0, 0);
-    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && result.getTime() <= baseDate.getTime()) {
-      result.setDate(result.getDate() + 1);
+    result.setUTCHours(h, m, 0, 0);
+    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && fromLocalFrame(result).getTime() <= baseDate.getTime()) {
+      result.setUTCDate(result.getUTCDate() + 1);
     }
-    return result.toISOString();
+    return fromLocalFrame(result).toISOString();
   }
 
   const tm24 = normalized.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
   if (tm24) {
     const h = Number(tm24[1]);
     const m = Number(tm24[2]);
-    result.setHours(h, m, 0, 0);
-    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && result.getTime() <= baseDate.getTime()) {
-      result.setDate(result.getDate() + 1);
+    result.setUTCHours(h, m, 0, 0);
+    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && fromLocalFrame(result).getTime() <= baseDate.getTime()) {
+      result.setUTCDate(result.getUTCDate() + 1);
     }
-    return result.toISOString();
+    return fromLocalFrame(result).toISOString();
   }
 
   if (/\bnoon\b/.test(normalized)) {
-    result.setHours(12, 0, 0, 0);
-    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && result.getTime() <= baseDate.getTime()) {
-      result.setDate(result.getDate() + 1);
+    result.setUTCHours(12, 0, 0, 0);
+    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && fromLocalFrame(result).getTime() <= baseDate.getTime()) {
+      result.setUTCDate(result.getUTCDate() + 1);
     }
-    return result.toISOString();
+    return fromLocalFrame(result).toISOString();
   }
 
   if (/\bmidnight\b/.test(normalized)) {
-    result.setHours(0, 0, 0, 0);
-    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && result.getTime() <= baseDate.getTime()) {
-      result.setDate(result.getDate() + 1);
+    result.setUTCHours(0, 0, 0, 0);
+    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && fromLocalFrame(result).getTime() <= baseDate.getTime()) {
+      result.setUTCDate(result.getUTCDate() + 1);
     }
-    return result.toISOString();
+    return fromLocalFrame(result).toISOString();
   }
 
   if (/\b(today|tomorrow|next week)\b/.test(normalized) || /\b20\d{2}-\d{2}-\d{2}\b/.test(normalized)) {
-    return result.toISOString();
+    return fromLocalFrame(result).toISOString();
   }
 
   return null;
@@ -170,9 +175,9 @@ function stripSyntax(text: string): string {
     .trim();
 }
 
-export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "auto", baseDate = new Date()): ClassificationResult {
+export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "auto", baseDate = new Date(), clientTimezoneOffsetMinutes?: number): ClassificationResult {
   const clean = normalizeText(text);
-  const dueAt = parseDueAt(clean, baseDate);
+  const dueAt = parseDueAt(clean, baseDate, clientTimezoneOffsetMinutes);
   const isJournal = clean.length > 140 || /\n|\. .+\./.test(text);
   const isIdeaLike = IDEA_OR_NOTE_CUES.test(clean);
   const checklistSignals = Number(CHECKLIST_CUES.test(clean)) + Number(LIST_PATTERN.test(clean));

@@ -29,6 +29,13 @@ describe("classifier fallback", () => {
     const deltaHours = (new Date(localTime!).getTime() - base.getTime()) / (60 * 60 * 1000);
     expect(deltaHours).toBeGreaterThan(3.5);
     expect(deltaHours).toBeLessThan(4.5);
+
+    const morning = new Date("2026-05-14T05:45:00-04:00");
+    const dueBySevenPm = parseDueAt("remind to book tickets by 7 pm", morning, 240);
+    expect(dueBySevenPm).toBeTruthy();
+    const deltaMin = Math.round((new Date(dueBySevenPm!).getTime() - morning.getTime()) / 60000);
+    expect(deltaMin).toBeGreaterThanOrEqual(790);
+    expect(deltaMin).toBeLessThanOrEqual(800);
   });
 
   it("classifies timeline items", () => {
