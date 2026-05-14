@@ -301,6 +301,14 @@ textarea { min-height: 100px; resize: vertical; }
   background: #111;
   color: #fff;
 }
+.iconAction.colorActive {
+  color: #fff;
+}
+.iconAction.colorActive.color-red { background: #d24f4f; border-color: #7f2626; }
+.iconAction.colorActive.color-blue { background: #2b7fca; border-color: #1f4f80; }
+.iconAction.colorActive.color-green { background: #2f9e66; border-color: #1e6d45; }
+.iconAction.colorActive.color-amber { background: #de8a2d; border-color: #8d5318; }
+.iconAction.colorActive.color-violet { background: #7666c8; border-color: #4f4586; }
 .topbarAction {
   margin-top: 2px;
 }

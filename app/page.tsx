@@ -35,7 +35,6 @@ export default function HomePage() {
   const [showHidden, setShowHidden] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedColorTag, setSelectedColorTag] = useState<string>("");
-  const [searchColorTag, setSearchColorTag] = useState<string>("");
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [nowMs, setNowMs] = useState(Date.now());
   const [mergeTargetBySource, setMergeTargetBySource] = useState<Record<string, string>>({});
@@ -169,7 +168,6 @@ export default function HomePage() {
 
   function runSearch() {
     setSearchText(sourceText.trim().toLowerCase());
-    setSearchColorTag(selectedColorTag);
   }
 
   async function updateItem(id: string, patch: Record<string, unknown>) {
@@ -463,10 +461,10 @@ export default function HomePage() {
     if (name === "show") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><circle cx="8" cy="8" r="1.5" /></svg>;
     if (name === "auto") return <svg {...common}><path d="M8 2.8v10.4" /><path d="M2.8 8h10.4" /><circle cx="8" cy="8" r="1.6" /></svg>;
     if (name === "timeline") return <svg {...common}><circle cx="8" cy="8" r="5.5" /><path d="M8 5v3.2l2.2 1.2" /></svg>;
-    if (name === "workflow") return <svg {...common}><circle cx="8" cy="8" r="6.1" /><path d="M5.2 6.8h5.6a.7.7 0 0 1 .7.7v3.4a.7.7 0 0 1-.7.7H5.2a.7.7 0 0 1-.7-.7V7.5a.7.7 0 0 1 .7-.7z" /><path d="M6.3 6.8V5.9a.9.9 0 0 1 .9-.9h1.6a.9.9 0 0 1 .9.9v.9" /></svg>;
+    if (name === "workflow") return <svg {...common}><path d="M4.3 6.4h7.4a.9.9 0 0 1 .9.9v3.8a.9.9 0 0 1-.9.9H4.3a.9.9 0 0 1-.9-.9V7.3a.9.9 0 0 1 .9-.9z" /><path d="M6 6.4V5.3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.1" /><path d="M7.4 8.9h1.2" /></svg>;
     if (name === "journal") return <svg {...common}><path d="M4 2.8h7.5a1 1 0 0 1 1 1v8.4a1 1 0 0 1-1 1H4" /><path d="M4 2.8v10.4" /><path d="M6.2 5.6h4M6.2 8h4" /></svg>;
     if (name === "checklist") return <svg {...common}><path d="M6.5 5.2h5M6.5 8h5M6.5 10.8h5" /><path d="M3.2 5.2 4 6l1.1-1.2M3.2 8 4 8.8l1.1-1.2M3.2 10.8 4 11.6l1.1-1.2" /></svg>;
-    if (name === "color") return <svg {...common}><circle cx="8" cy="8" r="6.1" /><path d="M6.2 9.8 9.9 6.1a1.1 1.1 0 0 1 1.6 1.6L7.8 11.4a1.4 1.4 0 0 1-1 .4H5.9v-.9c0-.4.1-.8.3-1.1z" /><circle cx="10.8" cy="6.8" r=".6" /></svg>;
+    if (name === "color") return <svg {...common}><path d="M6.1 10 10 6.1a1.2 1.2 0 0 1 1.7 1.7l-3.9 3.9a1.6 1.6 0 0 1-1.2.5h-.8v-.8a1.7 1.7 0 0 1 .3-1.4z" /><circle cx="10.9" cy="6.9" r=".7" /></svg>;
     if (name === "backlog") return <svg {...common}><path d="M11.5 8H4.2" /><path d="M6.9 5.3 4.2 8l2.7 2.7" /></svg>;
     if (name === "ready") return <svg {...common}><path d="M5 4.2 11.8 8 5 11.8z" /></svg>;
     if (name === "progress") return <svg {...common}><path d="M5.8 4v8M10.2 4v8" /></svg>;
@@ -481,7 +479,7 @@ export default function HomePage() {
       const haystack = `${item.title} ${item.body} ${(item.labels || []).join(" ")}`.toLowerCase();
       return haystack.includes(searchText);
     })
-    .filter((item) => !searchColorTag || (item.labels || []).includes(searchColorTag));
+    .filter((item) => !selectedColorTag || (item.labels || []).includes(selectedColorTag));
 
   const sortedItems = [...visibleItems].sort((a, b) => {
     const timelineRank = (item: DbItem) => {
@@ -583,7 +581,22 @@ export default function HomePage() {
             <button type="button" className={`iconAction compact${captureMode === "journal" ? " active" : ""}`} aria-label="Journal mode" title="Journal mode" onClick={() => setCaptureMode("journal")}><Icon name="journal" /></button>
             <button type="button" className={`iconAction compact${captureMode === "checklist" ? " active" : ""}`} aria-label="Checklist mode" title="Checklist mode" onClick={() => setCaptureMode("checklist")}><Icon name="checklist" /></button>
             <div className="colorPickerWrap">
-              <button type="button" className={`iconAction compact${selectedColorTag ? " active" : ""}`} aria-label="Color tag" title="Color tag" onClick={() => setShowColorPicker((prev) => !prev)}><Icon name="color" /></button>
+              <button
+                type="button"
+                className={`iconAction compact${selectedColorTag ? ` colorActive ${selectedColorTag}` : ""}`}
+                aria-label="Color tag"
+                title="Color tag"
+                onClick={() => {
+                  if (selectedColorTag) {
+                    setSelectedColorTag("");
+                    setShowColorPicker(true);
+                    return;
+                  }
+                  setShowColorPicker((prev) => !prev);
+                }}
+              >
+                <Icon name="color" />
+              </button>
               {showColorPicker ? (
                 <div className="colorPopover">
                   <button type="button" className="colorDot clear" onClick={() => { setSelectedColorTag(""); setShowColorPicker(false); }} title="No color">×</button>
