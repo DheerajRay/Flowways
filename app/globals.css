@@ -454,6 +454,138 @@ textarea { min-height: 100px; resize: vertical; }
   .actions { width: 100%; }
 }
 
+@media (max-width: 700px) {
+  .page {
+    gap: 12px;
+    padding: 10px;
+  }
+
+  .topbar {
+    gap: 10px;
+  }
+
+  .topbar h1 {
+    font-size: 30px;
+    line-height: 1.1;
+  }
+
+  .subtitle {
+    font-size: 17px;
+    line-height: 1.25;
+  }
+
+  .capture,
+  .feed {
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .pixelPal {
+    right: 10px;
+    top: -12px;
+    max-width: calc(100% - 20px);
+  }
+
+  .captureBar {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .captureBar input {
+    min-height: 44px;
+  }
+
+  .modeActions,
+  .captureActions {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .item {
+    border-radius: 18px;
+    padding: 10px 12px;
+    gap: 7px;
+  }
+
+  .kind {
+    font-size: 11px;
+  }
+
+  .item h3 {
+    font-size: 18px;
+  }
+
+  .item p {
+    font-size: 15px;
+  }
+
+  .itemHead {
+    align-items: flex-start;
+  }
+
+  .actions {
+    width: auto;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .metaRow {
+    gap: 6px;
+  }
+
+  .dateChip,
+  .tagChip,
+  .overdueTagChip {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .dueRailInline {
+    margin-left: 0;
+    width: 100%;
+    min-width: 0;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  .dueLabel {
+    font-size: 12px;
+  }
+
+  .dueRailWrap {
+    width: 100%;
+  }
+
+  .workflowRailInline {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .mergeRow {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .mergeRow select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .editor > input {
+    max-width: 100%;
+  }
+
+  .editRow {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .topbarAction {
+    margin-top: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
