@@ -208,8 +208,8 @@ textarea { min-height: 100px; resize: vertical; }
   overflow-y: auto;
   overscroll-behavior: contain;
   position: relative;
-  padding: 16px 14px 16px 16px;
-  margin-right: -6px;
+  padding: 16px 10px 16px 16px;
+  margin-right: -2px;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: #8b8b8b #ece6d8;
@@ -217,18 +217,7 @@ textarea { min-height: 100px; resize: vertical; }
 .feedCards {
   display: grid;
   gap: 12px;
-  margin-right: 16px;
-}
-.feed::after {
-  content: "";
-  position: absolute;
-  top: 10px;
-  bottom: 10px;
-  right: 10px;
-  width: 1px;
-  background: #d8d1bf;
-  border-radius: 999px;
-  pointer-events: none;
+  margin-right: 8px;
 }
 .feed::-webkit-scrollbar {
   width: 10px;
@@ -625,7 +614,7 @@ textarea { min-height: 100px; resize: vertical; }
   }
 
   .feedCards {
-    margin-right: 10px;
+    margin-right: 6px;
     padding: 10px 8px 10px 10px;
   }
 
