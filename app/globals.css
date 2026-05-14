@@ -143,6 +143,42 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   background: #fff;
   min-height: 44px;
 }
+.colorPickerWrap {
+  position: relative;
+}
+.colorPopover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(40, 54, 74, 0.12);
+  z-index: 20;
+}
+.colorDot {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid #222;
+  padding: 0;
+}
+.colorDot.active {
+  box-shadow: 0 0 0 2px #d9e4f7;
+}
+.colorDot.clear {
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+}
+.colorDot.color-red { background: #d24f4f; }
+.colorDot.color-blue { background: #2b7fca; }
+.colorDot.color-green { background: #2f9e66; }
+.colorDot.color-amber { background: #de8a2d; }
+.colorDot.color-violet { background: #7666c8; }
 .modeActions .iconAction.compact {
   width: 30px;
   height: 30px;
@@ -214,6 +250,11 @@ textarea { min-height: 100px; resize: vertical; }
   border-color: #2f9e66;
   box-shadow: 0 0 0 1px rgba(47, 158, 102, 0.22), 0 10px 24px rgba(40, 54, 74, 0.08);
 }
+.item.color-red { box-shadow: inset 4px 0 0 #d24f4f; }
+.item.color-blue { box-shadow: inset 4px 0 0 #2b7fca; }
+.item.color-green { box-shadow: inset 4px 0 0 #2f9e66; }
+.item.color-amber { box-shadow: inset 4px 0 0 #de8a2d; }
+.item.color-violet { box-shadow: inset 4px 0 0 #7666c8; }
 
 .itemHead {
   display: flex;
@@ -223,9 +264,16 @@ textarea { min-height: 100px; resize: vertical; }
 }
 .kind {
   text-transform: uppercase;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.5px;
   color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.kind svg {
+  width: 14px;
+  height: 14px;
 }
 .actions {
   display: flex;
@@ -329,6 +377,24 @@ textarea { min-height: 100px; resize: vertical; }
 }
 .tagChip {
   background: #f8f8f8;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.colorTag {
+  text-transform: capitalize;
+}
+.colorSwatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  border: 1px solid #222;
+}
+.colorTag.color-red .colorSwatch { background: #d24f4f; }
+.colorTag.color-blue .colorSwatch { background: #2b7fca; }
+.colorTag.color-green .colorSwatch { background: #2f9e66; }
+.colorTag.color-amber .colorSwatch { background: #de8a2d; }
+.colorTag.color-violet .colorSwatch { background: #7666c8; }
 }
 .overdueTagChip {
   border: 1px solid #111;

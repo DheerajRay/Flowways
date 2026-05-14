@@ -34,6 +34,9 @@ export default function HomePage() {
   const [petNoticeTone, setPetNoticeTone] = useState<"info" | "error">("info");
   const [showHidden, setShowHidden] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [selectedColorTag, setSelectedColorTag] = useState<string>("");
+  const [searchColorTag, setSearchColorTag] = useState<string>("");
+  const [showColorPicker, setShowColorPicker] = useState(false);
   const [nowMs, setNowMs] = useState(Date.now());
   const [mergeTargetBySource, setMergeTargetBySource] = useState<Record<string, string>>({});
   const [hiddenItemIds, setHiddenItemIds] = useState<string[]>([]);
@@ -141,6 +144,12 @@ export default function HomePage() {
       }
 
       const data = await response.json();
+      const createdId: string | undefined = data?.item?.id;
+      if (selectedColorTag && createdId) {
+        const existing = Array.isArray(data?.item?.labels) ? data.item.labels : [];
+        const withoutOldColor = existing.filter((label: string) => !label.startsWith("color-"));
+        await updateItem(createdId, { labels: [...new Set([...withoutOldColor, selectedColorTag])] });
+      }
       setSubmitMessage(
         data.merged
           ? `Merged into existing checklist.`
@@ -160,6 +169,7 @@ export default function HomePage() {
 
   function runSearch() {
     setSearchText(sourceText.trim().toLowerCase());
+    setSearchColorTag(selectedColorTag);
   }
 
   async function updateItem(id: string, patch: Record<string, unknown>) {
@@ -440,7 +450,7 @@ export default function HomePage() {
     return mins ? `${hours}h ${mins}m spent` : `${hours}h spent`;
   }
 
-  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "timeline" | "workflow" | "journal" | "checklist" | "auto" }) {
+  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "color" }) {
     const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
     if (name === "done" || name === "save") return <svg {...common}><path d="M3 8.5l3 3L13 4.5" /></svg>;
     if (name === "undo" || name === "cancel") return <svg {...common}><path d="M6 4L2.5 7.5 6 11" /><path d="M3 7.5h5.5A4.5 4.5 0 1 1 8.5 16" /></svg>;
@@ -456,6 +466,7 @@ export default function HomePage() {
     if (name === "workflow") return <svg {...common}><path d="M3 4.5h4M7 4.5l2 2M7 4.5l2-2" /><path d="M3 11.5h4M7 11.5l2 2M7 11.5l2-2" /><path d="M11 4.5v7" /></svg>;
     if (name === "journal") return <svg {...common}><path d="M4 2.8h7.5a1 1 0 0 1 1 1v8.4a1 1 0 0 1-1 1H4" /><path d="M4 2.8v10.4" /><path d="M6.2 5.6h4M6.2 8h4" /></svg>;
     if (name === "checklist") return <svg {...common}><path d="M6.5 5.2h5M6.5 8h5M6.5 10.8h5" /><path d="M3.2 5.2 4 6l1.1-1.2M3.2 8 4 8.8l1.1-1.2M3.2 10.8 4 11.6l1.1-1.2" /></svg>;
+    if (name === "color") return <svg {...common}><path d="M3.5 10.8a2 2 0 1 0 2 2h3.7a3.8 3.8 0 1 0-3.7-3.8V3.8" /><path d="M9.2 3.8h3.3M10.8 2.2v3.2" /></svg>;
     if (name === "backlog") return <svg {...common}><path d="M11.5 8H4.2" /><path d="M6.9 5.3 4.2 8l2.7 2.7" /></svg>;
     if (name === "ready") return <svg {...common}><path d="M5 4.2 11.8 8 5 11.8z" /></svg>;
     if (name === "progress") return <svg {...common}><path d="M5.8 4v8M10.2 4v8" /></svg>;
@@ -469,7 +480,8 @@ export default function HomePage() {
       if (!searchText) return true;
       const haystack = `${item.title} ${item.body} ${(item.labels || []).join(" ")}`.toLowerCase();
       return haystack.includes(searchText);
-    });
+    })
+    .filter((item) => !searchColorTag || (item.labels || []).includes(searchColorTag));
 
   const sortedItems = [...visibleItems].sort((a, b) => {
     const timelineRank = (item: DbItem) => {
@@ -570,6 +582,23 @@ export default function HomePage() {
             <button type="button" className={`iconAction compact${captureMode === "workflow" ? " active" : ""}`} aria-label="Workflow mode" title="Workflow mode" onClick={() => setCaptureMode("workflow")}><Icon name="workflow" /></button>
             <button type="button" className={`iconAction compact${captureMode === "journal" ? " active" : ""}`} aria-label="Journal mode" title="Journal mode" onClick={() => setCaptureMode("journal")}><Icon name="journal" /></button>
             <button type="button" className={`iconAction compact${captureMode === "checklist" ? " active" : ""}`} aria-label="Checklist mode" title="Checklist mode" onClick={() => setCaptureMode("checklist")}><Icon name="checklist" /></button>
+            <div className="colorPickerWrap">
+              <button type="button" className={`iconAction compact${selectedColorTag ? " active" : ""}`} aria-label="Color tag" title="Color tag" onClick={() => setShowColorPicker((prev) => !prev)}><Icon name="color" /></button>
+              {showColorPicker ? (
+                <div className="colorPopover">
+                  <button type="button" className="colorDot clear" onClick={() => { setSelectedColorTag(""); setShowColorPicker(false); }} title="No color">×</button>
+                  {["color-red", "color-blue", "color-green", "color-amber", "color-violet"].map((c) => (
+                    <button
+                      type="button"
+                      key={c}
+                      className={`colorDot ${c}${selectedColorTag === c ? " active" : ""}`}
+                      onClick={() => { setSelectedColorTag(c); setShowColorPicker(false); }}
+                      title={c.replace("color-", "")}
+                    />
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </div>
           <div className="captureActions">
             <button type="button" className="iconAction" aria-label="Add task" title="Add task" onClick={() => void submitItem()} disabled={busy || !sourceText.trim()}><Icon name="add" /></button>
@@ -585,10 +614,14 @@ export default function HomePage() {
           const timeState = item.kind === "timeline" ? timelineState(item.due_at) : null;
           const isTimelineExpired = item.kind === "timeline" && !item.checked && Boolean(timeState?.done);
           const isDone = Boolean(item.checked);
+          const colorLabel = (item.labels || []).find((label) => label.startsWith("color-"));
           return (
-          <article key={item.id} className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}${isDone ? " item-done" : ""}`}>
+          <article key={item.id} className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}${isDone ? " item-done" : ""}${colorLabel ? ` ${colorLabel}` : ""}`}>
             <div className="itemHead">
-              <span className="kind">{item.kind}</span>
+              <span className="kind">
+                <Icon name={item.kind} />
+                <span>{item.kind}</span>
+              </span>
               <div className="actions">
                 {item.checked ? (
                   <>
@@ -756,7 +789,16 @@ export default function HomePage() {
               {item.due_at ? <span className="dateChip">{new Date(item.due_at).toLocaleString()}</span> : item.created_at ? <span className="dateChip">{new Date(item.created_at).toLocaleString()}</span> : null}
               {item.kind === "timeline" && !item.checked && timeState?.done ? <span className="overdueTagChip">OVER DUE</span> : null}
               {item.kind === "workflow" && formatTimeSpent(item) ? <span className="dateChip">{formatTimeSpent(item)}</span> : null}
-              {item.labels?.map((label) => <span className="tagChip" key={label}>#{label}</span>)}
+              {item.labels?.map((label) => {
+                const isColorLabel = label.startsWith("color-");
+                const colorName = label.replace("color-", "");
+                return (
+                  <span className={`tagChip${isColorLabel ? ` colorTag ${label}` : ""}`} key={label}>
+                    {isColorLabel ? <span className="colorSwatch" aria-hidden="true" /> : null}
+                    {isColorLabel ? colorName : `#${label}`}
+                  </span>
+                );
+              })}
               {item.kind === "timeline" && !item.checked && item.due_at && !timeState?.done ? (
                 <div className="dueRailInline" aria-label="Due progress">
                   <span className="dueLabel">Time ({timeState?.label?.replace("Due in ", "") || "--"})</span>
