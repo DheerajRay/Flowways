@@ -168,6 +168,27 @@ textarea { min-height: 100px; resize: vertical; }
   overflow-y: auto;
   overscroll-behavior: contain;
   align-content: start;
+  padding-right: 12px;
+  margin-right: -10px;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #8b8b8b #ece6d8;
+}
+.feed::-webkit-scrollbar {
+  width: 12px;
+}
+.feed::-webkit-scrollbar-track {
+  background: #ece6d8;
+  border-radius: 999px;
+  border: 1px solid #d8d1bf;
+}
+.feed::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #9b9b9b 0%, #7f7f7f 100%);
+  border-radius: 999px;
+  border: 2px solid #ece6d8;
+}
+.feed::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #8b8b8b 0%, #6f6f6f 100%);
 }
 .item {
   border: 2px solid #1d1d1d;
