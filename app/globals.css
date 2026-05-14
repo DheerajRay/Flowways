@@ -395,7 +395,6 @@ textarea { min-height: 100px; resize: vertical; }
 .colorTag.color-green .colorSwatch { background: #2f9e66; }
 .colorTag.color-amber .colorSwatch { background: #de8a2d; }
 .colorTag.color-violet .colorSwatch { background: #7666c8; }
-}
 .overdueTagChip {
   border: 1px solid #111;
   border-radius: 999px;
