@@ -25,7 +25,11 @@ body {
   margin: 0 auto;
   padding: 24px;
   display: grid;
+  grid-template-rows: auto auto 1fr;
   gap: 16px;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 .topbar {
   display: flex;
@@ -160,6 +164,10 @@ textarea { min-height: 100px; resize: vertical; }
 .feed {
   display: grid;
   gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  align-content: start;
 }
 .item {
   border: 2px solid #1d1d1d;
