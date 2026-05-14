@@ -1,5 +1,5 @@
 ﻿import OpenAI from "openai";
-import { fallbackClassify, inferContextLabels, normalizeGeneratedLabels, parseDueAt } from "@/shared/domain/classifier";
+import { fallbackClassify, inferContextLabels, normalizeGeneratedLabels, normalizeText, parseDueAt } from "@/shared/domain/classifier";
 import { classificationResultSchema } from "@/shared/types/schemas";
 import type { ClassificationResult, ItemKind } from "@/shared/types/item";
 
@@ -99,12 +99,11 @@ export async function classifyWithAiOrFallback(
       }
     }
 
-    if (
-      refinedKind === "timeline" &&
-      (timeLike || reminderLike) &&
-      !/\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b\d{2}:\d{2}\b|\b(in|after|for)\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/i.test(refinedTitle)
-    ) {
-      refinedTitle = text.replace(/#[a-z0-9_-]+/gi, "").trim() || parsed.title;
+    if (refinedKind === "timeline") {
+      const sourceTimelineTitle = normalizeText(text.replace(/#[a-z0-9_-]+/gi, ""));
+      if (sourceTimelineTitle) {
+        refinedTitle = sourceTimelineTitle;
+      }
     }
 
     if (modeHint === "auto" && structuredListLike && !hardWorkflowLike && refinedKind === "workflow") {
@@ -113,7 +112,11 @@ export async function classifyWithAiOrFallback(
     }
 
     const inferredLabels = inferContextLabels(text, refinedKind);
-    const finalLabels = [...new Set([...normalizedLabels, ...inferredLabels])];
+    let finalLabels = [...new Set([...normalizedLabels, ...inferredLabels])];
+    if (refinedKind === "timeline") {
+      const genericTimelineLabels = new Set(["reminder", "notification", "timeline", "timer", "task", "note", "item"]);
+      finalLabels = finalLabels.filter((label) => !genericTimelineLabels.has(label));
+    }
 
     const finalDueAt = refinedKind === "timeline"
       ? (deterministicDueAt || parsed.due_at)

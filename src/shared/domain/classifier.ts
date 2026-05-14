@@ -64,6 +64,27 @@ export function inferContextLabels(text: string, kind: ItemKind): string[] {
     if (/\b(idea|testing|thought|hypothesis)\b/.test(lower)) inferred.push("idea");
   }
 
+  if (kind === "timeline") {
+    if (/\bbook(ing)?\s+tickets?\b/.test(lower)) inferred.push("booking", "tickets");
+    if (/\bcollect\b/.test(lower)) inferred.push("collect");
+    if (/\bbook\b/.test(lower)) inferred.push("book");
+    if (/\b(call|meeting|doctor|flight|train|bill|payment|pickup|dropoff)\b/.test(lower)) {
+      const ops = lower.match(/\b(call|meeting|doctor|flight|train|bill|payment|pickup|dropoff)\b/g) || [];
+      inferred.push(...ops);
+    }
+
+    const stopwords = new Set([
+      "to", "at", "in", "on", "for", "by", "from", "with", "about", "after", "before",
+      "today", "tomorrow", "week", "next", "pm", "am", "mins", "min", "minutes", "hour", "hours",
+      "remind", "reminder", "timer", "notification", "the", "a", "an", "and", "me", "my"
+    ]);
+    const locationCandidates = lower.match(/\b(?:for|to|at|in)\s+([a-z][a-z0-9_-]{2,})\b/g) || [];
+    for (const phrase of locationCandidates) {
+      const token = phrase.replace(/\b(?:for|to|at|in)\s+/, "").trim();
+      if (token && !stopwords.has(token)) inferred.push(token);
+    }
+  }
+
   const sourceNameMatch =
     lower.match(/\bnote from\s+([a-z][a-z0-9_-]{1,20})\b/) ||
     lower.match(/\bfrom\s+([a-z][a-z0-9_-]{1,20})\b/) ||
@@ -193,10 +214,14 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
   else if (workflowSignals > 0) kind = "workflow";
 
   const workflowStatus: WorkflowStatus | null = kind === "workflow" ? "Backlog" : null;
+  const timelineTitle = normalizeText(clean.replace(/#[a-z0-9_-]+/gi, ""));
+  const title = kind === "timeline"
+    ? (timelineTitle || clean || "Untitled item")
+    : (stripSyntax(clean) || clean || "Untitled item");
 
   return {
     kind,
-    title: stripSyntax(clean) || clean || "Untitled item",
+    title,
     body: kind === "journal" ? clean : "",
     labels: (() => {
       const normalized = normalizeGeneratedLabels(extractLabels(clean), clean);
