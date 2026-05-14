@@ -292,7 +292,7 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
   const temporalCue = /\b(today|tomorrow|next week|(next\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)|\d{1,2}(?::\d{2})?\s*(am|pm)|\d{2}:\d{2})\b/i.test(clean);
   const followupActionCue = /\b(remind|follow up|follow-up|connect|call|meet|check with|book|collect|pick up|pickup|drop off|dropoff)\b/i.test(clean);
   const personCue = /\b(note from|from\s+[a-z][a-z0-9_-]{1,20}\b|[a-z][a-z0-9_-]{1,20}\s+(said|asked|called|told))\b/i.test(clean);
-  const directedActionCue = /\b(collect|bring|send|share|review|prepare|fix|connect|call|meet|follow up|follow-up|book|pick up|pickup)\b/i.test(clean);
+  const directedActionCue = /\b(collect|bring|send|share|review|prepare|fix|connect|call|meet|check|follow up|follow-up|book|pick up|pickup)\b/i.test(clean);
 
   let kind: ItemKind = "checklist";
   if (modeHint !== "auto") kind = modeHint;

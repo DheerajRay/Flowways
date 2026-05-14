@@ -75,6 +75,9 @@ describe("classifier fallback", () => {
 
     const d = fallbackClassify("collect book from jj", "auto", base);
     expect(d.kind).toBe("workflow");
+
+    const e = fallbackClassify("jj called to check if we need some cheese", "auto", base);
+    expect(e.kind).toBe("workflow");
   });
 
   it("infers person/source tags from note phrasing", () => {

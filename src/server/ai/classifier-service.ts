@@ -73,6 +73,7 @@ export async function classifyWithAiOrFallback(
     const reminderLike = /\b(remind|reminder|due|tomorrow|today|next week|(in|after|for)\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days))\b/i.test(text);
     const timeLike = /\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b\d{2}:\d{2}\b/i.test(text);
     const weekdayLike = /\b(next\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(text);
+    const hasTemporalCue = reminderLike || timeLike || weekdayLike;
     const followupActionLike = /\b(remind|follow up|follow-up|connect|call|meet|check with|book|collect|pick up|pickup|drop off|dropoff)\b/i.test(text);
     const personLike = /\b(note from|from\s+[a-z][a-z0-9_-]{1,20}\b|[a-z][a-z0-9_-]{1,20}\s+(said|asked|called|told))\b/i.test(text);
     const directedActionLike = /\b(collect|bring|send|share|review|prepare|fix|connect|call|meet|follow up|follow-up|book|pick up|pickup)\b/i.test(text);
@@ -95,11 +96,27 @@ export async function classifyWithAiOrFallback(
     const deterministicDueAt = parseDueAt(text, baseDate, clientTimezoneOffsetMinutes);
     const inferredDueAt = deterministicDueAt || parsed.due_at;
 
-    if (modeHint === "auto" && (reminderLike || timeLike || parsed.kind === "timeline" || (weekdayLike && (followupActionLike || personLike)) || Boolean(deterministicDueAt && (followupActionLike || personLike)))) {
+    if (modeHint === "auto" && (hasTemporalCue || (parsed.kind === "timeline" && hasTemporalCue) || (weekdayLike && (followupActionLike || personLike)) || Boolean(deterministicDueAt && (followupActionLike || personLike)))) {
       const parsedDueAt = inferredDueAt;
       refinedKind = "timeline";
       if (parsedDueAt) {
         refinedReason = `${refinedReason} | post-rule: reminder-like input mapped to timeline`;
+      }
+    }
+
+    if (modeHint === "auto" && refinedKind === "timeline" && !deterministicDueAt && !hasTemporalCue) {
+      if (personLike && directedActionLike && !structuredListLike) {
+        refinedKind = "workflow";
+        refinedReason = `${refinedReason} | post-rule: timeline without time cues mapped to workflow`;
+      } else if (isIdeaLike && !hasChecklistMarkers) {
+        refinedKind = "journal";
+        refinedReason = `${refinedReason} | post-rule: timeline without time cues mapped to journal`;
+      } else if (structuredListLike) {
+        refinedKind = "checklist";
+        refinedReason = `${refinedReason} | post-rule: timeline without time cues mapped to checklist`;
+      } else {
+        refinedKind = "journal";
+        refinedReason = `${refinedReason} | post-rule: timeline without time cues mapped to journal`;
       }
     }
 
@@ -134,7 +151,7 @@ export async function classifyWithAiOrFallback(
 
     const finalDueAt = refinedKind === "timeline"
       ? (deterministicDueAt || parsed.due_at)
-      : parsed.due_at;
+      : null;
 
     return {
       ...parsed,
