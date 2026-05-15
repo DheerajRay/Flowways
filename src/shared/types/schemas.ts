@@ -6,7 +6,7 @@ const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 export const userSettingsSchema = z.object({
   pet_enabled: z.boolean(),
   pet_mode: z.enum(["sweet", "meh", "monster"]),
-  font_family: z.enum(["avenir", "combo", "mono", "rounded"]),
+  font_family: z.enum(["avenir", "inter", "plex", "mono", "rounded"]),
   font_size: z.enum(["s", "m", "l"]),
   color_palette: z.object({
     red: hexColor,

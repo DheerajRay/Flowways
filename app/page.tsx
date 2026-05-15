@@ -691,8 +691,6 @@ export default function HomePage() {
 
   const colorKeys = ["red", "blue", "green", "amber", "violet"] as const;
   const colorTagIds = colorKeys.map((key) => `color-${key}` as const);
-  const sizeIndexMap: Record<SettingsDraft["font_size"], number> = { s: 0, m: 1, l: 2 };
-  const sizeByIndex: SettingsDraft["font_size"][] = ["s", "m", "l"];
   const petProfile = !settingsDraft.pet_enabled
     ? "off"
     : settingsDraft.pet_mode === "monster"
@@ -859,24 +857,27 @@ export default function HomePage() {
               <button type="button" className="iconAction compact" aria-label="Close settings" onClick={() => setShowSettings(false)}>
                 <Icon name="cancel" />
               </button>
+              <button type="button" className="iconAction compact" aria-label="Save settings" onClick={() => void saveSettings()} disabled={settingsBusy} title="Save settings">
+                <Icon name="save" />
+              </button>
             </div>
             <div className="settingsGrid">
               <div className="settingsRow">
-                <div className="iconGroup">
-                  <span>Pet</span>
+                <span>Pet</span>
+                <div className="settingsIconRail">
                   {(["off", "sweet", "meh", "monster"] as const).map((mode) => (
                     <button
                       key={mode}
                       type="button"
                       className={`iconAction compact ${petProfile === mode ? "active" : ""}`}
-                      title={mode}
+                      title={mode === "off" ? "no" : mode === "sweet" ? "professional" : mode === "meh" ? "meh" : "nuclear"}
                       onClick={() => setSettingsDraft((prev) => (
                         mode === "off"
                           ? { ...prev, pet_enabled: false }
                           : { ...prev, pet_enabled: true, pet_mode: mode }
                       ))}
                     >
-                      {mode === "off" ? "×" : mode === "sweet" ? "🙂" : mode === "meh" ? "😐" : "😈"}
+                      {mode === "off" ? "×" : mode === "sweet" ? "^_^" : mode === "meh" ? "-_-" : ">:)"}
                     </button>
                   ))}
                 </div>
@@ -888,28 +889,31 @@ export default function HomePage() {
                   onChange={(event) => setSettingsDraft((prev) => ({ ...prev, font_family: event.target.value as SettingsDraft["font_family"] }))}
                 >
                   <option value="avenir">Avenir</option>
-                  <option value="combo">Combo</option>
+                  <option value="inter">Inter</option>
+                  <option value="plex">IBM Plex Sans</option>
                   <option value="mono">Mono</option>
                   <option value="rounded">Rounded</option>
                 </select>
               </label>
               <div className="settingsRow">
-                <span>Size</span>
-                <div className="sizeControl">
-                  <input
-                    type="range"
-                    min={0}
-                    max={2}
-                    step={1}
-                    value={sizeIndexMap[settingsDraft.font_size]}
-                    onChange={(event) => setSettingsDraft((prev) => ({ ...prev, font_size: sizeByIndex[Number(event.target.value)] }))}
-                  />
-                  <span className="sizeHint">{settingsDraft.font_size.toUpperCase()}</span>
+                <span>Text</span>
+                <div className="settingsIconRail">
+                  {(["s", "m", "l"] as const).map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      className={`iconAction compact ${settingsDraft.font_size === size ? "active" : ""}`}
+                      title={`Text ${size.toUpperCase()}`}
+                      onClick={() => setSettingsDraft((prev) => ({ ...prev, font_size: size }))}
+                    >
+                      {size.toUpperCase()}
+                    </button>
+                  ))}
                 </div>
               </div>
               <div className="settingsRow colorSettings">
                 <span>Colors</span>
-                <div className="paletteEditor">
+                <div className="settingsIconRail">
                   {colorKeys.map((key) => (
                     <label key={key} className="paletteCell" title={key}>
                       <span className="srOnly">{key}</span>
@@ -937,7 +941,6 @@ export default function HomePage() {
             {settingsError ? <p className="settingsError">{settingsError}</p> : null}
             <div className="settingsActions">
               <button type="button" onClick={() => { setSettingsDraft(settings); setShowSettings(false); }}>Cancel</button>
-              <button type="button" onClick={() => void saveSettings()} disabled={settingsBusy}>{settingsBusy ? "Saving..." : "Save"}</button>
             </div>
           </div>
         </section>

@@ -1,5 +1,5 @@
 export type PetMode = "sweet" | "meh" | "monster";
-export type FontFamilyKey = "avenir" | "combo" | "mono" | "rounded";
+export type FontFamilyKey = "avenir" | "inter" | "plex" | "mono" | "rounded";
 export type FontSizeKey = "s" | "m" | "l";
 
 export type ColorPalette = {
@@ -33,4 +33,3 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   font_size: "m",
   color_palette: DEFAULT_COLOR_PALETTE
 };
-

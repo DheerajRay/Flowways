@@ -734,10 +734,12 @@ textarea { min-height: 100px; resize: vertical; }
 }
 .settingsHeader {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
+  gap: 8px;
 }
 .settingsHeader h2 {
+  flex: 1;
   margin: 0;
   font-size: 20px;
 }
@@ -764,38 +766,17 @@ textarea { min-height: 100px; resize: vertical; }
   border-radius: 9px;
   padding: 6px 9px;
 }
-.iconGroup {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-}
-.iconGroup > span {
-  font-size: 13px;
-  font-weight: 700;
-  margin-right: 4px;
-}
-.sizeControl {
+.settingsIconRail {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
-}
-.sizeControl input[type="range"] {
-  width: 140px;
-  accent-color: #111;
-}
-.sizeHint {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
 }
 .colorSettings {
   align-items: start;
-}
-.paletteEditor {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
 }
 .paletteCell {
   display: inline-flex;
@@ -887,6 +868,10 @@ textarea { min-height: 100px; resize: vertical; }
     grid-template-columns: 1fr;
     align-items: start;
     gap: 8px;
+  }
+  .settingsIconRail {
+    width: 100%;
+    flex-wrap: wrap;
   }
 
   .capture,
