@@ -842,8 +842,8 @@ export default function HomePage() {
       </section>
 
       {showSettings ? (
-        <section className="settingsOverlay" role="dialog" aria-modal="true" aria-label="Settings">
-          <div className="settingsModal">
+        <section className="settingsOverlay" role="dialog" aria-modal="true" aria-label="Settings" onClick={() => setShowSettings(false)}>
+          <div className="settingsModal" onClick={(event) => event.stopPropagation()}>
             <div className="settingsHeader">
               <h2>Settings</h2>
               <button type="button" className="iconAction compact" aria-label="Close settings" onClick={() => setShowSettings(false)}>
@@ -851,20 +851,28 @@ export default function HomePage() {
               </button>
             </div>
             <div className="settingsGrid">
-              <label className="settingsRow">
+              <div className="settingsRow">
                 <span>Pet</span>
-                <input
-                  type="checkbox"
-                  checked={settingsDraft.pet_enabled}
-                  onChange={(event) => setSettingsDraft((prev) => ({ ...prev, pet_enabled: event.target.checked }))}
-                />
-              </label>
+                <button
+                  type="button"
+                  className={`iconToggle${settingsDraft.pet_enabled ? " active" : ""}`}
+                  onClick={() => setSettingsDraft((prev) => ({ ...prev, pet_enabled: !prev.pet_enabled }))}
+                >
+                  {settingsDraft.pet_enabled ? "Enabled" : "Disabled"}
+                </button>
+              </div>
               <div className="settingsRow">
                 <span>Mode</span>
-                <div className="segmented">
+                <div className="iconGroup">
                   {(["sweet", "meh", "monster"] as const).map((mode) => (
-                    <button key={mode} type="button" className={settingsDraft.pet_mode === mode ? "active" : ""} onClick={() => setSettingsDraft((prev) => ({ ...prev, pet_mode: mode }))}>
-                      {mode[0].toUpperCase() + mode.slice(1)}
+                    <button
+                      key={mode}
+                      type="button"
+                      className={`iconAction compact ${settingsDraft.pet_mode === mode ? "active" : ""}`}
+                      title={mode}
+                      onClick={() => setSettingsDraft((prev) => ({ ...prev, pet_mode: mode }))}
+                    >
+                      {mode === "sweet" ? "^_^" : mode === "meh" ? "-_-" : ">:)"}
                     </button>
                   ))}
                 </div>
@@ -883,9 +891,9 @@ export default function HomePage() {
               </label>
               <div className="settingsRow">
                 <span>Size</span>
-                <div className="segmented">
+                <div className="iconGroup">
                   {(["s", "m", "l"] as const).map((size) => (
-                    <button key={size} type="button" className={settingsDraft.font_size === size ? "active" : ""} onClick={() => setSettingsDraft((prev) => ({ ...prev, font_size: size }))}>
+                    <button key={size} type="button" className={`iconAction compact ${settingsDraft.font_size === size ? "active" : ""}`} onClick={() => setSettingsDraft((prev) => ({ ...prev, font_size: size }))}>
                       {size.toUpperCase()}
                     </button>
                   ))}
@@ -896,7 +904,7 @@ export default function HomePage() {
                 <div className="paletteEditor">
                   {colorKeys.map((key) => (
                     <label key={key} className="paletteCell">
-                      <span>{key}</span>
+                      <span className="srOnly">{key}</span>
                       <input
                         type="color"
                         value={settingsDraft.color_palette[key]}
