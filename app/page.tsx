@@ -691,6 +691,13 @@ export default function HomePage() {
 
   const colorKeys = ["red", "blue", "green", "amber", "violet"] as const;
   const colorTagIds = colorKeys.map((key) => `color-${key}` as const);
+  const fontOptions = [
+    { key: "avenir" as const, label: "A", title: "Avenir" },
+    { key: "inter" as const, label: "M", title: "Inter" },
+    { key: "plex" as const, label: "J", title: "IBM Plex Sans" },
+    { key: "rounded" as const, label: "R", title: "Nunito Rounded" },
+    { key: "mono" as const, label: "P", title: "IBM Plex Mono" }
+  ];
   const petProfile = !settingsDraft.pet_enabled
     ? "off"
     : settingsDraft.pet_mode === "monster"
@@ -854,94 +861,103 @@ export default function HomePage() {
           <div className="settingsModal" onClick={(event) => event.stopPropagation()}>
             <div className="settingsHeader">
               <h2>Settings</h2>
-              <button type="button" className="iconAction compact" aria-label="Close settings" onClick={() => setShowSettings(false)}>
-                <Icon name="cancel" />
-              </button>
-              <button type="button" className="iconAction compact" aria-label="Save settings" onClick={() => void saveSettings()} disabled={settingsBusy} title="Save settings">
-                <Icon name="save" />
-              </button>
+              <div className="settingsHeaderActions">
+                <button type="button" className="iconAction compact" aria-label="Save settings" onClick={() => void saveSettings()} disabled={settingsBusy} title="Save settings">
+                  <Icon name="save" />
+                </button>
+                <button type="button" className="iconAction compact" aria-label="Cancel settings" onClick={() => { setSettingsDraft(settings); setShowSettings(false); }} title="Cancel settings">
+                  <Icon name="cancel" />
+                </button>
+              </div>
             </div>
-            <div className="settingsGrid">
-              <div className="settingsRow">
-                <span>Pet</span>
-                <div className="settingsIconRail">
-                  {(["off", "sweet", "meh", "monster"] as const).map((mode) => (
-                    <button
-                      key={mode}
-                      type="button"
-                      className={`iconAction compact ${petProfile === mode ? "active" : ""}`}
-                      title={mode === "off" ? "no" : mode === "sweet" ? "professional" : mode === "meh" ? "meh" : "nuclear"}
-                      onClick={() => setSettingsDraft((prev) => (
-                        mode === "off"
-                          ? { ...prev, pet_enabled: false }
-                          : { ...prev, pet_enabled: true, pet_mode: mode }
-                      ))}
-                    >
-                      {mode === "off" ? "×" : mode === "sweet" ? "^_^" : mode === "meh" ? "-_-" : ">:)"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <label className="settingsRow">
-                <span>Font</span>
-                <select
-                  value={settingsDraft.font_family}
-                  onChange={(event) => setSettingsDraft((prev) => ({ ...prev, font_family: event.target.value as SettingsDraft["font_family"] }))}
-                >
-                  <option value="avenir">Avenir</option>
-                  <option value="inter">Inter</option>
-                  <option value="plex">IBM Plex Sans</option>
-                  <option value="mono">Mono</option>
-                  <option value="rounded">Rounded</option>
-                </select>
-              </label>
-              <div className="settingsRow">
-                <span>Text</span>
-                <div className="settingsIconRail">
-                  {(["s", "m", "l"] as const).map((size) => (
-                    <button
-                      key={size}
-                      type="button"
-                      className={`iconAction compact ${settingsDraft.font_size === size ? "active" : ""}`}
-                      title={`Text ${size.toUpperCase()}`}
-                      onClick={() => setSettingsDraft((prev) => ({ ...prev, font_size: size }))}
-                    >
-                      {size.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="settingsRow colorSettings">
-                <span>Colors</span>
-                <div className="settingsIconRail">
-                  {colorKeys.map((key) => (
-                    <label key={key} className="paletteCell" title={key}>
-                      <span className="srOnly">{key}</span>
+            <div className="settingsInner">
+              <div className="settingsGrid">
+                <div className="settingsRow">
+                  <span>Pet</span>
+                  <div className="settingsIconRail">
+                    {(["off", "sweet", "meh", "monster"] as const).map((mode) => (
                       <button
+                        key={mode}
                         type="button"
-                        className="colorDot"
-                        style={{ background: settingsDraft.color_palette[key] }}
-                        onClick={() => settingsColorInputRefs.current[key]?.click()}
-                      />
-                      <input
-                        type="color"
-                        ref={(node) => { settingsColorInputRefs.current[key] = node; }}
-                        className="hiddenColorInput"
-                        value={settingsDraft.color_palette[key]}
-                        onChange={(event) => setSettingsDraft((prev) => ({
-                          ...prev,
-                          color_palette: { ...prev.color_palette, [key]: event.target.value }
-                        }))}
-                      />
-                    </label>
-                  ))}
+                        className={`iconAction compact ${petProfile === mode ? "active" : ""}`}
+                        title={mode === "off" ? "no" : mode === "sweet" ? "professional" : mode === "meh" ? "meh" : "nuclear"}
+                        onClick={() => setSettingsDraft((prev) => (
+                          mode === "off"
+                            ? { ...prev, pet_enabled: false }
+                            : { ...prev, pet_enabled: true, pet_mode: mode }
+                        ))}
+                      >
+                        {mode === "off" ? "×" : mode === "sweet" ? "◉" : mode === "meh" ? "⊖" : "☢"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="settingsRow">
+                  <span>Font</span>
+                  <div className="settingsIconRail">
+                    {fontOptions.map((font) => (
+                      <button
+                        key={font.key}
+                        type="button"
+                        className={`iconAction compact ${settingsDraft.font_family === font.key ? "active" : ""}`}
+                        title={font.title}
+                        onClick={() => setSettingsDraft((prev) => ({ ...prev, font_family: font.key }))}
+                      >
+                        {font.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="settingsRow">
+                  <span>Text</span>
+                  <div className="settingsIconRail">
+                    {(["s", "m", "l"] as const).map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        className={`iconAction compact ${settingsDraft.font_size === size ? "active" : ""}`}
+                        title={`Text ${size.toUpperCase()}`}
+                        onClick={() => setSettingsDraft((prev) => ({ ...prev, font_size: size }))}
+                      >
+                        {size.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="settingsRow colorSettings">
+                  <span>Color</span>
+                  <div className="settingsIconRail">
+                    {colorKeys.map((key) => (
+                      <label key={key} className="paletteCell" title={key}>
+                        <span className="srOnly">{key}</span>
+                        <button
+                          type="button"
+                          className="colorDot"
+                          style={{ background: settingsDraft.color_palette[key] }}
+                          onClick={() => settingsColorInputRefs.current[key]?.click()}
+                        >
+                          <span aria-hidden="true">−</span>
+                        </button>
+                        <input
+                          type="color"
+                          ref={(node) => { settingsColorInputRefs.current[key] = node; }}
+                          className="hiddenColorInput"
+                          value={settingsDraft.color_palette[key]}
+                          onChange={(event) => setSettingsDraft((prev) => ({
+                            ...prev,
+                            color_palette: { ...prev.color_palette, [key]: event.target.value }
+                          }))}
+                        />
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
             {settingsError ? <p className="settingsError">{settingsError}</p> : null}
-            <div className="settingsActions">
-              <button type="button" onClick={() => { setSettingsDraft(settings); setShowSettings(false); }}>Cancel</button>
-            </div>
           </div>
         </section>
       ) : null}

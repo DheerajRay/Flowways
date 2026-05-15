@@ -38,7 +38,8 @@ body {
   min-height: 100dvh;
 }
 .page.font-avenir { --app-font: "Avenir Next", "Trebuchet MS", sans-serif; }
-.page.font-combo { --app-font: "Segoe UI", "Trebuchet MS", sans-serif; }
+.page.font-inter { --app-font: "Inter", "Segoe UI", "Avenir Next", sans-serif; }
+.page.font-plex { --app-font: "IBM Plex Sans", "Segoe UI", sans-serif; }
 .page.font-mono { --app-font: "IBM Plex Mono", "Courier New", monospace; }
 .page.font-rounded { --app-font: "Nunito", "Avenir Next", sans-serif; }
 .page.size-s { font-size: 14px; }
@@ -743,6 +744,16 @@ textarea { min-height: 100px; resize: vertical; }
   margin: 0;
   font-size: 20px;
 }
+.settingsHeaderActions {
+  display: inline-flex;
+  gap: 8px;
+}
+.settingsInner {
+  border: 2px solid #1a1a1a;
+  border-radius: 18px;
+  background: #fffefb;
+  padding: 10px;
+}
 .settingsGrid {
   display: grid;
   gap: 8px;
@@ -752,28 +763,20 @@ textarea { min-height: 100px; resize: vertical; }
   grid-template-columns: 90px 1fr;
   align-items: center;
   gap: 8px;
-  border: 1px solid #e5e0d0;
-  border-radius: 11px;
-  padding: 8px 10px;
-  background: #fffefb;
+  padding: 3px 0;
 }
 .settingsRow > span {
   font-size: 13px;
   font-weight: 700;
 }
-.settingsRow select {
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  padding: 6px 9px;
-}
 .settingsIconRail {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 8px;
-  border: 1px solid var(--line);
+  padding: 4px 8px 4px 0;
+  border: 0;
   border-radius: 999px;
-  background: #fff;
+  background: transparent;
 }
 .colorSettings {
   align-items: start;
@@ -783,11 +786,17 @@ textarea { min-height: 100px; resize: vertical; }
   justify-items: center;
 }
 .paletteCell .colorDot {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 999px;
   border: 2px solid #1a1a1a;
   padding: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 700;
 }
 .hiddenColorInput {
   position: absolute;
@@ -796,13 +805,8 @@ textarea { min-height: 100px; resize: vertical; }
   opacity: 0;
   pointer-events: none;
 }
-.settingsActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 6px;
-}
 .settingsError {
-  margin: 0;
+  margin: 0 4px;
   color: #8b2525;
   font-size: 13px;
   font-weight: 600;
