@@ -42,6 +42,10 @@ describe("classifier fallback", () => {
     const mondayLocal = new Date(new Date(dueMonday!).getTime() - 240 * 60000);
     expect(mondayLocal.getUTCDay()).toBe(1);
     expect(mondayLocal.getUTCHours()).toBe(9);
+
+    const yesterday = parseDueAt("remind me yesterday at 7 pm", morning, 240);
+    expect(yesterday).toBeTruthy();
+    expect(new Date(yesterday!).getTime()).toBeLessThan(morning.getTime());
   });
 
   it("classifies timeline items", () => {

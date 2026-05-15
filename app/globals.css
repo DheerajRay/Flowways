@@ -728,9 +728,9 @@ textarea { min-height: 100px; resize: vertical; }
   background: #fffdf8;
   border: 1px solid var(--line);
   border-radius: 18px;
-  padding: 14px;
+  padding: 16px;
   display: grid;
-  gap: 10px;
+  gap: 12px;
   box-shadow: 0 16px 36px rgba(35, 52, 75, 0.24);
 }
 .settingsHeader {
@@ -749,34 +749,36 @@ textarea { min-height: 100px; resize: vertical; }
   gap: 8px;
 }
 .settingsInner {
-  border: 2px solid #1a1a1a;
-  border-radius: 18px;
-  background: #fffefb;
-  padding: 10px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  padding: 0;
 }
 .settingsGrid {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 .settingsRow {
   display: grid;
-  grid-template-columns: 90px 1fr;
+  grid-template-columns: 74px 1fr;
   align-items: center;
-  gap: 8px;
-  padding: 3px 0;
+  gap: 10px;
+  padding: 0;
 }
 .settingsRow > span {
   font-size: 13px;
   font-weight: 700;
+  line-height: 1;
 }
 .settingsIconRail {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 8px 4px 0;
-  border: 0;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: transparent;
+  background: #fff;
+  min-height: 42px;
 }
 .colorSettings {
   align-items: start;
@@ -786,17 +788,11 @@ textarea { min-height: 100px; resize: vertical; }
   justify-items: center;
 }
 .paletteCell .colorDot {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 999px;
   border: 2px solid #1a1a1a;
   padding: 0;
-  display: grid;
-  place-items: center;
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 14px;
-  line-height: 1;
-  font-weight: 700;
 }
 .hiddenColorInput {
   position: absolute;
@@ -871,7 +867,7 @@ textarea { min-height: 100px; resize: vertical; }
   .settingsRow {
     grid-template-columns: 1fr;
     align-items: start;
-    gap: 8px;
+    gap: 6px;
   }
   .settingsIconRail {
     width: 100%;

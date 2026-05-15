@@ -565,7 +565,7 @@ export default function HomePage() {
     return mins ? `${hours}h ${mins}m spent` : `${hours}h spent`;
   }
 
-  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "settings" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "color" | "tags" }) {
+  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "settings" | "petNo" | "petPro" | "petMeh" | "petNuclear" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "color" | "tags" }) {
     const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
     if (name === "done" || name === "save") return <svg {...common}><path d="M3 8.5l3 3L13 4.5" /></svg>;
     if (name === "undo" || name === "cancel") return <svg {...common}><path d="M6 4L2.5 7.5 6 11" /><path d="M3 7.5h5.5A4.5 4.5 0 1 1 8.5 16" /></svg>;
@@ -574,6 +574,10 @@ export default function HomePage() {
     if (name === "hide") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><path d="M1.5 1.5l13 13" /></svg>;
     if (name === "signout") return <svg {...common}><path d="M9.5 3h3v10h-3" /><path d="M8 8H2.8" /><path d="M5.2 5.6 2.8 8l2.4 2.4" /></svg>;
     if (name === "settings") return <svg {...common}><circle cx="8" cy="8" r="2.2" /><path d="M8 2.2v1.4M8 12.4v1.4M13.8 8h-1.4M3.6 8H2.2M11.9 4.1l-1 1M5.1 10.9l-1 1M11.9 11.9l-1-1M5.1 5.1l-1-1" /></svg>;
+    if (name === "petNo") return <svg {...common}><path d="M4 4l8 8M12 4 4 12" /></svg>;
+    if (name === "petPro") return <svg {...common}><path d="M5.2 6.2h5.6a1.2 1.2 0 0 1 1.2 1.2v2.8a1.2 1.2 0 0 1-1.2 1.2H5.2A1.2 1.2 0 0 1 4 10.2V7.4a1.2 1.2 0 0 1 1.2-1.2z" /><path d="M6.3 6.2V5.3a1.2 1.2 0 0 1 1.2-1.2h1a1.2 1.2 0 0 1 1.2 1.2v.9" /></svg>;
+    if (name === "petMeh") return <svg {...common}><path d="M4.2 6.2h1.6M10.2 6.2h1.6" /><path d="M5 10h6" /></svg>;
+    if (name === "petNuclear") return <svg {...common}><circle cx="8" cy="8" r="1.2" /><path d="M8 3.2v2.3M11.9 5l-1.9 1.2M4.1 5l1.9 1.2M8 12.8v-2.3M11.9 11l-1.9-1.2M4.1 11l1.9-1.2" /></svg>;
     if (name === "add") return <svg {...common}><path d="M8 3.2v9.6M3.2 8h9.6" /></svg>;
     if (name === "search") return <svg {...common}><circle cx="7" cy="7" r="4.3" /><path d="M10.3 10.3 13.5 13.5" /></svg>;
     if (name === "show") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><circle cx="8" cy="8" r="1.5" /></svg>;
@@ -879,18 +883,18 @@ export default function HomePage() {
                       <button
                         key={mode}
                         type="button"
-                        className={`iconAction compact ${petProfile === mode ? "active" : ""}`}
-                        title={mode === "off" ? "no" : mode === "sweet" ? "professional" : mode === "meh" ? "meh" : "nuclear"}
-                        onClick={() => setSettingsDraft((prev) => (
-                          mode === "off"
-                            ? { ...prev, pet_enabled: false }
-                            : { ...prev, pet_enabled: true, pet_mode: mode }
-                        ))}
-                      >
-                        {mode === "off" ? "×" : mode === "sweet" ? "◉" : mode === "meh" ? "⊖" : "☢"}
-                      </button>
-                    ))}
-                  </div>
+                      className={`iconAction compact ${petProfile === mode ? "active" : ""}`}
+                      title={mode === "off" ? "no" : mode === "sweet" ? "professional" : mode === "meh" ? "meh" : "nuclear"}
+                      onClick={() => setSettingsDraft((prev) => (
+                        mode === "off"
+                          ? { ...prev, pet_enabled: false }
+                          : { ...prev, pet_enabled: true, pet_mode: mode }
+                      ))}
+                    >
+                      <Icon name={mode === "off" ? "petNo" : mode === "sweet" ? "petPro" : mode === "meh" ? "petMeh" : "petNuclear"} />
+                    </button>
+                  ))}
+                </div>
                 </div>
 
                 <div className="settingsRow">

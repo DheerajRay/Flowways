@@ -190,6 +190,7 @@ export function parseDueAt(text: string, baseDate = new Date(), clientTimezoneOf
   const toLocalFrame = (d: Date) => new Date(d.getTime() - offsetMin * 60000);
   const fromLocalFrame = (d: Date) => new Date(d.getTime() + offsetMin * 60000);
   const result = toLocalFrame(baseDate);
+  const hasYesterday = /\byesterday\b/.test(normalized);
   const relative = normalized.match(/\b(in|after|for)\s+(\d+)\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/);
   const bareRelative = normalized.match(/^\s*(\d+)\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\s*$/);
 
@@ -222,7 +223,10 @@ export function parseDueAt(text: string, baseDate = new Date(), clientTimezoneOf
     hasWeekday = true;
   }
 
-  if (/\btoday\b/.test(normalized)) {
+  if (hasYesterday) {
+    result.setUTCDate(result.getUTCDate() - 1);
+    result.setUTCHours(17, 0, 0, 0);
+  } else if (/\btoday\b/.test(normalized)) {
     result.setUTCHours(17, 0, 0, 0);
   } else if (/\btomorrow\b/.test(normalized)) {
     result.setUTCDate(result.getUTCDate() + 1);
@@ -245,7 +249,7 @@ export function parseDueAt(text: string, baseDate = new Date(), clientTimezoneOf
     if (tm[3] === "pm" && h < 12) h += 12;
     if (tm[3] === "am" && h === 12) h = 0;
     result.setUTCHours(h, m, 0, 0);
-    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && fromLocalFrame(result).getTime() <= baseDate.getTime()) {
+    if (!hasYesterday && !/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && fromLocalFrame(result).getTime() <= baseDate.getTime()) {
       result.setUTCDate(result.getUTCDate() + 1);
     }
     return fromLocalFrame(result).toISOString();
@@ -256,7 +260,7 @@ export function parseDueAt(text: string, baseDate = new Date(), clientTimezoneOf
     const h = Number(tm24[1]);
     const m = Number(tm24[2]);
     result.setUTCHours(h, m, 0, 0);
-    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && fromLocalFrame(result).getTime() <= baseDate.getTime()) {
+    if (!hasYesterday && !/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && fromLocalFrame(result).getTime() <= baseDate.getTime()) {
       result.setUTCDate(result.getUTCDate() + 1);
     }
     return fromLocalFrame(result).toISOString();
@@ -264,7 +268,7 @@ export function parseDueAt(text: string, baseDate = new Date(), clientTimezoneOf
 
   if (/\bnoon\b/.test(normalized)) {
     result.setUTCHours(12, 0, 0, 0);
-    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && fromLocalFrame(result).getTime() <= baseDate.getTime()) {
+    if (!hasYesterday && !/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && fromLocalFrame(result).getTime() <= baseDate.getTime()) {
       result.setUTCDate(result.getUTCDate() + 1);
     }
     return fromLocalFrame(result).toISOString();
@@ -272,13 +276,13 @@ export function parseDueAt(text: string, baseDate = new Date(), clientTimezoneOf
 
   if (/\bmidnight\b/.test(normalized)) {
     result.setUTCHours(0, 0, 0, 0);
-    if (!/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && fromLocalFrame(result).getTime() <= baseDate.getTime()) {
+    if (!hasYesterday && !/\b(today|tomorrow|next week)\b/.test(normalized) && !/\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) && fromLocalFrame(result).getTime() <= baseDate.getTime()) {
       result.setUTCDate(result.getUTCDate() + 1);
     }
     return fromLocalFrame(result).toISOString();
   }
 
-  if (/\b(today|tomorrow|next week)\b/.test(normalized) || /\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) || hasWeekday) {
+  if (hasYesterday || /\b(today|tomorrow|next week)\b/.test(normalized) || /\b20\d{2}-\d{2}-\d{2}\b/.test(normalized) || hasWeekday) {
     return fromLocalFrame(result).toISOString();
   }
 
