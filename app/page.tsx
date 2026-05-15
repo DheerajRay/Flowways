@@ -37,6 +37,9 @@ export default function HomePage() {
   const [selectedColorTag, setSelectedColorTag] = useState<string>("");
   const selectedColorTagRef = useRef<string>("");
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showTagWindow, setShowTagWindow] = useState(false);
+  const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
+  const [tagMatchMode, setTagMatchMode] = useState<"AND" | "OR">("AND");
   const [nowMs, setNowMs] = useState(Date.now());
   const [mergeTargetBySource, setMergeTargetBySource] = useState<Record<string, string>>({});
   const [hiddenItemIds, setHiddenItemIds] = useState<string[]>([]);
@@ -455,7 +458,7 @@ export default function HomePage() {
     return mins ? `${hours}h ${mins}m spent` : `${hours}h spent`;
   }
 
-  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "color" }) {
+  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "color" | "tags" }) {
     const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
     if (name === "done" || name === "save") return <svg {...common}><path d="M3 8.5l3 3L13 4.5" /></svg>;
     if (name === "undo" || name === "cancel") return <svg {...common}><path d="M6 4L2.5 7.5 6 11" /><path d="M3 7.5h5.5A4.5 4.5 0 1 1 8.5 16" /></svg>;
@@ -472,13 +475,14 @@ export default function HomePage() {
     if (name === "journal") return <svg {...common}><path d="M4 2.8h7.5a1 1 0 0 1 1 1v8.4a1 1 0 0 1-1 1H4" /><path d="M4 2.8v10.4" /><path d="M6.2 5.6h4M6.2 8h4" /></svg>;
     if (name === "checklist") return <svg {...common}><path d="M6.5 5.2h5M6.5 8h5M6.5 10.8h5" /><path d="M3.2 5.2 4 6l1.1-1.2M3.2 8 4 8.8l1.1-1.2M3.2 10.8 4 11.6l1.1-1.2" /></svg>;
     if (name === "color") return <svg {...common}><path d="M6.1 10 10 6.1a1.2 1.2 0 0 1 1.7 1.7l-3.9 3.9a1.6 1.6 0 0 1-1.2.5h-.8v-.8a1.7 1.7 0 0 1 .3-1.4z" /><circle cx="10.9" cy="6.9" r=".7" /></svg>;
+    if (name === "tags") return <svg {...common}><path d="M2.5 8.2 8.2 2.5h4.3v4.3L6.8 12.5a1 1 0 0 1-1.4 0L2.5 9.6a1 1 0 0 1 0-1.4z" /><circle cx="10.1" cy="5.9" r=".7" /></svg>;
     if (name === "backlog") return <svg {...common}><path d="M11.5 8H4.2" /><path d="M6.9 5.3 4.2 8l2.7 2.7" /></svg>;
     if (name === "ready") return <svg {...common}><path d="M5 4.2 11.8 8 5 11.8z" /></svg>;
     if (name === "progress") return <svg {...common}><path d="M5.8 4v8M10.2 4v8" /></svg>;
     return <svg {...common}><circle cx="8" cy="8" r="5.2" /><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none" /></svg>;
   }
 
-  const visibleItems = items
+  const baseVisibleItems = items
     .filter((item) => showHidden || !hiddenItemIds.includes(item.id))
     .filter((item) => captureMode === "auto" ? true : item.kind === captureMode)
     .filter((item) => {
@@ -487,6 +491,15 @@ export default function HomePage() {
       return haystack.includes(searchText);
     })
     .filter((item) => !selectedColorTag || (item.labels || []).includes(selectedColorTag));
+
+  const availableTagFilters = [...new Set(baseVisibleItems.flatMap((item) => item.labels || []).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+
+  const visibleItems = baseVisibleItems.filter((item) => {
+    if (!activeTagFilters.length) return true;
+    const labels = item.labels || [];
+    if (tagMatchMode === "AND") return activeTagFilters.every((tag) => labels.includes(tag));
+    return activeTagFilters.some((tag) => labels.includes(tag));
+  });
 
   const sortedItems = [...visibleItems].sort((a, b) => {
     const timelineRank = (item: DbItem) => {
@@ -634,9 +647,35 @@ export default function HomePage() {
           <div className="captureActions">
             <button type="button" className="iconAction" aria-label="Add task" title="Add task" onClick={() => void submitItem()} disabled={busy || !sourceText.trim()}><Icon name="add" /></button>
             <button type="button" className="iconAction" aria-label="Search tasks" title="Search tasks" onClick={runSearch}><Icon name="search" /></button>
+            <button type="button" className={`iconAction${showTagWindow ? " active" : ""}`} aria-label="Tag filters" title="Tag filters" onClick={() => setShowTagWindow((prev) => !prev)}><Icon name="tags" /></button>
             <button type="button" className={`iconAction${showHidden ? " active" : ""}`} aria-label={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} title={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} onClick={() => setShowHidden((prev) => !prev)}><Icon name={showHidden ? "show" : "hide"} /></button>
           </div>
         </div>
+        {showTagWindow ? (
+          <div className="tagWindow" aria-label="Tag filters window">
+            <div className="tagWindowTop">
+              <div className="tagMatchToggle">
+                <button type="button" className={tagMatchMode === "AND" ? "active" : ""} onClick={() => setTagMatchMode("AND")}>AND</button>
+                <button type="button" className={tagMatchMode === "OR" ? "active" : ""} onClick={() => setTagMatchMode("OR")}>OR</button>
+              </div>
+              <button type="button" className="tagClear" onClick={() => setActiveTagFilters([])} disabled={!activeTagFilters.length}>Clear tags</button>
+            </div>
+            <div className="tagWindowChips">
+              {availableTagFilters.length === 0 ? <span className="tagWindowEmpty">No tags in current result.</span> : null}
+              {availableTagFilters.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  className={activeTagFilters.includes(tag) ? `tagChip active${tag.startsWith("color-") ? ` colorTag ${tag}` : ""}` : `tagChip${tag.startsWith("color-") ? ` colorTag ${tag}` : ""}`}
+                  onClick={() => setActiveTagFilters((prev) => prev.includes(tag) ? prev.filter((v) => v !== tag) : [...prev, tag])}
+                >
+                  {tag.startsWith("color-") ? <span className="colorSwatch" aria-hidden="true" /> : null}
+                  {tag.startsWith("color-") ? tag.replace("color-", "") : `#${tag}`}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </section>
 
       <section className="feedShell" aria-label="Saved items">
@@ -826,10 +865,18 @@ export default function HomePage() {
                 const isColorLabel = label.startsWith("color-");
                 const colorName = label.replace("color-", "");
                 return (
-                  <span className={`tagChip${isColorLabel ? ` colorTag ${label}` : ""}`} key={label}>
+                  <button
+                    type="button"
+                    className={`${activeTagFilters.includes(label) ? "tagChip active" : "tagChip"}${isColorLabel ? ` colorTag ${label}` : ""}`}
+                    key={label}
+                    onClick={() => {
+                      setActiveTagFilters((prev) => prev.includes(label) ? prev.filter((v) => v !== label) : [...prev, label]);
+                      if (!showTagWindow) setShowTagWindow(true);
+                    }}
+                  >
                     {isColorLabel ? <span className="colorSwatch" aria-hidden="true" /> : null}
                     {isColorLabel ? colorName : `#${label}`}
-                  </span>
+                  </button>
                 );
               })}
               {item.kind === "timeline" && !item.checked && item.due_at && !timeState?.done ? (

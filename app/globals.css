@@ -133,6 +133,57 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   display: flex;
   gap: 8px;
 }
+.tagWindow {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+.tagWindowTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.tagMatchToggle {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  background: #fff;
+}
+.tagMatchToggle button {
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+.tagMatchToggle button:last-child {
+  border-right: 0;
+}
+.tagMatchToggle button.active {
+  background: #111;
+  color: #fff;
+}
+.tagClear {
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+.tagWindowChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tagWindowEmpty {
+  color: var(--muted);
+  font-size: 12px;
+}
 .modeActions {
   display: flex;
   align-items: center;
@@ -402,6 +453,12 @@ textarea { min-height: 100px; resize: vertical; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  cursor: pointer;
+}
+.tagChip.active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
 }
 .colorTag {
   text-transform: capitalize;
@@ -417,6 +474,9 @@ textarea { min-height: 100px; resize: vertical; }
 .colorTag.color-green .colorSwatch { background: #2f9e66; }
 .colorTag.color-amber .colorSwatch { background: #de8a2d; }
 .colorTag.color-violet .colorSwatch { background: #7666c8; }
+.tagChip.active .colorSwatch {
+  border-color: #fff;
+}
 .overdueTagChip {
   border: 1px solid #111;
   border-radius: 999px;
