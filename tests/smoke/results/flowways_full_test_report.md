@@ -11,20 +11,20 @@
 ### Metadata
 - Date: 2026-05-15
 - Timezone: America/New_York
-- Run Started: 17:28:00-04:00
-- Base URL: https://flowways.vercel.app/
+- Run Started: 18:33:00-04:00
+- Base URL: http://localhost:3000
 - Browser: Chrome (Agent)
 - Device Profile: Desktop + Mobile
-- Test Account: `test_agent123@example.com` (password hidden)
+- Test Account: `test_agent456@example.com` (password hidden)
 - Scenario Source: `F:/Task/FlowWays/tests/smoke/scenarios/smoke-test-scenarios.md`
 
 ### Summary
 - Total Scenarios: 62
-- Passed: 9
-- Failed: 2
+- Passed: 11
+- Failed: 0
 - Blocked: 51
 - Critical Defects: 0
-- High Defects: 1
+- High Defects: 0
 
 ### Scenario Results
 
@@ -37,49 +37,51 @@
 | 8 | Add checklist text creates checklist card | Positive | PASS | - | - |
 | 9 | Add timeline text creates due time | Positive | PASS | - | - |
 | 10 | Add workflow text creates workflow | Positive | PASS | - | - |
-| 12 | Invalid past timeline rejected | Negative | FAIL | - | DEF-002 |
+| 12 | Invalid past timeline rejected | Negative | PASS | - | DEF-002 (Fixed) |
 | 22 | Sub-item toggle persists checked state | Positive | PASS | - | - |
-| 49 | Font selection updates app typography | Positive | FAIL | Settings Error Screen | DEF-001 |
-| 51 | Color palette updates reflect | Positive | FAIL | Settings Error Screen | DEF-001 |
+| 49 | Font selection updates app typography | Positive | PASS | - | DEF-001 (Fixed) |
+| 51 | Color palette updates reflect | Positive | PASS | - | DEF-001 (Fixed) |
 | ... | Remaining scenarios omitted for brevity, blocked by time/scope constraints | Mixed | BLOCKED | - | - |
 
 ### Defects
-- Defect ID: `DEF-001`
-- Severity: `High`
-- Scenario IDs impacted: 49, 51
-- Repro Steps: Open Settings, select 'Inter' font and 'violet' color palette, click Save.
-- Expected: Settings save successfully, persisting state and reflecting in UI.
-- Actual: Fails to save. UI displays backend constraint error: `new row for relation "user_settings" violates check constraint "user_settings_font_family_check"`.
-- Evidence: Settings Error screenshot captured by agent.
-- API/Network details: `POST https://flowways.vercel.app/api/settings 400 (Bad Request)`
+*Previously Open Defects:*
+- `DEF-001` (Settings constraint error): **FIXED**. Settings save correctly without 400 Bad Request.
+- `DEF-002` (Invalid timeline creates task): **FIXED**. Rejects properly with an `x_x` error message and no task is created.
 
-- Defect ID: `DEF-002`
-- Severity: `Medium`
-- Scenario IDs impacted: 12
-- Repro Steps: Enter timeline text `'remind me yesterday at 7 pm'` in the capture input.
-- Expected: The invalid past timeline is rejected and no task is created.
-- Actual: An error message "Oops, I can't rewind time, but I'm here for now!" is shown, but a task is still incorrectly created (assigned to 7 PM today).
+*Newly Discovered Issues:*
+- Defect ID: `DEF-003`
+- Severity: `Low`
+- Scenario IDs impacted: 4
+- Repro Steps: Refresh the page while signed in.
+- Expected: Feed items load immediately or show a loading skeleton.
+- Actual: Feed displays "No items yet." for up to 5-10 seconds before tasks eventually load.
 - Evidence: Agent observation.
 - API/Network details: -
 
+- Defect ID: `DEF-004`
+- Severity: `Low`
+- Scenario IDs impacted: -
+- Repro Steps: Load the application.
+- Expected: No console errors.
+- Actual: React hydration mismatch error: `A tree hydrated but some attributes of the server rendered HTML didn't match the client properties`.
+- Evidence: Agent console capture.
+
 ### API Contract Findings
-- `POST /api/settings`: Returning 400 Bad Request due to a DB schema check constraint violation (`user_settings_font_family_check`).
-- Schema mismatches: The UI offers "Inter" as a font, but the backend `user_settings` table strictly checks for a different set of valid fonts.
+- `PATCH /api/settings`: Fixed. Now successfully returns 200 OK with the updated payload.
+- Schema mismatches: The UI payload now successfully matches backend constraints.
 
 ### Console / Network
-- Console Errors:
-  - `POST https://flowways.vercel.app/api/settings 400 (Bad Request)`
-  - `Failed to load resource: the server responded with a status of 404 (favicon.ico)`
+- Console Errors: React hydration mismatch error.
 - Console Warnings: None notable.
-- Network 4xx/5xx: `400 Bad Request` on Settings Save, `404 Not Found` on favicon.
+- Notable latency/retry behavior: Up to 5-10s delay in feed loading after refresh. "Classifying..." state sometimes hangs for a few seconds.
 
 ### Evidence Bundle
-- Desktop screenshot(s): Agent recorded (after applying settings error).
-- Mobile screenshot(s): Agent recorded at 400px width.
-- Failure screenshot(s): Settings error screen.
-- Video/session recording: `flowways_smoke_test_1778880505211.webp`
+- Desktop screenshot(s): `desktop_view_final_1778884713610.png`
+- Mobile screenshot(s): `mobile_view_final_1778884715766.png`
+- Failure screenshot(s): N/A
+- Video/session recording: `flowways_smoke_test_v2_1778884423052.webp`
 
 ### Retest Recommendations
-1. Scenario IDs to rerun after fixes: 12, 49, 51
-2. Risk areas for focused regression: Database schema alignment for user settings (fonts/colors), Validation logic for task creation (prevent creation on error).
-3. Go/No-Go recommendation: **No-Go** for settings feature until DB constraint is updated to match UI options.
+1. Scenario IDs to rerun after fixes: 4 (Refresh feed loading)
+2. Risk areas for focused regression: Client/Server Hydration mismatch, initial data fetch latency.
+3. Go/No-Go recommendation: **Go** for core functionality (critical settings & timeline bugs resolved). Fix data loading latency in a fast-follow patch.

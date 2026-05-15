@@ -45,7 +45,9 @@ export default function HomePage() {
   const [showTagWindow, setShowTagWindow] = useState(false);
   const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
   const [tagMatchMode, setTagMatchMode] = useState<"AND" | "OR">("AND");
-  const [nowMs, setNowMs] = useState(Date.now());
+  const [nowMs, setNowMs] = useState(0);
+  const [hydrated, setHydrated] = useState(false);
+  const [initialFeedLoaded, setInitialFeedLoaded] = useState(false);
   const [mergeTargetBySource, setMergeTargetBySource] = useState<Record<string, string>>({});
   const [hiddenItemIds, setHiddenItemIds] = useState<string[]>([]);
   const [editChecklistEntries, setEditChecklistEntries] = useState<{ text: string; checked: boolean }[]>([]);
@@ -69,18 +71,23 @@ export default function HomePage() {
   };
 
   async function loadItems() {
+    if (!initialFeedLoaded) setSubmitMessage("Loading items...");
     const response = await fetch("/api/items", { cache: "no-store" });
     if (response.status === 401) {
       setAuthRequired(true);
+      setInitialFeedLoaded(true);
       return;
     }
     if (!response.ok) {
       setSubmitMessage("Could not load items.");
+      setInitialFeedLoaded(true);
       return;
     }
     const data = await response.json();
     setItems(data.items || []);
     setAuthRequired(false);
+    setInitialFeedLoaded(true);
+    setSubmitMessage("");
   }
 
   async function loadSettings() {
@@ -102,6 +109,7 @@ export default function HomePage() {
         void loadSettings();
       } else {
         setAuthRequired(true);
+        setInitialFeedLoaded(false);
       }
     });
 
@@ -113,6 +121,7 @@ export default function HomePage() {
       } else {
         setAuthRequired(true);
         setItems([]);
+        setInitialFeedLoaded(false);
       }
     });
 
@@ -120,6 +129,8 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    setHydrated(true);
+    setNowMs(Date.now());
     const timer = window.setInterval(() => setNowMs(Date.now()), 30000);
     return () => window.clearInterval(timer);
   }, []);
@@ -523,6 +534,7 @@ export default function HomePage() {
 
   function timelineState(dueAt: string | null) {
     if (!dueAt) return { done: false, label: "No due time set" };
+    if (!hydrated) return { done: false, label: "Calculating..." };
     const dueMs = new Date(dueAt).getTime();
     if (Number.isNaN(dueMs)) return { done: false, label: "Invalid due time" };
     const delta = dueMs - nowMs;
@@ -535,6 +547,7 @@ export default function HomePage() {
   }
 
   function timelineProgress(item: DbItem): number {
+    if (!hydrated) return 0;
     if (!item.due_at) return 0;
     const dueMs = new Date(item.due_at).getTime();
     if (Number.isNaN(dueMs)) return 0;
@@ -556,7 +569,7 @@ export default function HomePage() {
     if (!workflow.startedAt) return null;
     const startMs = new Date(workflow.startedAt).getTime();
     if (Number.isNaN(startMs)) return null;
-    const endMs = workflow.completedAt ? new Date(workflow.completedAt).getTime() : nowMs;
+    const endMs = workflow.completedAt ? new Date(workflow.completedAt).getTime() : (hydrated ? nowMs : startMs);
     if (Number.isNaN(endMs) || endMs <= startMs) return null;
     const deltaMin = Math.max(1, Math.floor((endMs - startMs) / 60000));
     if (deltaMin < 60) return `${deltaMin}m spent`;
@@ -659,6 +672,14 @@ export default function HomePage() {
         : showHidden
           ? "(o_o)"
           : petExpression;
+
+  function formatMetaDate(item: DbItem): string | null {
+    const raw = item.due_at || item.created_at;
+    if (!raw || !hydrated) return null;
+    const ms = new Date(raw).getTime();
+    if (Number.isNaN(ms)) return null;
+    return new Date(raw).toLocaleString();
+  }
 
   async function signInOrUp() {
     setBusy(true);
@@ -969,9 +990,10 @@ export default function HomePage() {
       <section className="feedShell" aria-label="Saved items">
         <div className="feed">
         <div className="feedCards">
-        {sortedItems.length === 0 ? <p className="empty">No items yet.</p> : null}
+        {sortedItems.length === 0 ? <p className="empty">{initialFeedLoaded ? "No items yet." : "Loading items..."}</p> : null}
         {sortedItems.map((item) => {
           const timeState = item.kind === "timeline" ? timelineState(item.due_at) : null;
+          const metaDate = formatMetaDate(item);
           const isTimelineExpired = item.kind === "timeline" && !item.checked && Boolean(timeState?.done);
           const isDone = Boolean(item.checked);
           const isHiddenItem = hiddenItemIds.includes(item.id);
@@ -1146,7 +1168,7 @@ export default function HomePage() {
             )}
 
             <div className={`meta metaRow${item.kind === "timeline" ? " timelineMetaRow" : ""}`}>
-              {item.due_at ? <span className="dateChip">{new Date(item.due_at).toLocaleString()}</span> : item.created_at ? <span className="dateChip">{new Date(item.created_at).toLocaleString()}</span> : null}
+              {metaDate ? <span className="dateChip">{metaDate}</span> : null}
               {item.kind === "timeline" && !item.checked && timeState?.done ? <span className="overdueTagChip">OVER DUE</span> : null}
               {item.kind === "workflow" && formatTimeSpent(item) ? <span className="dateChip">{formatTimeSpent(item)}</span> : null}
               {item.labels?.map((label) => {
