@@ -764,13 +764,14 @@ export default function HomePage() {
           const timeState = item.kind === "timeline" ? timelineState(item.due_at) : null;
           const isTimelineExpired = item.kind === "timeline" && !item.checked && Boolean(timeState?.done);
           const isDone = Boolean(item.checked);
+          const isHiddenItem = hiddenItemIds.includes(item.id);
           const colorLabel = (item.labels || []).find((label) => label.startsWith("color-"));
           return (
-          <article key={item.id} className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}${isDone ? " item-done" : ""}${colorLabel ? ` ${colorLabel}` : ""}`}>
+          <article key={item.id} className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}${isDone ? " item-done" : ""}${isHiddenItem ? " item-hidden" : ""}${colorLabel ? ` ${colorLabel}` : ""}`}>
             <div className="itemHead">
               <span className="kind">
                 <Icon name={item.kind} />
-                <span>{item.kind}</span>
+                <span>{item.title}</span>
               </span>
               <div className="actions">
                 {item.checked ? (
@@ -893,7 +894,6 @@ export default function HomePage() {
               </div>
             ) : (
               <>
-                <h3>{item.title}</h3>
                 {item.kind === "checklist" ? (
                   <div className="checklistBlock">
                     {parseChecklistItems(item.body).length ? (

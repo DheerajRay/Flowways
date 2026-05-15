@@ -321,19 +321,40 @@ textarea { min-height: 100px; resize: vertical; }
 .item-timeline { border-left: 2px solid #1d1d1d; }
 .item-timeline-alert {
   border-color: #c93434;
-  background: #fff8f8;
-  box-shadow: 0 0 0 1px rgba(201, 52, 52, 0.2), 0 10px 24px rgba(40, 54, 74, 0.08);
+  border-style: solid;
+  background: #fff6f6;
+  box-shadow: 0 0 0 2px rgba(201, 52, 52, 0.22), 0 10px 24px rgba(40, 54, 74, 0.08);
   animation: overduePulse 1.8s ease-in-out infinite;
 }
 .item-done {
   border-color: #2f9e66;
   box-shadow: 0 0 0 1px rgba(47, 158, 102, 0.22), 0 10px 24px rgba(40, 54, 74, 0.08);
 }
-.item.color-red { box-shadow: inset 4px 0 0 #d24f4f; }
-.item.color-blue { box-shadow: inset 4px 0 0 #2b7fca; }
-.item.color-green { box-shadow: inset 4px 0 0 #2f9e66; }
-.item.color-amber { box-shadow: inset 4px 0 0 #de8a2d; }
-.item.color-violet { box-shadow: inset 4px 0 0 #7666c8; }
+.item.item-hidden {
+  border-style: dashed;
+  border-color: #6f7c8f;
+  background: #f9fbff;
+  box-shadow: 0 0 0 1px rgba(111, 124, 143, 0.2), 0 10px 24px rgba(40, 54, 74, 0.08);
+}
+.item.color-red { border-color: #d24f4f; }
+.item.color-blue { border-color: #2b7fca; }
+.item.color-green { border-color: #2f9e66; }
+.item.color-amber { border-color: #de8a2d; }
+.item.color-violet { border-color: #7666c8; }
+.item.item-hidden.color-red,
+.item.item-hidden.color-blue,
+.item.item-hidden.color-green,
+.item.item-hidden.color-amber,
+.item.item-hidden.color-violet {
+  border-color: #6f7c8f;
+}
+.item.item-timeline-alert.color-red,
+.item.item-timeline-alert.color-blue,
+.item.item-timeline-alert.color-green,
+.item.item-timeline-alert.color-amber,
+.item.item-timeline-alert.color-violet {
+  border-color: #c93434;
+}
 
 .itemHead {
   display: flex;
@@ -342,13 +363,18 @@ textarea { min-height: 100px; resize: vertical; }
   gap: 10px;
 }
 .kind {
-  text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.5px;
+  text-transform: none;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  font-weight: 700;
   color: var(--muted);
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  max-width: min(72vw, 620px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .kind svg {
   width: 14px;
