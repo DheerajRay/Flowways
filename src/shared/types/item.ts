@@ -24,6 +24,7 @@ export interface ClassificationResult {
   title: string;
   body: string;
   labels: string[];
+  pet_quip?: string;
   due_at: string | null;
   workflow_status: WorkflowStatus | null;
   confidence: number;

@@ -34,7 +34,7 @@ export async function classifyWithAiOrFallback(
         {
           role: "system",
           content:
-            "Classify user capture into checklist, journal, workflow, or timeline. Prefer workflow for professional project/action items (prepare, draft, plan, review, handoff, release, docs). Use checklist for simple personal actionable todos/lists. If input is exploratory/idea-like (for example 'testing something', 'test idea', 'thinking about'), prefer journal unless explicit task/list markers exist. Use memory hints to keep consistent categorization with existing items. Return strict JSON with keys: kind,title,body,labels,due_at,workflow_status,confidence,reason,fallbackUsed."
+            "Classify user capture into checklist, journal, workflow, or timeline. Prefer workflow for professional project/action items (prepare, draft, plan, review, handoff, release, docs). Use checklist for simple personal actionable todos/lists. If input is exploratory/idea-like (for example 'testing something', 'test idea', 'thinking about'), prefer journal unless explicit task/list markers exist. Use memory hints to keep consistent categorization with existing items. Provide concise, useful tags focused on people, entities, places, actions, or topics. Avoid filler tags like not/tell/thing/check. Also provide one short playful pet_quip (max 80 chars) related to the input. Return strict JSON with keys: kind,title,body,labels,pet_quip,due_at,workflow_status,confidence,reason,fallbackUsed."
         },
         {
           role: "user",
@@ -53,13 +53,14 @@ export async function classifyWithAiOrFallback(
               title: { type: "string" },
               body: { type: "string" },
               labels: { type: "array", items: { type: "string" } },
+              pet_quip: { type: "string" },
               due_at: { type: ["string", "null"] },
               workflow_status: { type: ["string", "null"], enum: ["Backlog", "Ready", "In Progress", "Review", "Done", null] },
               confidence: { type: "number" },
               reason: { type: "string" },
               fallbackUsed: { type: "boolean" }
             },
-            required: ["kind", "title", "body", "labels", "due_at", "workflow_status", "confidence", "reason", "fallbackUsed"]
+            required: ["kind", "title", "body", "labels", "pet_quip", "due_at", "workflow_status", "confidence", "reason", "fallbackUsed"]
           }
         }
       }
@@ -158,6 +159,7 @@ export async function classifyWithAiOrFallback(
       kind: refinedKind,
       title: refinedTitle || parsed.title,
       body: refinedBody,
+      pet_quip: (parsed.pet_quip || "").trim(),
       due_at: finalDueAt,
       labels: finalLabels,
       reason: refinedReason

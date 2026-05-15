@@ -15,8 +15,19 @@ const ACTION_CANONICAL: Record<string, string> = {
   meet: "meeting",
   call: "meeting",
   followup: "meeting",
-  "follow-up": "meeting"
+  "follow-up": "meeting",
+  mins: "minute",
+  min: "minute",
+  secs: "second",
+  sec: "second"
 };
+const TAG_STOPWORDS = new Set([
+  "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "in", "is", "it", "me", "my", "of", "on", "or", "that", "the", "this", "to", "was", "with",
+  "not", "no", "yes", "ok", "okay", "just", "really", "very", "thing", "things", "stuff", "some", "something",
+  "said", "tell", "told", "asked", "ask", "called", "call", "check", "checking", "about", "into", "onto",
+  "am", "pm", "mins", "min", "minute", "minutes", "secs", "sec", "second", "seconds", "hr", "hrs", "hour", "hours",
+  "today", "tomorrow"
+]);
 
 export function normalizeText(value: string): string {
   return String(value || "").trim().replace(/\s+/g, " ");
@@ -67,9 +78,14 @@ export function curateLabels(kind: ItemKind, labels: string[]): string[] {
   const canonical = labels
     .map((l) => slugLabel(l))
     .filter(Boolean)
+    .map((l) => l.replace(/-(s|es)$/, ""))
     .map((l) => ACTION_CANONICAL[l] || l)
     .filter((l) => !GENERIC_LABELS.has(l))
-    .filter((l) => l.length >= 2);
+    .filter((l) => !TAG_STOPWORDS.has(l))
+    .filter((l) => l.length >= 2)
+    .filter((l) => /[a-z]/.test(l))
+    .filter((l) => !/^\d+$/.test(l))
+    .filter((l) => !/^(check-in|checking|notification|reminder|timeline|journal|workflow|checklist)$/.test(l));
 
   const deduped = [...new Set(canonical)];
   const sorted = deduped.sort((a, b) => prioritizeLabel(b, kind) - prioritizeLabel(a, kind));
@@ -319,6 +335,13 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
       const normalized = normalizeGeneratedLabels(extractLabels(clean), clean);
       const inferred = inferContextLabels(clean, kind);
       return curateLabels(kind, [...new Set([...normalized, ...inferred])]);
+    })(),
+    pet_quip: (() => {
+      const compactTitle = title.length > 42 ? `${title.slice(0, 39)}...` : title;
+      if (kind === "timeline") return `Clock started for "${compactTitle}". No pressure.`;
+      if (kind === "workflow") return `Backlog fed: "${compactTitle}". Very official.`;
+      if (kind === "checklist") return `List saved: "${compactTitle}". Tiny boxes, big plans.`;
+      return `Noted: "${compactTitle}". Future-you will judge this.`;
     })(),
     due_at: dueAt,
     workflow_status: workflowStatus,

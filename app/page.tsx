@@ -214,7 +214,10 @@ export default function HomePage() {
           ? `Merged into existing checklist.`
           : `Saved as ${data.classification.kind}: ${data.classification.title}`
       );
-      const quip = pickSassyQuip(data.classification.kind, data.classification.title, Boolean(data.merged));
+      const serverQuip = String(data?.classification?.pet_quip || "").trim();
+      const quip = serverQuip
+        ? { text: serverQuip, face: "^_^" }
+        : pickSassyQuip(data.classification.kind, data.classification.title, Boolean(data.merged));
       setPetNotice(quip.text);
       setPetNoticeTone("info");
       setPetExpression(quip.face);

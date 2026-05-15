@@ -12,6 +12,7 @@ export const classificationResultSchema = z.object({
   title: z.string().min(1),
   body: z.string(),
   labels: z.array(z.string()),
+  pet_quip: z.string().optional().default(""),
   due_at: z.string().datetime().nullable(),
   workflow_status: z.enum(["Backlog", "Paused", "In Progress", "Ready", "Review", "Done"]).nullable(),
   confidence: z.number().min(0).max(1),
