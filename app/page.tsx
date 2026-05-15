@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { getSupabaseBrowserClient } from "@/shared/supabase-browser";
+import { DEFAULT_USER_SETTINGS, type UserSettings } from "@/shared/types/settings";
 
 interface DbItem {
   id: string;
@@ -14,6 +15,8 @@ interface DbItem {
   checked?: boolean;
   workflow_status?: "Backlog" | "Paused" | "In Progress" | "Ready" | "Review" | "Done" | null;
 }
+
+type SettingsDraft = UserSettings;
 
 export default function HomePage() {
   type CaptureMode = "auto" | "timeline" | "workflow" | "journal" | "checklist";
@@ -52,6 +55,11 @@ export default function HomePage() {
   const [editWorkflowStartedAt, setEditWorkflowStartedAt] = useState<string | null>(null);
   const [editWorkflowCompletedAt, setEditWorkflowCompletedAt] = useState<string | null>(null);
   const [newWorkflowComment, setNewWorkflowComment] = useState("");
+  const [settings, setSettings] = useState<SettingsDraft>(DEFAULT_USER_SETTINGS);
+  const [settingsDraft, setSettingsDraft] = useState<SettingsDraft>(DEFAULT_USER_SETTINGS);
+  const [showSettings, setShowSettings] = useState(false);
+  const [settingsBusy, setSettingsBusy] = useState(false);
+  const [settingsError, setSettingsError] = useState("");
   const workflowSteps = ["Backlog", "Paused", "In Progress"] as const;
   const workflowIcon: Record<(typeof workflowSteps)[number], "backlog" | "progress" | "ready"> = {
     Backlog: "backlog",
@@ -74,6 +82,15 @@ export default function HomePage() {
     setAuthRequired(false);
   }
 
+  async function loadSettings() {
+    const response = await fetch("/api/settings", { cache: "no-store" });
+    if (!response.ok) return;
+    const data = await response.json().catch(() => ({}));
+    const next = data?.settings || DEFAULT_USER_SETTINGS;
+    setSettings(next);
+    setSettingsDraft(next);
+  }
+
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
 
@@ -81,6 +98,7 @@ export default function HomePage() {
       if (data.session) {
         setAuthRequired(false);
         void loadItems();
+        void loadSettings();
       } else {
         setAuthRequired(true);
       }
@@ -90,6 +108,7 @@ export default function HomePage() {
       if (session) {
         setAuthRequired(false);
         void loadItems();
+        void loadSettings();
       } else {
         setAuthRequired(true);
         setItems([]);
@@ -130,6 +149,30 @@ export default function HomePage() {
   function setColorTag(value: string) {
     selectedColorTagRef.current = value;
     setSelectedColorTag(value);
+  }
+
+  async function saveSettings() {
+    setSettingsBusy(true);
+    setSettingsError("");
+    try {
+      const response = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settingsDraft)
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        setSettingsError(body.error || "Could not save settings.");
+        return;
+      }
+      const data = await response.json();
+      const next = data?.settings || settingsDraft;
+      setSettings(next);
+      setSettingsDraft(next);
+      setShowSettings(false);
+    } finally {
+      setSettingsBusy(false);
+    }
   }
 
   function pickSassyQuip(kind: DbItem["kind"], title: string, merged: boolean): { text: string; face: string } {
@@ -186,6 +229,8 @@ export default function HomePage() {
         body: JSON.stringify({
           sourceText,
           modeHint: captureMode,
+          petMode: settings.pet_mode,
+          petEnabled: settings.pet_enabled,
           clientNow: new Date().toISOString(),
           clientTimezoneOffsetMinutes: new Date().getTimezoneOffset()
         })
@@ -216,11 +261,15 @@ export default function HomePage() {
       );
       const serverQuip = String(data?.classification?.pet_quip || "").trim();
       const quip = serverQuip
-        ? { text: serverQuip, face: "^_^" }
+        ? { text: serverQuip, face: settings.pet_mode === "monster" ? ">:)" : settings.pet_mode === "meh" ? "-_-" : "^_^" }
         : pickSassyQuip(data.classification.kind, data.classification.title, Boolean(data.merged));
-      setPetNotice(quip.text);
-      setPetNoticeTone("info");
-      setPetExpression(quip.face);
+      if (settings.pet_enabled) {
+        setPetNotice(quip.text);
+        setPetNoticeTone("info");
+        setPetExpression(quip.face);
+      } else {
+        setPetNotice("");
+      }
       setSourceText("");
       await loadItems();
     } catch {
@@ -515,7 +564,7 @@ export default function HomePage() {
     return mins ? `${hours}h ${mins}m spent` : `${hours}h spent`;
   }
 
-  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "color" | "tags" }) {
+  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "settings" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "color" | "tags" }) {
     const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
     if (name === "done" || name === "save") return <svg {...common}><path d="M3 8.5l3 3L13 4.5" /></svg>;
     if (name === "undo" || name === "cancel") return <svg {...common}><path d="M6 4L2.5 7.5 6 11" /><path d="M3 7.5h5.5A4.5 4.5 0 1 1 8.5 16" /></svg>;
@@ -523,6 +572,7 @@ export default function HomePage() {
     if (name === "delete") return <svg {...common}><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6" /></svg>;
     if (name === "hide") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><path d="M1.5 1.5l13 13" /></svg>;
     if (name === "signout") return <svg {...common}><path d="M9.5 3h3v10h-3" /><path d="M8 8H2.8" /><path d="M5.2 5.6 2.8 8l2.4 2.4" /></svg>;
+    if (name === "settings") return <svg {...common}><circle cx="8" cy="8" r="2.2" /><path d="M8 2.2v1.4M8 12.4v1.4M13.8 8h-1.4M3.6 8H2.2M11.9 4.1l-1 1M5.1 10.9l-1 1M11.9 11.9l-1-1M5.1 5.1l-1-1" /></svg>;
     if (name === "add") return <svg {...common}><path d="M8 3.2v9.6M3.2 8h9.6" /></svg>;
     if (name === "search") return <svg {...common}><circle cx="7" cy="7" r="4.3" /><path d="M10.3 10.3 13.5 13.5" /></svg>;
     if (name === "show") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><circle cx="8" cy="8" r="1.5" /></svg>;
@@ -588,8 +638,13 @@ export default function HomePage() {
   const autoPetNotice = overduePetCount > 0
     ? `Overdue: ${overduePetCount} timeline ${overduePetCount === 1 ? "item" : "items"}`
     : "";
-  const resolvedPetNotice = showHidden ? "Hide mode" : (petNotice || autoPetNotice);
-  const resolvedPetTone: "info" | "warning" | "error" = showHidden ? "info" : (petNotice ? petNoticeTone : (autoPetNotice ? "warning" : "info"));
+  const resolvedPetNotice = settings.pet_enabled ? (showHidden ? "Hide mode" : (petNotice || autoPetNotice)) : "";
+  const resolvedPetTone: "info" | "warning" | "error" = settings.pet_enabled
+    ? (showHidden ? "info" : (petNotice ? petNoticeTone : (autoPetNotice ? "warning" : "info")))
+    : "info";
+  const systemNotice = !settings.pet_enabled
+    ? (showHidden ? "Hide mode" : (petNotice || autoPetNotice || ""))
+    : "";
   const resolvedPetFace = busy
     ? "•_•"
     : resolvedPetTone === "error"
@@ -633,6 +688,16 @@ export default function HomePage() {
     await supabase.auth.signOut();
   }
 
+  const colorKeys = ["red", "blue", "green", "amber", "violet"] as const;
+  const colorTagIds = colorKeys.map((key) => `color-${key}` as const);
+  const themeStyle = {
+    ["--tag-red" as string]: settings.color_palette.red,
+    ["--tag-blue" as string]: settings.color_palette.blue,
+    ["--tag-green" as string]: settings.color_palette.green,
+    ["--tag-amber" as string]: settings.color_palette.amber,
+    ["--tag-violet" as string]: settings.color_palette.violet
+  } as CSSProperties;
+
   if (authRequired) {
     return (
       <main className="authGate">
@@ -652,24 +717,43 @@ export default function HomePage() {
   }
 
   return (
-    <main className="page">
+    <main className={`page font-${settings.font_family} size-${settings.font_size}`} style={themeStyle}>
       <header className="topbar">
         <div>
           <h1>FlowWays</h1>
           <p className="subtitle">Capture, classify, edit, and manage memory items.</p>
         </div>
-        <button type="button" className="iconAction topbarAction" aria-label="Sign Out" title="Sign Out" onClick={signOut}><Icon name="signout" /></button>
+        <div className="topbarActions">
+          <button
+            type="button"
+            className={`iconAction topbarAction${showSettings ? " active" : ""}`}
+            aria-label="Settings"
+            title="Settings"
+            onClick={() => {
+              setSettingsDraft(settings);
+              setSettingsError("");
+              setShowSettings((prev) => !prev);
+            }}
+          >
+            <Icon name="settings" />
+          </button>
+          <button type="button" className="iconAction topbarAction" aria-label="Sign Out" title="Sign Out" onClick={signOut}><Icon name="signout" /></button>
+        </div>
       </header>
 
       <section className="capture">
-        <div className={`pixelPal${busy ? " isBusy" : ""}${resolvedPetNotice ? " hasNotice" : ""}${resolvedPetTone === "warning" ? " isWarning" : ""}${resolvedPetTone === "error" ? " isError" : ""}${showHidden ? " isGhost" : ""}`} aria-live="polite" aria-label={busy ? "Classifying task..." : resolvedPetNotice || (showHidden ? "Hidden tasks mode" : "Idle")}>
-          <span className="pixelPalFace" aria-hidden="true">{resolvedPetFace}</span>
-          {busy ? (
-            <span className="pixelPalText">Classifying...</span>
-          ) : resolvedPetNotice ? (
-            <span className="pixelPalText">{resolvedPetNotice}</span>
-          ) : null}
-        </div>
+        {settings.pet_enabled ? (
+          <div className={`pixelPal${busy ? " isBusy" : ""}${resolvedPetNotice ? " hasNotice" : ""}${resolvedPetTone === "warning" ? " isWarning" : ""}${resolvedPetTone === "error" ? " isError" : ""}${showHidden ? " isGhost" : ""}`} aria-live="polite" aria-label={busy ? "Classifying task..." : resolvedPetNotice || (showHidden ? "Hidden tasks mode" : "Idle")}>
+            <span className="pixelPalFace" aria-hidden="true">{resolvedPetFace}</span>
+            {busy ? (
+              <span className="pixelPalText">Classifying...</span>
+            ) : resolvedPetNotice ? (
+              <span className="pixelPalText">{resolvedPetNotice}</span>
+            ) : null}
+          </div>
+        ) : systemNotice ? (
+          <div className="systemNotice" aria-live="polite">{systemNotice}</div>
+        ) : null}
         <div className="captureBar">
           <input
             id="captureInput"
@@ -709,11 +793,12 @@ export default function HomePage() {
               {showColorPicker ? (
                 <div className="colorPopover">
                   <button type="button" className="colorDot clear" onClick={() => { setColorTag(""); setShowColorPicker(false); }} title="No color">×</button>
-                  {["color-red", "color-blue", "color-green", "color-amber", "color-violet"].map((c) => (
+                  {colorTagIds.map((c) => (
                     <button
                       type="button"
                       key={c}
-                      className={`colorDot ${c}${selectedColorTag === c ? " active" : ""}`}
+                      className={`colorDot${selectedColorTag === c ? " active" : ""}`}
+                      style={{ background: settings.color_palette[c.replace("color-", "") as keyof typeof settings.color_palette] }}
                       onClick={() => { setColorTag(c); setShowColorPicker(false); }}
                       title={c.replace("color-", "")}
                     />
@@ -755,6 +840,84 @@ export default function HomePage() {
           </div>
         ) : null}
       </section>
+
+      {showSettings ? (
+        <section className="settingsOverlay" role="dialog" aria-modal="true" aria-label="Settings">
+          <div className="settingsModal">
+            <div className="settingsHeader">
+              <h2>Settings</h2>
+              <button type="button" className="iconAction compact" aria-label="Close settings" onClick={() => setShowSettings(false)}>
+                <Icon name="cancel" />
+              </button>
+            </div>
+            <div className="settingsGrid">
+              <label className="settingsRow">
+                <span>Pet</span>
+                <input
+                  type="checkbox"
+                  checked={settingsDraft.pet_enabled}
+                  onChange={(event) => setSettingsDraft((prev) => ({ ...prev, pet_enabled: event.target.checked }))}
+                />
+              </label>
+              <div className="settingsRow">
+                <span>Mode</span>
+                <div className="segmented">
+                  {(["sweet", "meh", "monster"] as const).map((mode) => (
+                    <button key={mode} type="button" className={settingsDraft.pet_mode === mode ? "active" : ""} onClick={() => setSettingsDraft((prev) => ({ ...prev, pet_mode: mode }))}>
+                      {mode[0].toUpperCase() + mode.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <label className="settingsRow">
+                <span>Font</span>
+                <select
+                  value={settingsDraft.font_family}
+                  onChange={(event) => setSettingsDraft((prev) => ({ ...prev, font_family: event.target.value as SettingsDraft["font_family"] }))}
+                >
+                  <option value="avenir">Avenir</option>
+                  <option value="combo">Combo</option>
+                  <option value="mono">Mono</option>
+                  <option value="rounded">Rounded</option>
+                </select>
+              </label>
+              <div className="settingsRow">
+                <span>Size</span>
+                <div className="segmented">
+                  {(["s", "m", "l"] as const).map((size) => (
+                    <button key={size} type="button" className={settingsDraft.font_size === size ? "active" : ""} onClick={() => setSettingsDraft((prev) => ({ ...prev, font_size: size }))}>
+                      {size.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="settingsRow colorSettings">
+                <span>Color Tagging</span>
+                <div className="paletteEditor">
+                  {colorKeys.map((key) => (
+                    <label key={key} className="paletteCell">
+                      <span>{key}</span>
+                      <input
+                        type="color"
+                        value={settingsDraft.color_palette[key]}
+                        onChange={(event) => setSettingsDraft((prev) => ({
+                          ...prev,
+                          color_palette: { ...prev.color_palette, [key]: event.target.value }
+                        }))}
+                      />
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {settingsError ? <p className="settingsError">{settingsError}</p> : null}
+            <div className="settingsActions">
+              <button type="button" onClick={() => { setSettingsDraft(settings); setShowSettings(false); }}>Cancel</button>
+              <button type="button" onClick={() => void saveSettings()} disabled={settingsBusy}>{settingsBusy ? "Saving..." : "Save"}</button>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="feedShell" aria-label="Saved items">
         <div className="feed">

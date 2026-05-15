@@ -11,15 +11,30 @@ interface MemoryHint {
   labels?: string[] | null;
 }
 
+function petModeFallbackQuip(text: string, mode: "sweet" | "meh" | "monster"): string {
+  const short = normalizeText(text).slice(0, 42);
+  if (mode === "sweet") return `Got it, cutie. "${short}" is tucked in.`;
+  if (mode === "meh") return `Saved: "${short}". Moving on.`;
+  return `Boom. "${short}" captured. Try to keep up.`;
+}
+
 export async function classifyWithAiOrFallback(
   text: string,
   modeHint: "auto" | ItemKind,
+  petMode: "sweet" | "meh" | "monster" = "sweet",
+  petEnabled = true,
   memoryHints: MemoryHint[] = [],
   baseDate = new Date(),
   clientTimezoneOffsetMinutes?: number
 ): Promise<ClassificationResult> {
+  if (!petEnabled) {
+    const fallback = fallbackClassify(text, modeHint, baseDate, clientTimezoneOffsetMinutes);
+    return { ...fallback, pet_quip: "" };
+  }
+
   if (!client) {
-    return fallbackClassify(text, modeHint, baseDate, clientTimezoneOffsetMinutes);
+    const fallback = fallbackClassify(text, modeHint, baseDate, clientTimezoneOffsetMinutes);
+    return { ...fallback, pet_quip: petModeFallbackQuip(text, petMode) };
   }
 
   try {
@@ -34,11 +49,11 @@ export async function classifyWithAiOrFallback(
         {
           role: "system",
           content:
-            "Classify user capture into checklist, journal, workflow, or timeline. Prefer workflow for professional project/action items (prepare, draft, plan, review, handoff, release, docs). Use checklist for simple personal actionable todos/lists. If input is exploratory/idea-like (for example 'testing something', 'test idea', 'thinking about'), prefer journal unless explicit task/list markers exist. Use memory hints to keep consistent categorization with existing items. Provide concise, useful tags focused on people, entities, places, actions, or topics. Avoid filler tags like not/tell/thing/check. Also provide one short playful pet_quip (max 80 chars) related to the input. Return strict JSON with keys: kind,title,body,labels,pet_quip,due_at,workflow_status,confidence,reason,fallbackUsed."
+            "Classify user capture into checklist, journal, workflow, or timeline. Prefer workflow for professional project/action items (prepare, draft, plan, review, handoff, release, docs). Use checklist for simple personal actionable todos/lists. If input is exploratory/idea-like (for example 'testing something', 'test idea', 'thinking about'), prefer journal unless explicit task/list markers exist. Use memory hints to keep consistent categorization with existing items. Provide concise, useful tags focused on people, entities, places, actions, or topics. Avoid filler tags like not/tell/thing/check. Also provide one short playful pet_quip (max 80 chars) related to the input, in tone based on petMode: sweet=gentle/cute, meh=neutral/dry, monster=bold/sassy. Return strict JSON with keys: kind,title,body,labels,pet_quip,due_at,workflow_status,confidence,reason,fallbackUsed."
         },
         {
           role: "user",
-          content: `modeHint=${modeHint}\ntext=${text}\n\nmemoryHints:\n${hintText || "(none)"}`
+          content: `modeHint=${modeHint}\npetMode=${petMode}\ntext=${text}\n\nmemoryHints:\n${hintText || "(none)"}`
         }
       ],
       text: {

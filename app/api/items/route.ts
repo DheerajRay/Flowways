@@ -132,6 +132,8 @@ export async function POST(request: Request) {
     const classification = await classifyWithAiOrFallback(
       payload.sourceText,
       payload.modeHint,
+      payload.petMode,
+      payload.petEnabled,
       hintsResult.data || [],
       payload.clientNow ? new Date(payload.clientNow) : undefined,
       payload.clientTimezoneOffsetMinutes

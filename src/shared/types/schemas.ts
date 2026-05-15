@@ -1,8 +1,29 @@
 import { z } from "zod";
+import { DEFAULT_USER_SETTINGS } from "@/shared/types/settings";
+
+const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+
+export const userSettingsSchema = z.object({
+  pet_enabled: z.boolean(),
+  pet_mode: z.enum(["sweet", "meh", "monster"]),
+  font_family: z.enum(["avenir", "combo", "mono", "rounded"]),
+  font_size: z.enum(["s", "m", "l"]),
+  color_palette: z.object({
+    red: hexColor,
+    blue: hexColor,
+    green: hexColor,
+    amber: hexColor,
+    violet: hexColor
+  })
+});
+
+export const updateUserSettingsSchema = userSettingsSchema.partial();
 
 export const classifyInputSchema = z.object({
   text: z.string().min(1).max(5000),
   modeHint: z.enum(["auto", "checklist", "journal", "workflow", "timeline"]).default("auto"),
+  petMode: z.enum(["sweet", "meh", "monster"]).default(DEFAULT_USER_SETTINGS.pet_mode),
+  petEnabled: z.boolean().default(DEFAULT_USER_SETTINGS.pet_enabled),
   clientNow: z.string().datetime().optional(),
   clientTimezoneOffsetMinutes: z.number().int().min(-840).max(840).optional()
 });
@@ -23,6 +44,8 @@ export const classificationResultSchema = z.object({
 export const createItemSchema = z.object({
   sourceText: z.string().min(1),
   modeHint: z.enum(["auto", "checklist", "journal", "workflow", "timeline"]).default("auto"),
+  petMode: z.enum(["sweet", "meh", "monster"]).default(DEFAULT_USER_SETTINGS.pet_mode),
+  petEnabled: z.boolean().default(DEFAULT_USER_SETTINGS.pet_enabled),
   clientNow: z.string().datetime().optional(),
   clientTimezoneOffsetMinutes: z.number().int().min(-840).max(840).optional()
 });
