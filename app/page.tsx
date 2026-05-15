@@ -520,6 +520,20 @@ export default function HomePage() {
     return bCreated - aCreated;
   });
 
+  const overduePetCount = items
+    .filter((item) => (showHidden || !hiddenItemIds.includes(item.id)))
+    .filter((item) => item.kind === "timeline" && !item.checked && item.due_at)
+    .filter((item) => {
+      const dueMs = new Date(item.due_at as string).getTime();
+      return Number.isFinite(dueMs) && dueMs <= nowMs;
+    }).length;
+
+  const autoPetNotice = overduePetCount > 0
+    ? `Overdue: ${overduePetCount} timeline ${overduePetCount === 1 ? "item" : "items"}`
+    : "";
+  const resolvedPetNotice = petNotice || autoPetNotice;
+  const resolvedPetTone: "info" | "error" = petNotice ? petNoticeTone : (autoPetNotice ? "error" : "info");
+
   async function signInOrUp() {
     setBusy(true);
     setAuthMessage("");
@@ -582,12 +596,12 @@ export default function HomePage() {
       </header>
 
       <section className="capture">
-        <div className={`pixelPal${busy ? " isBusy" : ""}${petNotice ? " hasNotice" : ""}${petNoticeTone === "error" ? " isError" : ""}${showHidden ? " isGhost" : ""}`} aria-live="polite" aria-label={busy ? "Classifying task..." : petNotice || (showHidden ? "Hidden tasks mode" : "Idle")}>
-          <span className="pixelPalFace" aria-hidden="true">{petNoticeTone === "error" ? "x_x" : showHidden ? "(o_o)" : "^_^"}</span>
+        <div className={`pixelPal${busy ? " isBusy" : ""}${resolvedPetNotice ? " hasNotice" : ""}${resolvedPetTone === "error" ? " isError" : ""}${showHidden ? " isGhost" : ""}`} aria-live="polite" aria-label={busy ? "Classifying task..." : resolvedPetNotice || (showHidden ? "Hidden tasks mode" : "Idle")}>
+          <span className="pixelPalFace" aria-hidden="true">{resolvedPetTone === "error" ? "x_x" : showHidden ? "(o_o)" : "^_^"}</span>
           {busy ? (
             <span className="pixelPalText">Classifying...</span>
-          ) : petNotice ? (
-            <span className="pixelPalText">{petNotice}</span>
+          ) : resolvedPetNotice ? (
+            <span className="pixelPalText">{resolvedPetNotice}</span>
           ) : showHidden ? (
             <span className="pixelPalText">Hide mode</span>
           ) : null}
