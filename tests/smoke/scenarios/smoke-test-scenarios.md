@@ -4,134 +4,157 @@
 Run a fast but high-confidence smoke pass on deployed FlowWays behavior and produce actionable output for regressions.
 
 ## Source of Truth
-- App UI behavior: `app/page.tsx`
-- API contracts: `app/api/classify/route.ts`, `app/api/items/route.ts`, `app/api/items/[id]/route.ts`
-- Schemas: `src/shared/types/schemas.ts`
+- App UI behavior: `app/page.tsx`, `app/globals.css`
+- API contracts: `app/api/settings/route.ts`, `app/api/classify/route.ts`, `app/api/items/route.ts`, `app/api/items/[id]/route.ts`
+- Schemas: `src/shared/types/schemas.ts`, `src/shared/types/settings.ts`
 
-## Required Output Format (for every run)
-The external agent must produce a report with these sections:
+## Report Contract (must follow exactly)
 1. `Environment`
-- Base URL tested
+- Base URL
 - Browser + version
-- Date/time (with timezone)
-- Test account used (masked email)
-2. `Scenario Results Table`
-- Columns: `ID`, `Scenario`, `Status (Pass/Fail/Blocked)`, `Evidence`, `Defect ID`
-3. `Defects`
-- One block per defect:
-  - Severity (`Critical/High/Medium/Low`)
-  - Repro steps
-  - Expected vs actual
-  - Screenshot/video reference
-  - Network request/response reference (if applicable)
-4. `API Contract Findings`
-- Status codes observed for each endpoint
-- Any payload/schema mismatches
-5. `Console/Network Errors`
-- Exact error text and request URL
-6. `Retest Recommendations`
-- Exact scenarios to rerun after fixes
+- Device profile (desktop/mobile)
+- Date/time + timezone
+- Test account (masked)
+2. `Summary`
+- Total scenarios
+- Passed / Failed / Blocked count
+- Critical/High defect count
+3. `Scenario Results`
+- Columns: `ID`, `Scenario`, `Type (Positive/Negative)`, `Status`, `Evidence`, `Defect ID`
+4. `Defects`
+- Severity (`Critical/High/Medium/Low`)
+- Repro steps
+- Expected vs actual
+- Screenshot/video
+- Network payload/response excerpt
+5. `API Findings`
+- Endpoint, status code, response shape
+- Schema mismatch notes
+6. `Console/Network Errors`
+- Exact error text and URL/request id
+7. `Retest List`
+- Scenario IDs that must be rerun after fixes
 
-## Evidence Requirements
-For each failed scenario, capture:
-- 1 screenshot at failure state
-- Relevant request/response payload excerpt
-- Console error snippet if present
-
-For each passed API scenario, capture:
-- Endpoint
-- Status code
-- Minimal JSON shape confirmation
+## Evidence Rules
+- Every failed scenario: screenshot + console/network snippet.
+- Every API scenario: endpoint + status + compact JSON shape check.
+- At least 1 mobile screenshot and 1 desktop screenshot per run.
 
 ## Preconditions
-- User can sign in with email/password.
-- At least one clean test account available.
-- Browser localStorage is reset before run:
+- Auth credentials available.
+- Use clean account state when possible.
+- Clear local-only UI state before run:
 ```js
-localStorage.removeItem('flowways:hidden-items');
+localStorage.removeItem("flowways:hidden-items");
 ```
 
-## Smoke Scenarios
+## Scenario Matrix
 
-### Auth and Session
-1. Unauthenticated gate displays Sign In/Create Account and no feed.
-2. Sign in succeeds and loads app shell.
-3. Sign out returns to auth gate and clears feed.
-4. Refresh while signed in preserves session and reloads items.
+### A. Auth and Session
+1. Auth gate shows Sign In/Create Account while logged out. (`Positive`)
+2. Valid sign-in enters app shell. (`Positive`)
+3. Sign out returns to auth gate. (`Positive`)
+4. Refresh while signed in keeps session and restores feed. (`Positive`)
 
-### Capture and Save
-5. Empty capture input keeps Add (`+`) disabled.
-6. Save a journal-like text via Add (`+`); expect new card.
-7. Save a checklist-like text; expect checklist card with actionable rows.
-8. Save a timeline text (`in 10 mins`); expect due chip + due rail.
-9. Save a workflow text; expect workflow status rail and Backlog default.
-10. Save operation must always complete without stuck add state.
-11. Search icon filters visible feed by input text (title/body/tags).
-12. Show/Hide icon toggles whether hidden items are included in feed.
+### B. Capture and Classification
+5. Empty capture keeps add disabled. (`Positive`)
+6. Enter key submits capture when valid. (`Positive`)
+7. Add journal text creates journal card. (`Positive`)
+8. Add checklist text creates checklist card with rows. (`Positive`)
+9. Add timeline text (`in 10 mins`) creates due time + due rail. (`Positive`)
+10. Add workflow text creates workflow with Backlog status. (`Positive`)
+11. Save flow never remains stuck busy. (`Positive`)
+12. Invalid timeline in past is rejected with user-visible error. (`Negative`)
+13. Simulated transient save failure shows error and recovers next submit. (`Negative`)
 
-### Checklist Behaviors
-13. Toggle single sub-item persists state.
-14. Toggle all sub-items marks card done.
-15. Done card shows only Undo/Hide actions.
-16. Undo restores active controls.
-17. Edit checklist title + entries (add/remove/rename) and save without corruption.
-18. Multi-line checklist edits remain separate rows (no text concatenation).
-19. Merge visible when at least two open checklist cards exist.
-20. Merge appends deduplicated items into target and removes source card intentionally.
+### C. Tagging and Tag Filters
+14. Tags generated are topic/entity focused (no filler tags like `#not`, `#thing`). (`Positive`)
+15. Tag window opens/closes from toolbar button. (`Positive`)
+16. Tag chip click in window filters results. (`Positive`)
+17. AND mode requires all selected tags. (`Positive`)
+18. OR mode matches any selected tag. (`Positive`)
+19. Clear tags resets only tag filters. (`Positive`)
+20. Clicking card tag toggles same filter state and opens tag window if closed. (`Positive`)
+21. Color tags remain visible as tag chips and reflected in border color. (`Positive`)
 
-### Timeline Behaviors
-21. Edit timeline with exact datetime and save.
-22. Edit timeline with `In minutes` apply and save.
-23. Timeline edit `In minutes` pre-fills from current due time (not static default).
-24. Overdue timeline shows overdue state/chip while unchecked.
+### D. Checklist Behaviors
+22. Sub-item toggle persists checked state. (`Positive`)
+23. All checklist items checked marks parent done. (`Positive`)
+24. Done card shows Undo/Hide actions only. (`Positive`)
+25. Undo restores active action set. (`Positive`)
+26. Edit checklist title/items add/remove/update persists correctly. (`Positive`)
+27. Multi-line checklist edit stays separate rows. (`Positive`)
+28. Merge controls appear with at least two open checklists. (`Positive`)
+29. Merge deduplicates and removes source card. (`Positive`)
 
-### Workflow Behaviors
-25. New workflow item is created with status `Backlog` regardless of classifier output.
-26. Workflow rail shows only `Backlog` (back), `Paused` (pause), `In Progress` (play).
-27. Workflow rail does not include `Done` status control.
-28. Setting top-card Done marks workflow checked and stops time-spent counter.
-29. Undo on done workflow reopens it (unchecked) and preserves workflow timing continuity.
-30. Time-spent chip appears only after workflow has entered `In Progress`.
-31. Edit workflow summary/comments persists correctly.
+### E. Timeline Behaviors
+30. Timeline edit exact datetime save works. (`Positive`)
+31. Timeline `In minutes` apply/save works and updates due time. (`Positive`)
+32. Timeline edit prefills remaining minutes from due time. (`Positive`)
+33. Overdue unchecked timeline shows overdue styling and chip. (`Positive`)
+34. Timeline due time is local-time consistent (no unexpected day shift for same input context). (`Positive`)
 
-### Item Lifecycle and Feed
-32. Delete item removes it and does not reappear after refresh.
-33. Hide done item removes it from visible feed.
-34. If all cards are hidden, feed must show empty-state text (`No items yet.`), not a blank box.
-35. Sorting sanity: overdue timelines first, then timeline due order, then newest non-timeline.
+### F. Workflow Behaviors
+35. Workflow defaults to Backlog on creation. (`Positive`)
+36. Workflow rail has only Backlog, Paused, In Progress. (`Positive`)
+37. No duplicate done control in workflow rail. (`Positive`)
+38. Time spent appears only after first In Progress transition. (`Positive`)
+39. Done stops time spent growth; Undo reopens correctly. (`Positive`)
+40. Workflow summary/comments edit persists. (`Positive`)
 
-### API Contract Smoke
-36. `GET /api/items` returns 200 + `{ items: [...] }` when authenticated.
-37. `GET /api/items` returns 401 when unauthenticated.
-38. `POST /api/items` returns 200 + `item` + `classification` on valid payload.
-39. `PATCH /api/items/:id` persists valid fields and returns updated item.
-40. `DELETE /api/items/:id` returns `{ ok: true }`.
-41. `POST /api/classify` valid payload returns `{ result, remaining }`.
+### G. Hide, Search, Feed Order
+41. Search filters by title/body/tags. (`Positive`)
+42. Hide toggle includes/excludes hidden tasks from feed. (`Positive`)
+43. If everything hidden, empty-state text appears (not blank list box). (`Positive`)
+44. Feed sort order remains stable: overdue timelines first, then timeline due order, then newest others. (`Positive`)
 
-### Negative / Resilience
-42. Invalid `PATCH` payload is rejected; data unchanged.
-43. Invalid `POST /api/classify` payload is rejected.
-44. Simulated transient network failure during save shows user-facing failure message and does not leave add flow stuck.
+### H. Settings Modal and Runtime Theming
+45. Settings icon opens modal and outside click closes. (`Positive`)
+46. Modal top-right save applies changes immediately. (`Positive`)
+47. Modal cancel discards draft changes. (`Positive`)
+48. Pet control modes (`no/professional/meh/nuclear`) update behavior:
+- `no` disables pet UI and uses fallback notice area.
+- non-`no` re-enables pet UI.
+49. Font selection updates app typography and persists after refresh. (`Positive`)
+50. Text size control updates and persists after refresh. (`Positive`)
+51. Color palette updates reflect in:
+- card color borders
+- color chips/swatches
+- color-active controls
+52. Settings persist across sign-out/sign-in for same account. (`Positive`)
+53. Invalid settings payload rejected by API with no partial corrupt state. (`Negative`)
+
+### I. API Contract Smoke
+54. `GET /api/items` => 200 authenticated + `{ items: [] }`. (`Positive`)
+55. `GET /api/items` => 401 unauthenticated. (`Negative`)
+56. `POST /api/items` valid payload => 200 + `{ item, classification }`. (`Positive`)
+57. `PATCH /api/items/:id` valid update persists. (`Positive`)
+58. `DELETE /api/items/:id` returns success and item no longer appears. (`Positive`)
+59. `POST /api/classify` valid payload returns `{ result, remaining }`. (`Positive`)
+60. `GET /api/settings` returns effective settings object. (`Positive`)
+61. `PATCH /api/settings` valid payload persists and rehydrates on reload. (`Positive`)
+62. `PATCH /api/settings` invalid enum/hex rejected. (`Negative`)
 
 ## Suggested Seed Inputs
-- Checklist: `1. Buy milk 2. Buy bread 3. Buy onion #grocery`
-- Timeline: `Remind me in 10 mins to stretch`
+- Journal: `jj said the pet is boring`
+- Checklist: `1. eggs 2. milk 3. bread #grocery`
+- Timeline: `remind me to book tickets at 7 pm`
 - Workflow: `Prepare release handoff and draft rollout spec #release`
-- Journal: `Testing idea: compare calmer onboarding copy against current flow.`
+- Invalid timeline: `remind me yesterday at 7 pm`
 
-## Severity Guidance
-- `Critical`: data loss, auth bypass, app unusable
-- `High`: core flow broken, incorrect persistent state
-- `Medium`: degraded UX with workaround
-- `Low`: cosmetic/secondary behavior issue
+## Severity Guide
+- `Critical`: auth bypass, data loss, unusable app
+- `High`: core flow broken or incorrect persisted state
+- `Medium`: workaround available but behavior wrong
+- `Low`: cosmetic/minor UX issue
 
-## Regression Focus (Current)
-Prioritize these during every smoke run:
-1. Checklist edit data integrity (no entry corruption/duplication).
-2. Checklist row separation in edit/save (no concatenation).
-3. Save button busy-state recovery on failure and success.
+## Current Regression Priorities
+1. Settings persistence across devices/account sessions.
+2. Tag quality and filter correctness (AND/OR logic).
+3. Timeline local-time correctness and overdue rendering.
+4. Checklist edit/merge data integrity.
 
-## Pass Criteria for Release Candidate
-- No open Critical/High defects.
-- All Auth/Capture/Checklist/Timeline/Workflow core smoke scenarios pass.
-- API contract smoke scenarios pass without schema drift.
+## Release Pass Criteria
+- Zero open Critical/High defects.
+- All core positive scenarios (Auth, Capture, Settings, Checklist, Timeline, Workflow, API) pass.
+- All negative scenarios return correct rejection behavior with no state corruption.
