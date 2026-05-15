@@ -32,6 +32,7 @@ export default function HomePage() {
   const [busy, setBusy] = useState(false);
   const [petNotice, setPetNotice] = useState("");
   const [petNoticeTone, setPetNoticeTone] = useState<"info" | "warning" | "error">("info");
+  const [petExpression, setPetExpression] = useState("^_^");
   const [showHidden, setShowHidden] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedColorTag, setSelectedColorTag] = useState<string>("");
@@ -123,6 +124,46 @@ export default function HomePage() {
     setSelectedColorTag(value);
   }
 
+  function pickSassyQuip(kind: DbItem["kind"], title: string, merged: boolean): { text: string; face: string } {
+    const cleanTitle = (title || "").trim();
+    const shortTitle = cleanTitle.length > 36 ? `${cleanTitle.slice(0, 33)}...` : cleanTitle;
+
+    if (merged) {
+      const options = [
+        { text: "Folded into your checklist. No duplicates on my watch.", face: "^_-" },
+        { text: "Merged clean. Your list game is suspiciously strong.", face: "u_u" },
+        { text: "Checklist upgraded. I even pretended it was hard.", face: "¬_¬" }
+      ];
+      return options[Math.floor(Math.random() * options.length)];
+    }
+
+    const byKind: Record<DbItem["kind"], { text: string; face: string }[]> = {
+      timeline: [
+        { text: `Timer locked: ${shortTitle || "that task"}. Try beating the clock this time.`, face: "o_o" },
+        { text: `Scheduled: ${shortTitle || "timeline item"}. Time waits for nobody.`, face: "•_•" },
+        { text: `Timeline set. ${shortTitle || "It"} is now officially your problem.`, face: "^_~" }
+      ],
+      workflow: [
+        { text: `Workflow queued: ${shortTitle || "new work"}. Pretend this is under control.`, face: "¬‿¬" },
+        { text: `Backlog fed with ${shortTitle || "a fresh task"}. Very corporate of you.`, face: "u_u" },
+        { text: `Task pipelined: ${shortTitle || "it"}. Look at you being organized.`, face: "^_^" }
+      ],
+      checklist: [
+        { text: `Checklist saved: ${shortTitle || "new list"}. Tiny boxes, big ambition.`, face: "•‿•" },
+        { text: `List captured. ${shortTitle || "It"} now has accountability.`, face: "^_-" },
+        { text: `Checklist ready. One more thing to cross off dramatically.`, face: "o_o" }
+      ],
+      journal: [
+        { text: `Noted: ${shortTitle || "that thought"}. Future-you can decode this later.`, face: "¬_¬" },
+        { text: `Journaled: ${shortTitle || "entry saved"}. Main character energy noted.`, face: "^_^" },
+        { text: `Captured your note. Surprisingly coherent, too.`, face: "•_•" }
+      ]
+    };
+
+    const pool = byKind[kind] || byKind.journal;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
   async function submitItem() {
     if (!sourceText.trim() || authRequired) return;
     const colorTagAtSubmit = selectedColorTagRef.current;
@@ -148,6 +189,7 @@ export default function HomePage() {
         if (response.status === 400 && String(body.error || "").toLowerCase().includes("invalid timeline input")) {
           setPetNotice("Invalid timer. Please choose a future time.");
           setPetNoticeTone("error");
+          setPetExpression("x_x");
         }
         return;
       }
@@ -164,13 +206,17 @@ export default function HomePage() {
           ? `Merged into existing checklist.`
           : `Saved as ${data.classification.kind}: ${data.classification.title}`
       );
-      setPetNotice("");
+      const quip = pickSassyQuip(data.classification.kind, data.classification.title, Boolean(data.merged));
+      setPetNotice(quip.text);
+      setPetNoticeTone("info");
+      setPetExpression(quip.face);
       setSourceText("");
       await loadItems();
     } catch {
       setSubmitMessage("Save failed due to a network or server error.");
       setPetNotice("Something went wrong. Try again.");
       setPetNoticeTone("error");
+      setPetExpression("x_x");
     } finally {
       setBusy(false);
     }
@@ -533,6 +579,15 @@ export default function HomePage() {
     : "";
   const resolvedPetNotice = petNotice || autoPetNotice;
   const resolvedPetTone: "info" | "warning" | "error" = petNotice ? petNoticeTone : (autoPetNotice ? "warning" : "info");
+  const resolvedPetFace = busy
+    ? "•_•"
+    : resolvedPetTone === "error"
+      ? "x_x"
+      : resolvedPetTone === "warning"
+        ? "!_!"
+        : showHidden
+          ? "(o_o)"
+          : petExpression;
 
   async function signInOrUp() {
     setBusy(true);
@@ -597,7 +652,7 @@ export default function HomePage() {
 
       <section className="capture">
         <div className={`pixelPal${busy ? " isBusy" : ""}${resolvedPetNotice ? " hasNotice" : ""}${resolvedPetTone === "warning" ? " isWarning" : ""}${resolvedPetTone === "error" ? " isError" : ""}${showHidden ? " isGhost" : ""}`} aria-live="polite" aria-label={busy ? "Classifying task..." : resolvedPetNotice || (showHidden ? "Hidden tasks mode" : "Idle")}>
-          <span className="pixelPalFace" aria-hidden="true">{resolvedPetTone === "error" ? "x_x" : resolvedPetTone === "warning" ? "o_o" : showHidden ? "(o_o)" : "^_^"}</span>
+          <span className="pixelPalFace" aria-hidden="true">{resolvedPetFace}</span>
           {busy ? (
             <span className="pixelPalText">Classifying...</span>
           ) : resolvedPetNotice ? (
