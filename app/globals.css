@@ -110,6 +110,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   border-color: #9f2f2f;
   color: #7c2323;
 }
+.pixelPal.isWarning {
+  background: #fff8e8;
+  border-color: #a26b14;
+  color: #6e4a0f;
+}
 .pixelPal.isGhost {
   opacity: 1;
   transform: translateY(0);

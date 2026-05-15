@@ -31,7 +31,7 @@ export default function HomePage() {
   const [submitMessage, setSubmitMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [petNotice, setPetNotice] = useState("");
-  const [petNoticeTone, setPetNoticeTone] = useState<"info" | "error">("info");
+  const [petNoticeTone, setPetNoticeTone] = useState<"info" | "warning" | "error">("info");
   const [showHidden, setShowHidden] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedColorTag, setSelectedColorTag] = useState<string>("");
@@ -532,7 +532,7 @@ export default function HomePage() {
     ? `Overdue: ${overduePetCount} timeline ${overduePetCount === 1 ? "item" : "items"}`
     : "";
   const resolvedPetNotice = petNotice || autoPetNotice;
-  const resolvedPetTone: "info" | "error" = petNotice ? petNoticeTone : (autoPetNotice ? "error" : "info");
+  const resolvedPetTone: "info" | "warning" | "error" = petNotice ? petNoticeTone : (autoPetNotice ? "warning" : "info");
 
   async function signInOrUp() {
     setBusy(true);
@@ -596,8 +596,8 @@ export default function HomePage() {
       </header>
 
       <section className="capture">
-        <div className={`pixelPal${busy ? " isBusy" : ""}${resolvedPetNotice ? " hasNotice" : ""}${resolvedPetTone === "error" ? " isError" : ""}${showHidden ? " isGhost" : ""}`} aria-live="polite" aria-label={busy ? "Classifying task..." : resolvedPetNotice || (showHidden ? "Hidden tasks mode" : "Idle")}>
-          <span className="pixelPalFace" aria-hidden="true">{resolvedPetTone === "error" ? "x_x" : showHidden ? "(o_o)" : "^_^"}</span>
+        <div className={`pixelPal${busy ? " isBusy" : ""}${resolvedPetNotice ? " hasNotice" : ""}${resolvedPetTone === "warning" ? " isWarning" : ""}${resolvedPetTone === "error" ? " isError" : ""}${showHidden ? " isGhost" : ""}`} aria-live="polite" aria-label={busy ? "Classifying task..." : resolvedPetNotice || (showHidden ? "Hidden tasks mode" : "Idle")}>
+          <span className="pixelPalFace" aria-hidden="true">{resolvedPetTone === "error" ? "x_x" : resolvedPetTone === "warning" ? "o_o" : showHidden ? "(o_o)" : "^_^"}</span>
           {busy ? (
             <span className="pixelPalText">Classifying...</span>
           ) : resolvedPetNotice ? (
