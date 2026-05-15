@@ -714,16 +714,6 @@ textarea { min-height: 100px; resize: vertical; }
 .authTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .authTabs button.active { background: #e7f0ff; border-color: #a2bddf; }
 
-.settingsOverlay {
-  position: fixed;
-  inset: 0;
-  background: transparent;
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-start;
-  padding: 68px 24px 24px;
-  z-index: 70;
-}
 .settingsModal {
   width: min(430px, calc(100vw - 24px));
   background: #fffdf8;
@@ -733,6 +723,16 @@ textarea { min-height: 100px; resize: vertical; }
   display: grid;
   gap: 10px;
   box-shadow: 0 10px 24px rgba(35, 52, 75, 0.2);
+}
+.settingsDock {
+  display: flex;
+  justify-content: flex-end;
+}
+.settingsInline {
+  width: min(380px, 100%);
+  margin-top: 4px;
+  border-radius: 14px;
+  padding: 12px;
 }
 .settingsHeader {
   display: flex;
@@ -861,12 +861,10 @@ textarea { min-height: 100px; resize: vertical; }
     margin-top: 2px;
     justify-self: end;
   }
-  .settingsOverlay {
-    justify-content: center;
-    align-items: flex-start;
-    padding: 12px;
+  .settingsDock {
+    justify-content: stretch;
   }
-  .settingsModal { width: 100%; }
+  .settingsInline { width: 100%; }
   .settingsRow {
     grid-template-columns: 1fr;
     align-items: start;

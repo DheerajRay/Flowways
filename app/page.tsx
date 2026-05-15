@@ -879,18 +879,16 @@ export default function HomePage() {
             </div>
           </div>
         ) : null}
-      </section>
-
       {showSettings ? (
-        <section className="settingsOverlay" role="dialog" aria-modal="true" aria-label="Settings" onClick={() => setShowSettings(false)}>
-          <div className="settingsModal" onClick={(event) => event.stopPropagation()}>
+        <section className="settingsDock" aria-label="Settings">
+          <div className="settingsModal settingsInline">
             <div className="settingsHeader">
               <h2>Settings</h2>
               <div className="settingsHeaderActions">
                 <button type="button" className="iconAction compact" aria-label="Save settings" onClick={() => void saveSettings()} disabled={settingsBusy} title="Save settings">
                   <Icon name="save" />
                 </button>
-                <button type="button" className="iconAction compact" aria-label="Cancel settings" onClick={() => { setSettingsDraft(settings); setShowSettings(false); }} title="Cancel settings">
+                <button type="button" className="iconAction compact" aria-label="Close settings" onClick={() => { setSettingsDraft(settings); setShowSettings(false); }} title="Close settings">
                   <Icon name="cancel" />
                 </button>
               </div>
@@ -986,6 +984,7 @@ export default function HomePage() {
           </div>
         </section>
       ) : null}
+      </section>
 
       <section className="feedShell" aria-label="Saved items">
         <div className="feed">
