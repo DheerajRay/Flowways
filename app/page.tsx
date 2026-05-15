@@ -40,6 +40,7 @@ export default function HomePage() {
   const [searchText, setSearchText] = useState("");
   const [selectedColorTag, setSelectedColorTag] = useState<string>("");
   const selectedColorTagRef = useRef<string>("");
+  const settingsColorInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showTagWindow, setShowTagWindow] = useState(false);
   const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
@@ -690,6 +691,15 @@ export default function HomePage() {
 
   const colorKeys = ["red", "blue", "green", "amber", "violet"] as const;
   const colorTagIds = colorKeys.map((key) => `color-${key}` as const);
+  const sizeIndexMap: Record<SettingsDraft["font_size"], number> = { s: 0, m: 1, l: 2 };
+  const sizeByIndex: SettingsDraft["font_size"][] = ["s", "m", "l"];
+  const petProfile = !settingsDraft.pet_enabled
+    ? "off"
+    : settingsDraft.pet_mode === "monster"
+      ? "monster"
+      : settingsDraft.pet_mode === "meh"
+        ? "meh"
+        : "sweet";
   const themeStyle = {
     ["--tag-red" as string]: settings.color_palette.red,
     ["--tag-blue" as string]: settings.color_palette.blue,
@@ -852,39 +862,21 @@ export default function HomePage() {
             </div>
             <div className="settingsGrid">
               <div className="settingsRow">
-                <span>Pet</span>
-                <div className="microToggle">
-                  <button
-                    type="button"
-                    className={`iconAction compact ${settingsDraft.pet_enabled ? "active" : ""}`}
-                    title="Pet enabled"
-                    onClick={() => setSettingsDraft((prev) => ({ ...prev, pet_enabled: true }))}
-                  >
-                    <Icon name="done" />
-                  </button>
-                  <button
-                    type="button"
-                    className={`iconAction compact ${!settingsDraft.pet_enabled ? "active" : ""}`}
-                    title="Pet disabled"
-                    onClick={() => setSettingsDraft((prev) => ({ ...prev, pet_enabled: false }))}
-                  >
-                    <Icon name="cancel" />
-                  </button>
-                  <span className="microState">{settingsDraft.pet_enabled ? "On" : "Off"}</span>
-                </div>
-              </div>
-              <div className="settingsRow">
-                <span>Mode</span>
                 <div className="iconGroup">
-                  {(["sweet", "meh", "monster"] as const).map((mode) => (
+                  <span>Pet</span>
+                  {(["off", "sweet", "meh", "monster"] as const).map((mode) => (
                     <button
                       key={mode}
                       type="button"
-                      className={`iconAction compact ${settingsDraft.pet_mode === mode ? "active" : ""}`}
+                      className={`iconAction compact ${petProfile === mode ? "active" : ""}`}
                       title={mode}
-                      onClick={() => setSettingsDraft((prev) => ({ ...prev, pet_mode: mode }))}
+                      onClick={() => setSettingsDraft((prev) => (
+                        mode === "off"
+                          ? { ...prev, pet_enabled: false }
+                          : { ...prev, pet_enabled: true, pet_mode: mode }
+                      ))}
                     >
-                      {mode === "sweet" ? "^_^" : mode === "meh" ? "-_-" : ">:)"}
+                      {mode === "off" ? "×" : mode === "sweet" ? "🙂" : mode === "meh" ? "😐" : "😈"}
                     </button>
                   ))}
                 </div>
@@ -903,22 +895,34 @@ export default function HomePage() {
               </label>
               <div className="settingsRow">
                 <span>Size</span>
-                <div className="iconGroup">
-                  {(["s", "m", "l"] as const).map((size) => (
-                    <button key={size} type="button" className={`iconAction compact ${settingsDraft.font_size === size ? "active" : ""}`} onClick={() => setSettingsDraft((prev) => ({ ...prev, font_size: size }))}>
-                      {size.toUpperCase()}
-                    </button>
-                  ))}
+                <div className="sizeControl">
+                  <input
+                    type="range"
+                    min={0}
+                    max={2}
+                    step={1}
+                    value={sizeIndexMap[settingsDraft.font_size]}
+                    onChange={(event) => setSettingsDraft((prev) => ({ ...prev, font_size: sizeByIndex[Number(event.target.value)] }))}
+                  />
+                  <span className="sizeHint">{settingsDraft.font_size.toUpperCase()}</span>
                 </div>
               </div>
               <div className="settingsRow colorSettings">
                 <span>Colors</span>
                 <div className="paletteEditor">
                   {colorKeys.map((key) => (
-                    <label key={key} className="paletteCell">
+                    <label key={key} className="paletteCell" title={key}>
                       <span className="srOnly">{key}</span>
+                      <button
+                        type="button"
+                        className="colorDot"
+                        style={{ background: settingsDraft.color_palette[key] }}
+                        onClick={() => settingsColorInputRefs.current[key]?.click()}
+                      />
                       <input
                         type="color"
+                        ref={(node) => { settingsColorInputRefs.current[key] = node; }}
+                        className="hiddenColorInput"
                         value={settingsDraft.color_palette[key]}
                         onChange={(event) => setSettingsDraft((prev) => ({
                           ...prev,

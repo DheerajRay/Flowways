@@ -769,16 +769,25 @@ textarea { min-height: 100px; resize: vertical; }
   gap: 6px;
   align-items: center;
 }
-.microToggle {
+.iconGroup > span {
+  font-size: 13px;
+  font-weight: 700;
+  margin-right: 4px;
+}
+.sizeControl {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  width: 100%;
 }
-.microState {
+.sizeControl input[type="range"] {
+  width: 140px;
+  accent-color: #111;
+}
+.sizeHint {
   font-size: 12px;
-  color: var(--muted);
   font-weight: 700;
-  min-width: 24px;
+  color: var(--muted);
 }
 .colorSettings {
   align-items: start;
@@ -790,22 +799,21 @@ textarea { min-height: 100px; resize: vertical; }
 }
 .paletteCell {
   display: inline-flex;
-  gap: 6px;
   justify-items: center;
 }
-.paletteCell span {
-  text-transform: capitalize;
-  font-size: 11px;
-  color: var(--muted);
-}
-.paletteCell input[type="color"] {
-  width: 32px;
-  height: 32px;
-  border: 2px solid #1a1a1a;
-  background: #fff;
-  padding: 2px;
+.paletteCell .colorDot {
+  width: 28px;
+  height: 28px;
   border-radius: 999px;
-  cursor: pointer;
+  border: 2px solid #1a1a1a;
+  padding: 0;
+}
+.hiddenColorInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 .settingsActions {
   display: flex;
