@@ -6,6 +6,51 @@ Format follows Keep a Changelog style with practical engineering detail for this
 
 ## [Unreleased]
 
+## [2026-05-15] - v1.1.0 stabilization release
+
+### Added
+- Tag filtering UX:
+- dedicated tag-filter toggle in capture actions.
+- expandable tag window under search with multi-select chips.
+- `AND/OR` match mode toggle and `Clear tags` action.
+- clickable tag chips in task cards to activate/deactivate filters.
+- Overdue pet awareness:
+- pet now announces overdue timeline item count automatically.
+
+### Changed
+- Filtering stack behavior finalized:
+- hidden-state, kind, text search, color filter, and tag filters now stack together.
+- sort behavior remains unchanged while filtering (no re-ranking/pinning side effects).
+- Capture input UX:
+- pressing `Enter` in input now triggers classification/save (same as add button).
+- Button affordance polish:
+- subtle depth and hover/press feedback added to button system for clearer interaction cues.
+- Scroll/feed shell polish:
+- feed shell and scroll lane spacing refined to preserve full card span while keeping scrollbar visually separated.
+
+### Fixed
+- Classification guardrails:
+- timeline classification now requires explicit temporal cues; non-time notes no longer become invalid timers.
+- directed person-action phrases (for example `collect book from jj`, `jj called to check ...`) map to workflow.
+- Color-tagging state race:
+- fixed quick-toggle edge case that could apply stale color tags to a new item.
+- Visual semantics:
+- overdue pet tone now uses warning style, while true failures remain error style.
+
+### Docs / QA
+- Smoke test report normalized to a single `Latest Run` section per repository rules.
+- Changelog updated for post-1.0.1 feature/fix consolidation.
+
+### Files
+- `app/page.tsx`
+- `app/globals.css`
+- `src/server/ai/classifier-service.ts`
+- `src/shared/domain/classifier.ts`
+- `tests/unit/classifier.test.ts`
+- `tests/smoke/results/flowways_full_test_report.md`
+- `package.json`
+- `package-lock.json`
+
 ## [2026-05-14] - Feed-scrolling shell + themed scrollbar + color tagging UI
 
 ### Added
