@@ -853,13 +853,25 @@ export default function HomePage() {
             <div className="settingsGrid">
               <div className="settingsRow">
                 <span>Pet</span>
-                <button
-                  type="button"
-                  className={`iconToggle${settingsDraft.pet_enabled ? " active" : ""}`}
-                  onClick={() => setSettingsDraft((prev) => ({ ...prev, pet_enabled: !prev.pet_enabled }))}
-                >
-                  {settingsDraft.pet_enabled ? "Enabled" : "Disabled"}
-                </button>
+                <div className="microToggle">
+                  <button
+                    type="button"
+                    className={`iconAction compact ${settingsDraft.pet_enabled ? "active" : ""}`}
+                    title="Pet enabled"
+                    onClick={() => setSettingsDraft((prev) => ({ ...prev, pet_enabled: true }))}
+                  >
+                    <Icon name="done" />
+                  </button>
+                  <button
+                    type="button"
+                    className={`iconAction compact ${!settingsDraft.pet_enabled ? "active" : ""}`}
+                    title="Pet disabled"
+                    onClick={() => setSettingsDraft((prev) => ({ ...prev, pet_enabled: false }))}
+                  >
+                    <Icon name="cancel" />
+                  </button>
+                  <span className="microState">{settingsDraft.pet_enabled ? "On" : "Off"}</span>
+                </div>
               </div>
               <div className="settingsRow">
                 <span>Mode</span>
@@ -900,7 +912,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="settingsRow colorSettings">
-                <span>Color Tagging</span>
+                <span>Colors</span>
                 <div className="paletteEditor">
                   {colorKeys.map((key) => (
                     <label key={key} className="paletteCell">
