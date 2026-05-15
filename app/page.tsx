@@ -119,6 +119,14 @@ export default function HomePage() {
     window.localStorage.setItem("flowways:hidden-items", JSON.stringify(hiddenItemIds));
   }, [hiddenItemIds]);
 
+  useEffect(() => {
+    if (!petNotice || petNoticeTone !== "info") return;
+    const timeoutId = window.setTimeout(() => {
+      setPetNotice("");
+    }, 30000);
+    return () => window.clearTimeout(timeoutId);
+  }, [petNotice, petNoticeTone]);
+
   function setColorTag(value: string) {
     selectedColorTagRef.current = value;
     setSelectedColorTag(value);
@@ -577,8 +585,8 @@ export default function HomePage() {
   const autoPetNotice = overduePetCount > 0
     ? `Overdue: ${overduePetCount} timeline ${overduePetCount === 1 ? "item" : "items"}`
     : "";
-  const resolvedPetNotice = petNotice || autoPetNotice;
-  const resolvedPetTone: "info" | "warning" | "error" = petNotice ? petNoticeTone : (autoPetNotice ? "warning" : "info");
+  const resolvedPetNotice = showHidden ? "Hide mode" : (petNotice || autoPetNotice);
+  const resolvedPetTone: "info" | "warning" | "error" = showHidden ? "info" : (petNotice ? petNoticeTone : (autoPetNotice ? "warning" : "info"));
   const resolvedPetFace = busy
     ? "•_•"
     : resolvedPetTone === "error"
@@ -657,8 +665,6 @@ export default function HomePage() {
             <span className="pixelPalText">Classifying...</span>
           ) : resolvedPetNotice ? (
             <span className="pixelPalText">{resolvedPetNotice}</span>
-          ) : showHidden ? (
-            <span className="pixelPalText">Hide mode</span>
           ) : null}
         </div>
         <div className="captureBar">
