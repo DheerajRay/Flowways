@@ -716,22 +716,22 @@ textarea { min-height: 100px; resize: vertical; }
 .settingsOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(20, 24, 31, 0.32);
-  display: grid;
-  place-items: center;
-  padding: 20px;
+  background: transparent;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 68px 24px 24px;
   z-index: 70;
-  backdrop-filter: blur(2px);
 }
 .settingsModal {
-  width: min(520px, calc(100vw - 24px));
+  width: min(430px, calc(100vw - 24px));
   background: #fffdf8;
   border: 1px solid var(--line);
   border-radius: 18px;
-  padding: 16px;
+  padding: 14px;
   display: grid;
-  gap: 12px;
-  box-shadow: 0 16px 36px rgba(35, 52, 75, 0.24);
+  gap: 10px;
+  box-shadow: 0 10px 24px rgba(35, 52, 75, 0.2);
 }
 .settingsHeader {
   display: flex;
@@ -756,13 +756,13 @@ textarea { min-height: 100px; resize: vertical; }
 }
 .settingsGrid {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 .settingsRow {
   display: grid;
-  grid-template-columns: 74px 1fr;
+  grid-template-columns: 58px auto;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 0;
 }
 .settingsRow > span {
@@ -774,11 +774,12 @@ textarea { min-height: 100px; resize: vertical; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 9px;
+  padding: 4px 8px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: #fff;
-  min-height: 42px;
+  min-height: 38px;
+  justify-self: start;
 }
 .colorSettings {
   align-items: start;
@@ -860,7 +861,8 @@ textarea { min-height: 100px; resize: vertical; }
     justify-self: end;
   }
   .settingsOverlay {
-    place-items: center;
+    justify-content: center;
+    align-items: flex-start;
     padding: 12px;
   }
   .settingsModal { width: 100%; }
