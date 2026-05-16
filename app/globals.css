@@ -87,7 +87,7 @@ body:has(.page.theme-bold) {
   gap: 16px;
   height: 100vh;
   height: 100dvh;
-  overflow: hidden;
+  overflow: visible;
   color: var(--ink);
 }
 .page.theme-classic {
@@ -499,7 +499,7 @@ textarea { min-height: 100px; resize: vertical; }
 }
 
 .feed {
-  display: grid;
+  display: block;
   min-height: 0;
   height: 100%;
   max-height: none;
@@ -518,6 +518,11 @@ textarea { min-height: 100px; resize: vertical; }
   display: grid;
   gap: 12px;
   margin-right: 8px;
+  align-content: start;
+  grid-auto-rows: max-content;
+}
+.feedCards > .item {
+  align-self: start;
 }
 .feed::-webkit-scrollbar {
   width: 0;
@@ -937,7 +942,8 @@ textarea { min-height: 100px; resize: vertical; }
   display: block;
   position: absolute;
   top: 0;
-  right: 0;
+  left: calc(100% + 18px);
+  right: auto;
   z-index: 10;
 }
 .settingsInline {
