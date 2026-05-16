@@ -71,6 +71,7 @@ body:has(.page.theme-bold) {
   --line: #d8d1bf;
   --ink: #23344b;
   --muted: #55657a;
+  --accent: #2563eb;
   --theme-shadow: 0 8px 18px rgba(35, 52, 75, 0.06);
 }
 .page.theme-neo {
@@ -79,6 +80,7 @@ body:has(.page.theme-bold) {
   --line: #e8edf3;
   --ink: #1f2b3a;
   --muted: #6c7a8d;
+  --accent: #06b6d4;
   --theme-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
 }
 .page.theme-midnight {
@@ -87,6 +89,7 @@ body:has(.page.theme-bold) {
   --line: #33353f;
   --ink: #edf6ff;
   --muted: #94a3b8;
+  --accent: #00f2fe;
   --theme-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
 }
 .page.theme-bold {
@@ -95,6 +98,7 @@ body:has(.page.theme-bold) {
   --line: #111827;
   --ink: #111827;
   --muted: #4b5563;
+  --accent: #7c3aed;
   --theme-shadow: 4px 4px 0 #111827;
 }
 .page.font-avenir { --app-font: "Avenir Next", "Trebuchet MS", sans-serif; }
@@ -944,11 +948,56 @@ textarea { min-height: 100px; resize: vertical; }
   box-shadow: 0 0 0 1px rgba(79, 172, 254, 0.22), 0 10px 22px rgba(0, 0, 0, 0.35);
 }
 
+.page.theme-midnight .iconAction {
+  border-color: #3f4960;
+  color: #dce7ff;
+  background: #1b1f29;
+}
+
+.page.theme-midnight .iconAction:hover {
+  background: #232a38;
+  border-color: #5a6a8f;
+  box-shadow: 0 0 0 1px rgba(0, 242, 254, 0.28), 0 8px 16px rgba(0, 0, 0, 0.45);
+}
+
+.page.theme-midnight .iconAction.active {
+  background: color-mix(in srgb, var(--accent) 24%, #121622);
+  border-color: color-mix(in srgb, var(--accent) 66%, #3a3a44);
+  color: #f3fcff;
+  box-shadow: 0 0 0 1px rgba(0, 242, 254, 0.45), 0 8px 18px rgba(0, 0, 0, 0.5);
+}
+
+.page.theme-midnight .item.color-red,
+.page.theme-midnight .item.color-blue,
+.page.theme-midnight .item.color-green,
+.page.theme-midnight .item.color-amber,
+.page.theme-midnight .item.color-violet {
+  box-shadow: 0 0 0 1px rgba(79, 172, 254, 0.16), 0 10px 22px rgba(0, 0, 0, 0.35);
+}
+
+.page.theme-midnight .item.color-red { border-color: var(--tag-red); box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-red) 45%, #000), 0 10px 22px rgba(0, 0, 0, 0.35); }
+.page.theme-midnight .item.color-blue { border-color: var(--tag-blue); box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-blue) 45%, #000), 0 10px 22px rgba(0, 0, 0, 0.35); }
+.page.theme-midnight .item.color-green { border-color: var(--tag-green); box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-green) 45%, #000), 0 10px 22px rgba(0, 0, 0, 0.35); }
+.page.theme-midnight .item.color-amber { border-color: var(--tag-amber); box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-amber) 45%, #000), 0 10px 22px rgba(0, 0, 0, 0.35); }
+.page.theme-midnight .item.color-violet { border-color: var(--tag-violet); box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-violet) 45%, #000), 0 10px 22px rgba(0, 0, 0, 0.35); }
+
+.page.theme-midnight .item.color-red .actions .iconAction.active { background: color-mix(in srgb, var(--tag-red) 60%, #111); border-color: var(--tag-red); }
+.page.theme-midnight .item.color-blue .actions .iconAction.active { background: color-mix(in srgb, var(--tag-blue) 60%, #111); border-color: var(--tag-blue); }
+.page.theme-midnight .item.color-green .actions .iconAction.active { background: color-mix(in srgb, var(--tag-green) 60%, #111); border-color: var(--tag-green); }
+.page.theme-midnight .item.color-amber .actions .iconAction.active { background: color-mix(in srgb, var(--tag-amber) 60%, #111); border-color: var(--tag-amber); }
+.page.theme-midnight .item.color-violet .actions .iconAction.active { background: color-mix(in srgb, var(--tag-violet) 60%, #111); border-color: var(--tag-violet); }
+
 .page.theme-neo .item,
 .page.theme-neo .capture,
 .page.theme-neo .feedShell,
 .page.theme-neo .authCard {
   border-radius: 22px;
+}
+
+.page.theme-neo .iconAction.active {
+  background: color-mix(in srgb, var(--accent) 22%, #ffffff);
+  border-color: color-mix(in srgb, var(--accent) 70%, #b9d7e2);
+  color: #0f3140;
 }
 
 .page.theme-bold .item,
@@ -965,6 +1014,12 @@ textarea { min-height: 100px; resize: vertical; }
 .page.theme-bold .item.color-green { border-color: var(--tag-green); box-shadow: 4px 4px 0 var(--tag-green); }
 .page.theme-bold .item.color-amber { border-color: var(--tag-amber); box-shadow: 4px 4px 0 var(--tag-amber); }
 .page.theme-bold .item.color-violet { border-color: var(--tag-violet); box-shadow: 4px 4px 0 var(--tag-violet); }
+
+.page.theme-bold .iconAction.active {
+  background: color-mix(in srgb, var(--accent) 18%, #ffffff);
+  border-color: var(--accent);
+  color: #1f1645;
+}
 
 @media (max-width: 900px) {
   .page { padding: 14px; }
