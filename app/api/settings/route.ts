@@ -21,7 +21,7 @@ export async function GET() {
 
   const { data, error } = await auth.supabase
     .from("user_settings")
-    .select("pet_enabled,pet_mode,font_family,font_size,color_palette")
+    .select("pet_enabled,pet_mode,font_family,font_size,theme,color_palette")
     .eq("user_id", auth.user.id)
     .maybeSingle();
 
@@ -39,7 +39,7 @@ export async function PATCH(request: Request) {
 
   const currentResult = await auth.supabase
     .from("user_settings")
-    .select("pet_enabled,pet_mode,font_family,font_size,color_palette")
+    .select("pet_enabled,pet_mode,font_family,font_size,theme,color_palette")
     .eq("user_id", auth.user.id)
     .maybeSingle();
   if (currentResult.error) return NextResponse.json({ error: currentResult.error.message }, { status: 400 });
@@ -61,10 +61,9 @@ export async function PATCH(request: Request) {
       user_id: auth.user.id,
       ...merged
     }, { onConflict: "user_id" })
-    .select("pet_enabled,pet_mode,font_family,font_size,color_palette")
+    .select("pet_enabled,pet_mode,font_family,font_size,theme,color_palette")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ settings: mergeWithDefaults(data) });
 }
-

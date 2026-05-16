@@ -1,6 +1,7 @@
 export type PetMode = "sweet" | "meh" | "monster";
 export type FontFamilyKey = "avenir" | "inter" | "plex" | "mono" | "rounded";
 export type FontSizeKey = "s" | "m" | "l";
+export type ThemeKey = "classic" | "neo" | "midnight" | "bold";
 
 export type ColorPalette = {
   red: string;
@@ -15,6 +16,7 @@ export interface UserSettings {
   pet_mode: PetMode;
   font_family: FontFamilyKey;
   font_size: FontSizeKey;
+  theme: ThemeKey;
   color_palette: ColorPalette;
 }
 
@@ -31,5 +33,6 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   pet_mode: "sweet",
   font_family: "avenir",
   font_size: "m",
+  theme: "classic",
   color_palette: DEFAULT_COLOR_PALETTE
 };

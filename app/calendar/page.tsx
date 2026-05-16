@@ -226,8 +226,8 @@ export default function CalendarPage() {
 
           <div className={styles.dayPane}>
             <div className={styles.dayNumber}>
-              {String(selectedDate.getDate()).padStart(2, "0")}
-              <span>{formatWeekdayShort(selectedDate)}</span>
+              <span className={styles.dayNumberValue}>{String(selectedDate.getDate()).padStart(2, "0")}</span>
+              <span className={styles.dayNumberWeekday}>{formatWeekdayShort(selectedDate)}</span>
             </div>
 
             <div className={styles.eventList}>

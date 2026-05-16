@@ -574,7 +574,7 @@ export default function HomePage() {
     return mins ? `${hours}h ${mins}m spent` : `${hours}h spent`;
   }
 
-  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "settings" | "petNo" | "petPro" | "petMeh" | "petNuclear" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "color" | "tags" | "labelPet" | "labelFont" | "labelText" | "labelColor" }) {
+  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "settings" | "petNo" | "petPro" | "petMeh" | "petNuclear" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "color" | "tags" | "labelPet" | "labelFont" | "labelText" | "labelColor" | "labelTheme" }) {
     const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
     if (name === "done" || name === "save") return <svg {...common}><path d="M3 8.5l3 3L13 4.5" /></svg>;
     if (name === "undo" || name === "cancel") return <svg {...common}><path d="M6 4L2.5 7.5 6 11" /><path d="M3 7.5h5.5A4.5 4.5 0 1 1 8.5 16" /></svg>;
@@ -591,6 +591,7 @@ export default function HomePage() {
     if (name === "labelFont") return <svg {...common}><path d="M3 12.5 7 3.5h2l4 9" /><path d="M5.2 9.2h5.6" /></svg>;
     if (name === "labelText") return <svg {...common}><path d="M3 4h10M8 4v8M5.8 12h4.4" /></svg>;
     if (name === "labelColor") return <svg {...common}><path d="M5.8 10.8 9.7 6.9a1.2 1.2 0 0 1 1.7 1.7l-3.9 3.9a1.6 1.6 0 0 1-1.2.5h-.8v-.8a1.7 1.7 0 0 1 .3-1.4z" /><circle cx="10.8" cy="7.8" r=".7" /></svg>;
+    if (name === "labelTheme") return <svg {...common}><path d="M2.8 8h10.4" /><path d="M8 2.8v10.4" /><circle cx="8" cy="8" r="1.2" /></svg>;
     if (name === "add") return <svg {...common}><path d="M8 3.2v9.6M3.2 8h9.6" /></svg>;
     if (name === "search") return <svg {...common}><circle cx="7" cy="7" r="4.3" /><path d="M10.3 10.3 13.5 13.5" /></svg>;
     if (name === "show") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><circle cx="8" cy="8" r="1.5" /></svg>;
@@ -723,6 +724,12 @@ export default function HomePage() {
     { key: "rounded" as const, label: "R", title: "Nunito Rounded" },
     { key: "mono" as const, label: "P", title: "IBM Plex Mono" }
   ];
+  const themeOptions = [
+    { key: "classic" as const, label: "C", title: "Classic Minimal" },
+    { key: "neo" as const, label: "N", title: "Neo-Soft" },
+    { key: "midnight" as const, label: "M", title: "Midnight Neon" },
+    { key: "bold" as const, label: "B", title: "Bold Dashboard" }
+  ];
   const petProfile = !settings.pet_enabled
     ? "off"
     : settings.pet_mode === "monster"
@@ -757,7 +764,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className={`page font-${settings.font_family} size-${settings.font_size}`} style={themeStyle}>
+    <main className={`page font-${settings.font_family} size-${settings.font_size} theme-${settings.theme}`} style={themeStyle}>
       <header className="topbar">
         <div>
           <h1>FlowWays</h1>
@@ -948,6 +955,28 @@ export default function HomePage() {
                         disabled={settingsBusy}
                       >
                         {size.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="settingsRow">
+                  <span className="settingsLabelIcon" aria-hidden="true"><Icon name="labelTheme" /></span>
+                  <div className="settingsIconRail">
+                    {themeOptions.map((theme) => (
+                      <button
+                        key={theme.key}
+                        type="button"
+                        className={`iconAction compact glyphButton ${settings.theme === theme.key ? "active" : ""}`}
+                        title={theme.title}
+                        onClick={() => {
+                          const next = { ...settings, theme: theme.key };
+                          setSettings(next);
+                          void applySettings(next);
+                        }}
+                        disabled={settingsBusy}
+                      >
+                        {theme.label}
                       </button>
                     ))}
                   </div>

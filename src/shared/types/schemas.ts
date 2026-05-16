@@ -8,6 +8,7 @@ export const userSettingsSchema = z.object({
   pet_mode: z.enum(["sweet", "meh", "monster"]),
   font_family: z.enum(["avenir", "inter", "plex", "mono", "rounded"]),
   font_size: z.enum(["s", "m", "l"]),
+  theme: z.enum(["classic", "neo", "midnight", "bold"]),
   color_palette: z.object({
     red: hexColor,
     blue: hexColor,
