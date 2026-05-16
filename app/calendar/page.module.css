@@ -12,7 +12,7 @@
   border-radius: 10px;
   padding: 12px;
   display: grid;
-  grid-template-columns: 196px 1fr;
+  grid-template-columns: 230px 1fr;
   gap: 10px;
   min-height: calc(100vh - 28px);
   width: 100%;
@@ -32,8 +32,9 @@
 
 .sidebarHead h2 {
   margin: 0;
-  font-size: 42px;
+  font-size: 46px;
   font-weight: 800;
+  line-height: 1;
 }
 
 .sidebarHead span {
@@ -110,22 +111,24 @@
 .schedule {
   background: #f7f6ef;
   border-radius: 8px;
-  padding: 10px;
+  padding: 12px;
+  overflow: hidden;
 }
 
 .scheduleHead {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   border-bottom: 2px solid #151515;
-  padding-bottom: 10px;
+  padding-bottom: 12px;
   gap: 12px;
 }
 
 .scheduleHead h3 {
   margin: 0;
-  font-size: 42px;
+  font-size: 56px;
   font-weight: 800;
+  line-height: 0.95;
 }
 
 .scheduleActions {
@@ -145,63 +148,72 @@
 
 .dayPane {
   display: grid;
-  grid-template-columns: 200px 1fr;
+  grid-template-columns: 220px minmax(0, 1fr);
   min-height: 620px;
+  align-items: start;
 }
 
 .dayNumber {
   border-right: 2px solid #171717;
-  padding: 14px 14px 0 0;
-  font-size: clamp(86px, 10vw, 136px);
+  padding: 16px 16px 0 0;
+  font-size: clamp(88px, 9vw, 126px);
   font-weight: 900;
-  line-height: 0.82;
+  line-height: 0.86;
   white-space: nowrap;
-  overflow: hidden;
+  overflow: visible;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .dayNumber span {
-  font-size: clamp(28px, 2.8vw, 34px);
+  font-size: clamp(28px, 2vw, 34px);
   color: #d61616;
-  margin-left: 8px;
-  vertical-align: top;
+  margin-left: 0;
+  margin-top: 10px;
+  flex: 0 0 auto;
 }
 
 .eventList {
-  padding-left: 12px;
+  padding: 16px 0 0 14px;
   display: grid;
   align-content: start;
-  gap: 0;
+  gap: 2px;
+  min-width: 0;
 }
 
 .eventRow {
   display: grid;
-  grid-template-columns: 84px 1fr;
-  gap: 10px;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 12px;
   border-bottom: 1px solid #d8d7cb;
-  padding: 10px 0;
+  padding: 12px 0;
 }
 
 .timeCol strong {
   display: block;
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 800;
+  line-height: 1;
 }
 
 .timeCol span {
   color: #868c98;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .eventCol h4 {
   margin: 0;
-  font-size: 26px;
+  font-size: 32px;
   font-weight: 800;
+  line-height: 1;
 }
 
 .eventCol p {
-  margin: 2px 0 0;
+  margin: 6px 0 0;
   color: #333a49;
-  font-size: 22px;
+  font-size: 24px;
+  line-height: 1.2;
 }
 
 .eventCol small {
@@ -212,12 +224,12 @@
 }
 
 .placeholder {
-  margin-top: 18px;
+  margin-top: 0;
   border: 1px dashed #c8c6ba;
   border-radius: 8px;
-  padding: 12px;
+  padding: 14px;
   color: #5d6372;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 @media (max-width: 1100px) {
