@@ -1072,6 +1072,27 @@ textarea { min-height: 100px; resize: vertical; }
   box-shadow: 0 0 0 1px rgba(0, 242, 254, 0.45), 0 8px 18px rgba(0, 0, 0, 0.5);
 }
 
+.page.theme-midnight .workflowDot.active {
+  background: color-mix(in srgb, var(--accent) 26%, #0f1622);
+  border-color: color-mix(in srgb, var(--accent) 78%, #3a3a44);
+  color: #e8fbff;
+  box-shadow: 0 0 0 1px rgba(0, 242, 254, 0.55), 0 6px 14px rgba(0, 0, 0, 0.5);
+}
+
+.page.theme-midnight .tagChip.active {
+  background: color-mix(in srgb, var(--accent) 18%, #131a25);
+  border-color: color-mix(in srgb, var(--accent) 76%, #3a3a44);
+  color: #effbff;
+  box-shadow: 0 0 0 1px rgba(0, 242, 254, 0.45);
+}
+
+.page.theme-midnight .tagMatchToggle button.active {
+  background: color-mix(in srgb, var(--accent) 24%, #121622);
+  border-color: color-mix(in srgb, var(--accent) 76%, #3a3a44);
+  color: #f3fcff;
+  box-shadow: inset 0 0 0 1px rgba(0, 242, 254, 0.42);
+}
+
 .page.theme-midnight .item.color-red,
 .page.theme-midnight .item.color-blue,
 .page.theme-midnight .item.color-green,
