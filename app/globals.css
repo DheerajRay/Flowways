@@ -24,6 +24,27 @@ body {
     radial-gradient(circle at 88% 16%, #fef9ef 0, #f3f1e7 36%);
 }
 
+html:has(.page.theme-midnight),
+body:has(.page.theme-midnight) {
+  background: #0a0a0a;
+}
+
+body:has(.page.theme-midnight) {
+  color: #edf6ff;
+}
+
+html:has(.page.theme-neo),
+body:has(.page.theme-neo) {
+  background:
+    radial-gradient(circle at 18% 12%, #ffffff 0, #f8f9fa 44%),
+    radial-gradient(circle at 86% 18%, #f7fdff 0, #f8f9fa 36%);
+}
+
+html:has(.page.theme-bold),
+body:has(.page.theme-bold) {
+  background: #f3f4f6;
+}
+
 .page {
   --app-font: "Avenir Next", "Trebuchet MS", sans-serif;
   --bg: #f3f1e7;
@@ -938,6 +959,12 @@ textarea { min-height: 100px; resize: vertical; }
   border-color: #111827;
   box-shadow: 4px 4px 0 #111827;
 }
+
+.page.theme-bold .item.color-red { border-color: var(--tag-red); box-shadow: 4px 4px 0 var(--tag-red); }
+.page.theme-bold .item.color-blue { border-color: var(--tag-blue); box-shadow: 4px 4px 0 var(--tag-blue); }
+.page.theme-bold .item.color-green { border-color: var(--tag-green); box-shadow: 4px 4px 0 var(--tag-green); }
+.page.theme-bold .item.color-amber { border-color: var(--tag-amber); box-shadow: 4px 4px 0 var(--tag-amber); }
+.page.theme-bold .item.color-violet { border-color: var(--tag-violet); box-shadow: 4px 4px 0 var(--tag-violet); }
 
 @media (max-width: 900px) {
   .page { padding: 14px; }
