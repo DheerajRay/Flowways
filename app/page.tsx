@@ -294,7 +294,7 @@ export default function HomePage() {
     setSearchText(sourceText.trim().toLowerCase());
   }
 
-  async function updateItem(id: string, patch: Record<string, unknown>) {
+  async function updateItem(id: string, patch: Record<string, unknown>): Promise<boolean> {
     const response = await fetch(`/api/items/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -303,9 +303,10 @@ export default function HomePage() {
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
       setSubmitMessage(body.error || "Update failed.");
-      return;
+      return false;
     }
     await loadItems();
+    return true;
   }
 
   async function deleteItem(id: string) {
@@ -420,7 +421,12 @@ export default function HomePage() {
     const target = items.find((item) => item.id === targetId);
     if (!target) return;
 
-    const sourceEntries = parseChecklistItems(source.body || source.title).map((entry) => ({
+    const parsedSourceEntries = parseChecklistItems(source.body || source.title);
+    const fallbackSourceText = (source.title || source.body || "").trim();
+    const sourceEntries = (parsedSourceEntries.length
+      ? parsedSourceEntries
+      : (fallbackSourceText ? [{ text: fallbackSourceText, checked: false }] : [])
+    ).map((entry) => ({
       text: entry.text,
       checked: false
     }));
@@ -439,7 +445,11 @@ export default function HomePage() {
     const mergedBody = toChecklistMarkdown(merged);
     const mergedLabels = [...new Set([...(target.labels || []), ...(source.labels || [])])];
 
-    await updateItem(target.id, { body: mergedBody, labels: mergedLabels });
+    const mergedOk = await updateItem(target.id, { body: mergedBody, labels: mergedLabels });
+    if (!mergedOk) {
+      setSubmitMessage("Merge failed while updating the target list.");
+      return;
+    }
     await deleteItem(source.id);
     setSubmitMessage(`Merged checklist into "${target.title}".`);
   }

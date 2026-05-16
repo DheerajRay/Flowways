@@ -47,6 +47,13 @@ function slugLabel(value: string): string {
     .replace(/^-|-$/g, "");
 }
 
+function singularizeLabel(value: string): string {
+  if (value.endsWith("ies") && value.length > 4) return `${value.slice(0, -3)}y`;
+  if (value.endsWith("es") && value.length > 4) return value.slice(0, -2);
+  if (value.endsWith("s") && value.length > 3) return value.slice(0, -1);
+  return value;
+}
+
 function prioritizeLabel(label: string, kind: ItemKind): number {
   const weekday = /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday|today|tomorrow)$/.test(label);
   const person = /^[a-z]{2,20}$/.test(label) && !GENERIC_LABELS.has(label);
@@ -96,13 +103,19 @@ export function curateLabels(kind: ItemKind, labels: string[]): string[] {
 export function normalizeGeneratedLabels(labels: string[], text: string, memoryLabels: string[] = []): string[] {
   const source = labels.map(slugLabel).filter(Boolean);
   const memory = memoryLabels.map(slugLabel).filter(Boolean);
+  const memoryByCanon = new Map<string, string>();
+  for (const memoryLabel of memory) {
+    const canonical = singularizeLabel(memoryLabel.replace(/-/g, ""));
+    if (!memoryByCanon.has(canonical)) memoryByCanon.set(canonical, memoryLabel);
+  }
   const hasConfigDriftContext = /\bconfig drift\b/i.test(text) || memory.includes("config-drift");
 
   const mapped = source.map((label) => {
     if (label === "config-drift" || label === "configdrift") return "config-drift";
     if (label === "drift" && hasConfigDriftContext) return "config-drift";
     if (label === "flow-ways") return "flowways";
-    return label;
+    const canon = singularizeLabel(label.replace(/-/g, ""));
+    return memoryByCanon.get(canon) || label;
   });
 
   if (hasConfigDriftContext && mapped.includes("drift") && !mapped.includes("config-drift")) {
@@ -157,17 +170,6 @@ export function inferContextLabels(text: string, kind: ItemKind): string[] {
     for (const day of weekdays) {
       if (new RegExp(`\\b${day}\\b`).test(lower)) inferred.push(day);
     }
-  }
-
-  const topicalNouns = lower.match(/\b[a-z][a-z0-9_-]{2,}\b/g) || [];
-  const topicalStopwords = new Set([
-    "note", "notes", "task", "tasks", "asked", "said", "told", "about", "with", "from", "this", "that",
-    "the", "and", "for", "into", "onto", "remind", "reminder", "notification", "timeline", "journal",
-    "workflow", "checklist", "connect", "called", "call", "follow", "followup", "follow-up", "monday",
-    "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
-  ]);
-  for (const token of topicalNouns) {
-    if (!topicalStopwords.has(token)) inferred.push(token);
   }
 
   const sourceNameMatch =

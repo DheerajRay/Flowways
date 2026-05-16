@@ -57,9 +57,8 @@ body:has(.page.theme-bold) {
   max-width: 1040px;
   margin: 0 auto;
   padding: 24px;
-  display: grid;
-  grid-template-rows: auto auto;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
   min-height: 100vh;
   min-height: 100dvh;
@@ -362,12 +361,15 @@ textarea { min-height: 100px; resize: vertical; }
 
 .feedShell {
   padding: 0;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .feed {
   display: grid;
-  min-height: 92px;
-  max-height: calc(100dvh - 250px);
+  min-height: 0;
+  height: 100%;
+  max-height: none;
   overflow-y: auto;
   overscroll-behavior: contain;
   position: relative;
@@ -1087,7 +1089,8 @@ textarea { min-height: 100px; resize: vertical; }
 
   .feed {
     padding: 0 0 0 0;
-    max-height: calc(100dvh - 220px);
+    height: 100%;
+    max-height: none;
   }
 
   .feedCards {

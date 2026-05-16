@@ -38,6 +38,12 @@ export async function classifyWithAiOrFallback(
   }
 
   try {
+    const existingTagVocabulary = [...new Set(
+      memoryHints.flatMap((h) => h.labels || [])
+        .map((label) => normalizeText(label).toLowerCase())
+        .filter(Boolean)
+    )].slice(0, 120);
+
     const hintText = memoryHints
       .slice(0, 8)
       .map((h, i) => `${i + 1}. [${h.kind}] ${h.title}${h.labels?.length ? ` #${h.labels.join(" #")}` : ""}`)
@@ -49,11 +55,11 @@ export async function classifyWithAiOrFallback(
         {
           role: "system",
           content:
-            "Classify user capture into checklist, journal, workflow, or timeline. Prefer workflow for professional project/action items (prepare, draft, plan, review, handoff, release, docs). Use checklist for simple personal actionable todos/lists. If input is exploratory/idea-like (for example 'testing something', 'test idea', 'thinking about'), prefer journal unless explicit task/list markers exist. Use memory hints to keep consistent categorization with existing items. Provide concise, useful tags focused on people, entities, places, actions, or topics. Avoid filler tags like not/tell/thing/check. Also provide one short playful pet_quip (max 80 chars) related to the input, in tone based on petMode: sweet=gentle/cute, meh=neutral/dry, monster=bold/sassy. Return strict JSON with keys: kind,title,body,labels,pet_quip,due_at,workflow_status,confidence,reason,fallbackUsed."
+            "Classify user capture into checklist, journal, workflow, or timeline. Prefer workflow for professional project/action items (prepare, draft, plan, review, handoff, release, docs). Use checklist for simple personal actionable todos/lists. If input is exploratory/idea-like (for example 'testing something', 'test idea', 'thinking about'), prefer journal unless explicit task/list markers exist. Use memory hints to keep consistent categorization with existing items. For labels: be strict, output only important retrieval tags (max 4), prioritize people/entities/places/core actions, avoid generic fillers and near-duplicates. Reuse existing tags when possible instead of inventing similar new ones. Also provide one short playful pet_quip (max 80 chars) related to the input, in tone based on petMode: sweet=gentle/cute, meh=neutral/dry, monster=bold/sassy. Return strict JSON with keys: kind,title,body,labels,pet_quip,due_at,workflow_status,confidence,reason,fallbackUsed."
         },
         {
           role: "user",
-          content: `modeHint=${modeHint}\npetMode=${petMode}\ntext=${text}\n\nmemoryHints:\n${hintText || "(none)"}`
+          content: `modeHint=${modeHint}\npetMode=${petMode}\ntext=${text}\n\nexistingTagVocabulary:\n${existingTagVocabulary.length ? existingTagVocabulary.join(", ") : "(none)"}\n\nmemoryHints:\n${hintText || "(none)"}`
         }
       ],
       text: {
