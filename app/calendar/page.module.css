@@ -2,40 +2,9 @@
   min-height: 100vh;
   background: #f4f3ee;
   color: #101522;
-  padding: 24px;
+  padding: 14px;
   font-family: "Avenir Next", "Segoe UI", sans-serif;
-}
-
-.header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 14px;
-}
-
-.header h1 {
-  margin: 0;
-  font-size: 36px;
-  font-weight: 800;
-}
-
-.header p {
-  margin: 4px 0 0;
-  color: #5a6075;
-}
-
-.controls {
-  display: flex;
-  gap: 8px;
-}
-
-.controls button {
-  border: 1px solid #111;
-  border-radius: 999px;
-  background: #fff;
-  padding: 8px 14px;
-  font-weight: 700;
-  cursor: pointer;
 }
 
 .board {
@@ -45,7 +14,8 @@
   display: grid;
   grid-template-columns: 196px 1fr;
   gap: 10px;
-  min-height: 760px;
+  min-height: calc(100vh - 28px);
+  width: 100%;
 }
 
 .sidebar {
@@ -62,7 +32,7 @@
 
 .sidebarHead h2 {
   margin: 0;
-  font-size: 36px;
+  font-size: 42px;
   font-weight: 800;
 }
 
@@ -148,40 +118,49 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid #151515;
-  padding-bottom: 8px;
+  padding-bottom: 10px;
+  gap: 12px;
 }
 
 .scheduleHead h3 {
   margin: 0;
-  font-size: 38px;
+  font-size: 42px;
   font-weight: 800;
 }
 
-.scheduleHead button {
+.scheduleActions {
+  display: flex;
+  gap: 8px;
+}
+
+.scheduleActions button {
   border: 1px solid #111;
   border-radius: 999px;
-  background: #101010;
-  color: #fff;
+  background: #fff;
+  color: #101522;
   padding: 6px 14px;
   font-weight: 700;
+  cursor: pointer;
 }
 
 .dayPane {
   display: grid;
-  grid-template-columns: 230px 1fr;
-  min-height: 660px;
+  grid-template-columns: 200px 1fr;
+  min-height: 620px;
 }
 
 .dayNumber {
   border-right: 2px solid #171717;
   padding: 14px 14px 0 0;
-  font-size: 158px;
+  font-size: clamp(86px, 10vw, 136px);
   font-weight: 900;
-  line-height: 0.88;
+  line-height: 0.82;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .dayNumber span {
-  font-size: 34px;
+  font-size: clamp(28px, 2.8vw, 34px);
   color: #d61616;
   margin-left: 8px;
   vertical-align: top;
@@ -196,7 +175,7 @@
 
 .eventRow {
   display: grid;
-  grid-template-columns: 90px 1fr;
+  grid-template-columns: 84px 1fr;
   gap: 10px;
   border-bottom: 1px solid #d8d7cb;
   padding: 10px 0;
@@ -204,7 +183,7 @@
 
 .timeCol strong {
   display: block;
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 800;
 }
 
@@ -215,14 +194,14 @@
 
 .eventCol h4 {
   margin: 0;
-  font-size: 30px;
+  font-size: 26px;
   font-weight: 800;
 }
 
 .eventCol p {
   margin: 2px 0 0;
   color: #333a49;
-  font-size: 26px;
+  font-size: 22px;
 }
 
 .eventCol small {

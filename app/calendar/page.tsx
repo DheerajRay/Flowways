@@ -159,22 +159,6 @@ export default function CalendarPage() {
 
   return (
     <main className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1>FlowWays Calendar</h1>
-          <p>Timeline tasks scheduled by day.</p>
-        </div>
-        <div className={styles.controls}>
-          <button type="button" onClick={() => {
-            const now = new Date();
-            setSelectedDate(now);
-            setViewDate(new Date(now.getFullYear(), now.getMonth(), 1));
-          }}>Today</button>
-          <button type="button" onClick={() => setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}>Prev</button>
-          <button type="button" onClick={() => setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}>Next</button>
-        </div>
-      </header>
-
       <section className={styles.board}>
         <aside className={styles.sidebar}>
           <div className={styles.sidebarHead}>
@@ -220,7 +204,24 @@ export default function CalendarPage() {
         <section className={styles.schedule}>
           <div className={styles.scheduleHead}>
             <h3>{formatMonthYear(selectedDate)}</h3>
-            <button type="button">Share</button>
+            <div className={styles.scheduleActions}>
+              <button
+                type="button"
+                onClick={() => {
+                  const now = new Date();
+                  setSelectedDate(now);
+                  setViewDate(new Date(now.getFullYear(), now.getMonth(), 1));
+                }}
+              >
+                Today
+              </button>
+              <button type="button" onClick={() => setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}>
+                Prev
+              </button>
+              <button type="button" onClick={() => setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}>
+                Next
+              </button>
+            </div>
           </div>
 
           <div className={styles.dayPane}>
