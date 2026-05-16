@@ -494,15 +494,16 @@ textarea { min-height: 100px; resize: vertical; }
 
 .feedShell {
   padding: 0;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
+  max-height: clamp(220px, calc(100dvh - 260px), 78dvh);
 }
 
 .feed {
   display: block;
   min-height: 0;
-  height: 100%;
-  max-height: none;
+  height: auto;
+  max-height: inherit;
   overflow-y: auto;
   overscroll-behavior: contain;
   scroll-behavior: smooth;
@@ -537,6 +538,11 @@ textarea { min-height: 100px; resize: vertical; }
   gap: 8px;
   animation: cardIn 260ms ease-out;
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+.item.isDeleting {
+  pointer-events: none;
+  transform-origin: center;
+  animation: deleteClassic 260ms ease forwards;
 }
 .item-checklist { border-left: 2px solid #1d1d1d; }
 .item-journal { border-left: 2px solid #1d1d1d; }
@@ -909,6 +915,24 @@ textarea { min-height: 100px; resize: vertical; }
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+@keyframes deleteClassic {
+  0% { opacity: 1; transform: scaleY(1); max-height: 420px; margin-top: 0; margin-bottom: 0; }
+  55% { opacity: 0.7; transform: scaleX(0.96) scaleY(0.98); }
+  100% { opacity: 0; transform: scaleY(0.04); max-height: 0; margin-top: -6px; margin-bottom: -6px; padding-top: 0; padding-bottom: 0; }
+}
+@keyframes deleteMidnight {
+  0% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
+  100% { opacity: 0; transform: translateX(22px) scale(0.97); filter: blur(3px); max-height: 0; margin-top: -6px; margin-bottom: -6px; padding-top: 0; padding-bottom: 0; }
+}
+@keyframes deleteNeo {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-10px) scale(0.985); max-height: 0; margin-top: -6px; margin-bottom: -6px; padding-top: 0; padding-bottom: 0; }
+}
+@keyframes deleteBold {
+  0% { opacity: 1; transform: scale(1); }
+  65% { transform: scale(1.02, 0.92); }
+  100% { opacity: 0; transform: scale(0.96, 0.08); max-height: 0; margin-top: -6px; margin-bottom: -6px; padding-top: 0; padding-bottom: 0; }
+}
 @keyframes palBounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
@@ -1138,6 +1162,7 @@ textarea { min-height: 100px; resize: vertical; }
 .page.theme-midnight .item.color-green { border-color: var(--tag-green); box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-green) 45%, #000), 0 10px 22px rgba(0, 0, 0, 0.35); }
 .page.theme-midnight .item.color-amber { border-color: var(--tag-amber); box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-amber) 45%, #000), 0 10px 22px rgba(0, 0, 0, 0.35); }
 .page.theme-midnight .item.color-violet { border-color: var(--tag-violet); box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-violet) 45%, #000), 0 10px 22px rgba(0, 0, 0, 0.35); }
+.page.theme-midnight .item.isDeleting { animation-name: deleteMidnight; }
 
 .page.theme-midnight .item.color-red .actions .iconAction.active { background: color-mix(in srgb, var(--tag-red) 60%, #111); border-color: var(--tag-red); }
 .page.theme-midnight .item.color-blue .actions .iconAction.active { background: color-mix(in srgb, var(--tag-blue) 60%, #111); border-color: var(--tag-blue); }
@@ -1162,6 +1187,7 @@ textarea { min-height: 100px; resize: vertical; }
   background: linear-gradient(180deg, #ffffff 0%, #f3fbff 100%);
   border-color: #cfe2ec;
 }
+.page.theme-neo .item.isDeleting { animation-name: deleteNeo; }
 
 .page.theme-bold .item,
 .page.theme-bold .capture,
@@ -1193,6 +1219,7 @@ textarea { min-height: 100px; resize: vertical; }
   border-color: #111827;
   box-shadow: 2px 2px 0 #111827;
 }
+.page.theme-bold .item.isDeleting { animation-name: deleteBold; }
 
 @media (max-width: 900px) {
   .page { padding: 14px; }

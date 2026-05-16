@@ -62,6 +62,7 @@ export default function HomePage() {
   const [showSettings, setShowSettings] = useState(false);
   const [settingsBusy, setSettingsBusy] = useState(false);
   const [settingsError, setSettingsError] = useState("");
+  const [deletingIds, setDeletingIds] = useState<string[]>([]);
   const workflowSteps = ["Backlog", "Paused", "In Progress"] as const;
   const workflowIcon: Record<(typeof workflowSteps)[number], "backlog" | "progress" | "ready"> = {
     Backlog: "backlog",
@@ -344,6 +345,15 @@ export default function HomePage() {
       return;
     }
     await loadItems();
+  }
+
+  function animateDelete(id: string) {
+    if (deletingIds.includes(id)) return;
+    setDeletingIds((prev) => [...prev, id]);
+    window.setTimeout(async () => {
+      await deleteItem(id);
+      setDeletingIds((prev) => prev.filter((v) => v !== id));
+    }, 260);
   }
 
   function hideItem(id: string) {
@@ -1072,7 +1082,7 @@ export default function HomePage() {
           const isHiddenItem = hiddenItemIds.includes(item.id);
           const colorLabel = (item.labels || []).find((label) => label.startsWith("color-"));
           return (
-          <article key={item.id} className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}${isDone ? " item-done" : ""}${isHiddenItem ? " item-hidden" : ""}${colorLabel ? ` ${colorLabel}` : ""}`}>
+          <article key={item.id} className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}${isDone ? " item-done" : ""}${isHiddenItem ? " item-hidden" : ""}${colorLabel ? ` ${colorLabel}` : ""}${deletingIds.includes(item.id) ? " isDeleting" : ""}`}>
             <div className="itemHead">
               <span className="kind">
                 <Icon name={item.kind} />
@@ -1095,7 +1105,7 @@ export default function HomePage() {
                       <>
                         <button type="button" className="iconAction" aria-label="Done" title="Done" onClick={() => item.kind === "workflow" ? toggleWorkflowDone(item, true) : updateItem(item.id, { checked: true })}><Icon name="done" /></button>
                         <button type="button" className="iconAction" aria-label="Edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" /></button>
-                        <button type="button" className="iconAction danger" aria-label="Delete" title="Delete" onClick={() => deleteItem(item.id)}><Icon name="delete" /></button>
+                        <button type="button" className="iconAction danger" aria-label="Delete" title="Delete" onClick={() => animateDelete(item.id)}><Icon name="delete" /></button>
                       </>
                     )}
                   </>
