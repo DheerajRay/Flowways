@@ -152,13 +152,32 @@ export default function HomePage() {
     if (!petNotice || petNoticeTone !== "info") return;
     const timeoutId = window.setTimeout(() => {
       setPetNotice("");
-    }, 30000);
+    }, 3000);
     return () => window.clearTimeout(timeoutId);
   }, [petNotice, petNoticeTone]);
 
   function setColorTag(value: string) {
     selectedColorTagRef.current = value;
     setSelectedColorTag(value);
+  }
+
+  function pickSettingsQuip(next: SettingsDraft): { text: string; face: string } {
+    const pool = {
+      sweet: [
+        { text: "Fresh settings! Everything looks cozy now.", face: "^_^" },
+        { text: "Tuned nicely. Your vibe just leveled up.", face: "^_~" }
+      ],
+      meh: [
+        { text: "Settings updated. Minimal drama.", face: "-_-" },
+        { text: "Change applied. Proceed.", face: "._." }
+      ],
+      monster: [
+        { text: "Settings mutated. I approve.", face: ">:)" },
+        { text: "Config flipped. Looking dangerous.", face: ">:D" }
+      ]
+    } as const;
+    const options = pool[next.pet_mode];
+    return options[Math.floor(Math.random() * options.length)];
   }
 
   async function applySettings(next: SettingsDraft) {
@@ -178,6 +197,14 @@ export default function HomePage() {
       const data = await response.json();
       const resolved = data?.settings || next;
       setSettings(resolved);
+      if (resolved.pet_enabled) {
+        const quip = pickSettingsQuip(resolved);
+        setPetExpression(quip.face);
+        setPetNoticeTone("info");
+        setPetNotice(quip.text);
+      } else {
+        setPetNotice("");
+      }
     } finally {
       setSettingsBusy(false);
     }
