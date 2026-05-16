@@ -780,6 +780,7 @@ export default function HomePage() {
         </div>
       </header>
 
+      <section className="captureShell">
       <section className="capture">
         {settings.pet_enabled ? (
           <div className={`pixelPal${busy ? " isBusy" : ""}${resolvedPetNotice ? " hasNotice" : ""}${resolvedPetTone === "warning" ? " isWarning" : ""}${resolvedPetTone === "error" ? " isError" : ""}${showHidden ? " isGhost" : ""}`} aria-live="polite" aria-label={busy ? "Classifying task..." : resolvedPetNotice || (showHidden ? "Hidden tasks mode" : "Idle")}>
@@ -793,8 +794,6 @@ export default function HomePage() {
         ) : systemNotice ? (
           <div className="systemNotice" aria-live="polite">{systemNotice}</div>
         ) : null}
-        <div className="captureGrid">
-        <div className="captureMainCol">
         <div className="captureBar">
           <input
             id="captureInput"
@@ -880,7 +879,7 @@ export default function HomePage() {
             </div>
           </div>
         ) : null}
-        </div>
+      </section>
       {showSettings ? (
         <section className="settingsDock" aria-label="Settings">
           <div className="settingsModal settingsInline">
@@ -993,7 +992,6 @@ export default function HomePage() {
           </div>
         </section>
       ) : null}
-      </div>
       </section>
 
       <section className="feedShell" aria-label="Saved items">

@@ -97,16 +97,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   position: relative;
   padding-top: 26px;
 }
-.captureGrid {
+.captureShell {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: start;
-}
-.captureMainCol {
-  min-width: 0;
-  display: grid;
-  gap: 10px;
 }
 .systemNotice {
   position: absolute;
@@ -884,7 +879,7 @@ textarea { min-height: 100px; resize: vertical; }
     margin-top: 2px;
     justify-self: end;
   }
-  .captureGrid {
+  .captureShell {
     grid-template-columns: 1fr;
     gap: 8px;
   }
