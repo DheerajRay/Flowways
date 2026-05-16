@@ -1,7 +1,7 @@
 export type PetMode = "sweet" | "meh" | "monster";
 export type FontFamilyKey = "avenir" | "inter" | "plex" | "mono" | "rounded";
 export type FontSizeKey = "s" | "m" | "l";
-export type ThemeKey = "classic" | "neo" | "midnight" | "bold";
+export type ThemeKey = "classic" | "neo" | "midnight" | "bold" | "sunset";
 
 export type ColorPalette = {
   red: string;

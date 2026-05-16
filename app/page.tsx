@@ -775,7 +775,8 @@ export default function HomePage() {
     { key: "classic" as const, label: "C", title: "Classic Minimal" },
     { key: "neo" as const, label: "N", title: "Neo-Soft" },
     { key: "midnight" as const, label: "M", title: "Midnight Neon" },
-    { key: "bold" as const, label: "B", title: "Bold Dashboard" }
+    { key: "bold" as const, label: "B", title: "Bold Dashboard" },
+    { key: "sunset" as const, label: "S", title: "Sunset Warm" }
   ];
   const petProfile = !settings.pet_enabled
     ? "off"

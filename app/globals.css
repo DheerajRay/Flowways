@@ -49,6 +49,13 @@ body:has(.page.theme-bold) {
   background: #f3f4f6;
 }
 
+html:has(.page.theme-sunset),
+body:has(.page.theme-sunset) {
+  background:
+    radial-gradient(circle at 14% 12%, #fff6ef 0, #f6e7da 42%),
+    radial-gradient(circle at 84% 18%, #ffeede 0, #f6e7da 38%);
+}
+
 .page {
   --app-font: "Avenir Next", "Trebuchet MS", sans-serif;
   --bg: #f3f1e7;
@@ -184,6 +191,29 @@ body:has(.page.theme-bold) {
   --tip-bg: #111827;
   --tip-ink: #fff;
   --tip-border: #111827;
+}
+.page.theme-sunset {
+  --bg: #f6e7da;
+  --panel: #fff7ef;
+  --line: #e5c8af;
+  --ink: #3e2a1d;
+  --muted: #745748;
+  --accent: #e06a47;
+  --theme-shadow: 0 10px 26px rgba(110, 59, 33, 0.12);
+  --card-body-ink: #5a3e2d;
+  --due-label: #5e3d2a;
+  --due-rail-track: #e7cdb9;
+  --due-rail-fill: #c95535;
+  --select-bg: #c95535;
+  --select-ink: #fff8f4;
+  --select-border: #c95535;
+  --toggle-active-bg: #c95535;
+  --toggle-active-ink: #fff8f4;
+  --toggle-active-border: #c95535;
+  --check-accent: #c95535;
+  --tip-bg: #5c2f1d;
+  --tip-ink: #fff2ea;
+  --tip-border: #5c2f1d;
 }
 .page.font-avenir { --app-font: "Avenir Next", "Trebuchet MS", sans-serif; }
 .page.font-inter { --app-font: "Inter", "Segoe UI", "Avenir Next", sans-serif; }
@@ -1286,6 +1316,94 @@ textarea { min-height: 100px; resize: vertical; }
   box-shadow: 2px 2px 0 #111827;
 }
 .page.theme-bold .item.isDeleting { animation-name: deleteBold; }
+
+.page.theme-sunset .item,
+.page.theme-sunset .capture,
+.page.theme-sunset .feedShell,
+.page.theme-sunset .authCard {
+  background: linear-gradient(180deg, #fff9f3 0%, #fff3e8 100%);
+  border-color: #dfb89a;
+}
+
+.page.theme-sunset .modeActions,
+.page.theme-sunset .settingsIconRail,
+.page.theme-sunset .tagWindow,
+.page.theme-sunset .colorPopover {
+  background: #fff4ea;
+  border-color: #dfb89a;
+}
+
+.page.theme-sunset button,
+.page.theme-sunset .dateChip,
+.page.theme-sunset .tagChip,
+.page.theme-sunset .mergeRow select,
+.page.theme-sunset input,
+.page.theme-sunset textarea {
+  background: #fff8f1;
+  color: #4b311f;
+  border-color: #dfb89a;
+}
+
+.page.theme-sunset .iconAction {
+  background: #fff5eb;
+  border-color: #6a4632;
+  color: #5a3a26;
+}
+
+.page.theme-sunset .iconAction:hover {
+  background: #ffe9d7;
+  border-color: #8a5635;
+  box-shadow: 0 0 0 1px rgba(224, 106, 71, 0.24), 0 8px 16px rgba(98, 50, 28, 0.16);
+}
+
+.page.theme-sunset .iconAction.active {
+  background: color-mix(in srgb, var(--accent) 24%, #fff2e8);
+  border-color: color-mix(in srgb, var(--accent) 72%, #9b6546);
+  color: #5f2f1b;
+}
+
+.page.theme-sunset .workflowDot.active {
+  background: color-mix(in srgb, var(--accent) 24%, #fff2e8);
+  border-color: color-mix(in srgb, var(--accent) 72%, #9b6546);
+  color: #5f2f1b;
+}
+
+.page.theme-sunset .tagChip.active {
+  background: color-mix(in srgb, var(--accent) 18%, #fff2e8);
+  border-color: color-mix(in srgb, var(--accent) 75%, #9b6546);
+  color: #5f2f1b;
+}
+
+.page.theme-sunset .tagMatchToggle button.active {
+  background: color-mix(in srgb, var(--accent) 24%, #fff2e8);
+  border-color: color-mix(in srgb, var(--accent) 75%, #9b6546);
+  color: #5f2f1b;
+}
+
+.page.theme-sunset .pixelPal {
+  background: #fff0e4;
+  border-color: #c95535;
+  color: #663c29;
+  box-shadow: 0 6px 16px rgba(111, 59, 32, 0.16);
+}
+
+.page.theme-sunset .pixelPal.isWarning {
+  background: #fff1d9;
+  border-color: #bb7d1d;
+  color: #6f4a13;
+}
+
+.page.theme-sunset .pixelPal.isError {
+  background: #ffe5e2;
+  border-color: #b64a4a;
+  color: #7f2525;
+}
+
+.page.theme-sunset .pixelPal.isGhost {
+  background: #f4ebe2;
+  border-color: #ae8b73;
+  color: #735c4b;
+}
 
 @media (max-width: 900px) {
   .page { padding: 14px; }
