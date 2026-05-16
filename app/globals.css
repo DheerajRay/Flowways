@@ -68,6 +68,9 @@ body:has(.page.theme-bold) {
   --toggle-active-ink: #fff;
   --toggle-active-border: #111;
   --check-accent: #111;
+  --tip-bg: #1f2e42;
+  --tip-ink: #fff;
+  --tip-border: #1f2e42;
   --card-title-size: 1.25rem;
   --card-body-size: 1rem;
   --meta-size: 0.75rem;
@@ -109,6 +112,9 @@ body:has(.page.theme-bold) {
   --toggle-active-ink: #fff;
   --toggle-active-border: #111;
   --check-accent: #111;
+  --tip-bg: #1f2e42;
+  --tip-ink: #fff;
+  --tip-border: #1f2e42;
 }
 .page.theme-neo {
   --bg: #f8f9fa;
@@ -129,6 +135,9 @@ body:has(.page.theme-bold) {
   --toggle-active-ink: #fff;
   --toggle-active-border: #0f6c84;
   --check-accent: #0f6c84;
+  --tip-bg: #0f6c84;
+  --tip-ink: #fff;
+  --tip-border: #0f6c84;
 }
 .page.theme-midnight {
   --bg: #0a0a0a;
@@ -149,6 +158,9 @@ body:has(.page.theme-bold) {
   --toggle-active-ink: #dff9ff;
   --toggle-active-border: #00f2fe;
   --check-accent: #00f2fe;
+  --tip-bg: #111a26;
+  --tip-ink: #e8fbff;
+  --tip-border: #00f2fe;
 }
 .page.theme-bold {
   --bg: #f3f4f6;
@@ -169,6 +181,9 @@ body:has(.page.theme-bold) {
   --toggle-active-ink: #fff;
   --toggle-active-border: #7c3aed;
   --check-accent: #7c3aed;
+  --tip-bg: #111827;
+  --tip-ink: #fff;
+  --tip-border: #111827;
 }
 .page.font-avenir { --app-font: "Avenir Next", "Trebuchet MS", sans-serif; }
 .page.font-inter { --app-font: "Inter", "Segoe UI", "Avenir Next", sans-serif; }
@@ -239,6 +254,36 @@ button:active {
 button:focus-visible, input:focus-visible, textarea:focus-visible {
   outline: 3px solid #4d86cf;
   outline-offset: 2px;
+}
+
+:where(button, span, label)[data-tip] {
+  position: relative;
+}
+:where(button, span, label)[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(3px) scale(0.98);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 60;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--tip-border);
+  background: var(--tip-bg);
+  color: var(--tip-ink);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.1;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+  transition: opacity 90ms ease-out, transform 120ms ease-out;
+}
+:where(button, span, label)[data-tip]:hover::after,
+:where(button, span, label)[data-tip]:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
 }
 
 .capture,

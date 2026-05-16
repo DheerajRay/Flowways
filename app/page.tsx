@@ -822,7 +822,7 @@ export default function HomePage() {
             type="button"
             className={`iconAction topbarAction${showSettings ? " active" : ""}`}
             aria-label="Settings"
-            title="Settings"
+            data-tip="Settings"
             onClick={() => {
               setSettingsError("");
               setShowSettings((prev) => !prev);
@@ -830,7 +830,7 @@ export default function HomePage() {
           >
             <Icon name="settings" />
           </button>
-          <button type="button" className="iconAction topbarAction" aria-label="Sign Out" title="Sign Out" onClick={signOut}><Icon name="signout" /></button>
+          <button type="button" className="iconAction topbarAction" aria-label="Sign Out" data-tip="Sign Out" onClick={signOut}><Icon name="signout" /></button>
         </div>
       </header>
 
@@ -862,17 +862,17 @@ export default function HomePage() {
             placeholder="Add task | Search"
           />
           <div className="modeActions" aria-label="Classification mode">
-            <button type="button" className={`iconAction compact${captureMode === "auto" ? " active" : ""}`} aria-label="Auto mode" title="Auto mode" onClick={() => setCaptureMode("auto")}><Icon name="auto" /></button>
-            <button type="button" className={`iconAction compact${captureMode === "timeline" ? " active" : ""}`} aria-label="Timeline mode" title="Timeline mode" onClick={() => setCaptureMode("timeline")}><Icon name="timeline" /></button>
-            <button type="button" className={`iconAction compact${captureMode === "workflow" ? " active" : ""}`} aria-label="Workflow mode" title="Workflow mode" onClick={() => setCaptureMode("workflow")}><Icon name="workflow" /></button>
-            <button type="button" className={`iconAction compact${captureMode === "journal" ? " active" : ""}`} aria-label="Journal mode" title="Journal mode" onClick={() => setCaptureMode("journal")}><Icon name="journal" /></button>
-            <button type="button" className={`iconAction compact${captureMode === "checklist" ? " active" : ""}`} aria-label="Checklist mode" title="Checklist mode" onClick={() => setCaptureMode("checklist")}><Icon name="checklist" /></button>
+            <button type="button" className={`iconAction compact${captureMode === "auto" ? " active" : ""}`} aria-label="Auto mode" data-tip="Auto mode" onClick={() => setCaptureMode("auto")}><Icon name="auto" /></button>
+            <button type="button" className={`iconAction compact${captureMode === "timeline" ? " active" : ""}`} aria-label="Timeline mode" data-tip="Timeline mode" onClick={() => setCaptureMode("timeline")}><Icon name="timeline" /></button>
+            <button type="button" className={`iconAction compact${captureMode === "workflow" ? " active" : ""}`} aria-label="Workflow mode" data-tip="Workflow mode" onClick={() => setCaptureMode("workflow")}><Icon name="workflow" /></button>
+            <button type="button" className={`iconAction compact${captureMode === "journal" ? " active" : ""}`} aria-label="Journal mode" data-tip="Journal mode" onClick={() => setCaptureMode("journal")}><Icon name="journal" /></button>
+            <button type="button" className={`iconAction compact${captureMode === "checklist" ? " active" : ""}`} aria-label="Checklist mode" data-tip="Checklist mode" onClick={() => setCaptureMode("checklist")}><Icon name="checklist" /></button>
             <div className="colorPickerWrap">
               <button
                 type="button"
                 className={`iconAction compact${selectedColorTag ? ` colorActive ${selectedColorTag}` : ""}`}
                 aria-label="Color tag"
-                title="Color tag"
+                data-tip="Color tag"
                 onClick={() => {
                   if (selectedColorTag) {
                     setColorTag("");
@@ -886,7 +886,7 @@ export default function HomePage() {
               </button>
               {showColorPicker ? (
                 <div className="colorPopover">
-                  <button type="button" className="colorDot clear" onClick={() => { setColorTag(""); setShowColorPicker(false); }} title="No color">×</button>
+                  <button type="button" className="colorDot clear" onClick={() => { setColorTag(""); setShowColorPicker(false); }} data-tip="No color">×</button>
                   {colorTagIds.map((c) => (
                     <button
                       type="button"
@@ -894,7 +894,7 @@ export default function HomePage() {
                       className={`colorDot${selectedColorTag === c ? " active" : ""}`}
                       style={{ background: settings.color_palette[c.replace("color-", "") as keyof typeof settings.color_palette] }}
                       onClick={() => { setColorTag(c); setShowColorPicker(false); }}
-                      title={c.replace("color-", "")}
+                      data-tip={c.replace("color-", "")}
                     />
                   ))}
                 </div>
@@ -902,10 +902,10 @@ export default function HomePage() {
             </div>
           </div>
           <div className="captureActions">
-            <button type="button" className="iconAction" aria-label="Add task" title="Add task" onClick={() => void submitItem()} disabled={busy || !sourceText.trim()}><Icon name="add" /></button>
-            <button type="button" className="iconAction" aria-label="Search tasks" title="Search tasks" onClick={runSearch}><Icon name="search" /></button>
-            <button type="button" className={`iconAction${showTagWindow ? " active" : ""}`} aria-label="Tag filters" title="Tag filters" onClick={() => setShowTagWindow((prev) => !prev)}><Icon name="tags" /></button>
-            <button type="button" className={`iconAction${showHidden ? " active" : ""}`} aria-label={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} title={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} onClick={() => setShowHidden((prev) => !prev)}><Icon name={showHidden ? "show" : "hide"} /></button>
+            <button type="button" className="iconAction" aria-label="Add task" data-tip="Add task" onClick={() => void submitItem()} disabled={busy || !sourceText.trim()}><Icon name="add" /></button>
+            <button type="button" className="iconAction" aria-label="Search tasks" data-tip="Search tasks" onClick={runSearch}><Icon name="search" /></button>
+            <button type="button" className={`iconAction${showTagWindow ? " active" : ""}`} aria-label="Tag filters" data-tip="Tag filters" onClick={() => setShowTagWindow((prev) => !prev)}><Icon name="tags" /></button>
+            <button type="button" className={`iconAction${showHidden ? " active" : ""}`} aria-label={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} data-tip={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} onClick={() => setShowHidden((prev) => !prev)}><Icon name={showHidden ? "show" : "hide"} /></button>
           </div>
         </div>
         {showTagWindow ? (
@@ -940,14 +940,14 @@ export default function HomePage() {
             <div className="settingsInner">
               <div className="settingsGrid">
                 <div className="settingsRow">
-                  <span className="settingsLabelIcon" title="Pet mode" aria-label="Pet mode"><Icon name="labelPet" /></span>
+                  <span className="settingsLabelIcon" data-tip="Pet mode" aria-label="Pet mode"><Icon name="labelPet" /></span>
                   <div className="settingsIconRail">
                     {(["off", "sweet", "meh", "monster"] as const).map((mode) => (
                       <button
                         key={mode}
                         type="button"
                       className={`iconAction compact ${petProfile === mode ? "active" : ""}`}
-                      title={mode === "off" ? "no" : mode === "sweet" ? "professional" : mode === "meh" ? "meh" : "nuclear"}
+                      data-tip={mode === "off" ? "no" : mode === "sweet" ? "professional" : mode === "meh" ? "meh" : "nuclear"}
                       onClick={() => {
                         const next = mode === "off"
                           ? { ...settings, pet_enabled: false }
@@ -964,14 +964,14 @@ export default function HomePage() {
                 </div>
 
                 <div className="settingsRow">
-                  <span className="settingsLabelIcon" title="Font family" aria-label="Font family"><Icon name="labelFont" /></span>
+                  <span className="settingsLabelIcon" data-tip="Font family" aria-label="Font family"><Icon name="labelFont" /></span>
                   <div className="settingsIconRail">
                     {fontOptions.map((font) => (
                       <button
                         key={font.key}
                         type="button"
                         className={`iconAction compact glyphButton ${settings.font_family === font.key ? "active" : ""}`}
-                        title={font.title}
+                        data-tip={font.title}
                         onClick={() => {
                           const next = { ...settings, font_family: font.key };
                           setSettings(next);
@@ -986,14 +986,14 @@ export default function HomePage() {
                 </div>
 
                 <div className="settingsRow">
-                  <span className="settingsLabelIcon" title="Text size" aria-label="Text size"><Icon name="labelText" /></span>
+                  <span className="settingsLabelIcon" data-tip="Text size" aria-label="Text size"><Icon name="labelText" /></span>
                   <div className="settingsIconRail">
                     {(["s", "m", "l"] as const).map((size) => (
                       <button
                         key={size}
                         type="button"
                         className={`iconAction compact glyphButton sizeGlyph ${settings.font_size === size ? "active" : ""}`}
-                        title={`Text ${size.toUpperCase()}`}
+                        data-tip={`Text ${size.toUpperCase()}`}
                         onClick={() => {
                           const next = { ...settings, font_size: size };
                           setSettings(next);
@@ -1008,14 +1008,14 @@ export default function HomePage() {
                 </div>
 
                 <div className="settingsRow">
-                  <span className="settingsLabelIcon" title="Theme" aria-label="Theme"><Icon name="labelTheme" /></span>
+                  <span className="settingsLabelIcon" data-tip="Theme" aria-label="Theme"><Icon name="labelTheme" /></span>
                   <div className="settingsIconRail">
                     {themeOptions.map((theme) => (
                       <button
                         key={theme.key}
                         type="button"
                         className={`iconAction compact glyphButton ${settings.theme === theme.key ? "active" : ""}`}
-                        title={theme.title}
+                        data-tip={theme.title}
                         onClick={() => {
                           const next = { ...settings, theme: theme.key };
                           setSettings(next);
@@ -1030,10 +1030,10 @@ export default function HomePage() {
                 </div>
 
                 <div className="settingsRow colorSettings">
-                  <span className="settingsLabelIcon" title="Color palette" aria-label="Color palette"><Icon name="labelColor" /></span>
+                  <span className="settingsLabelIcon" data-tip="Color palette" aria-label="Color palette"><Icon name="labelColor" /></span>
                   <div className="settingsIconRail">
                     {colorKeys.map((key) => (
-                      <label key={key} className="paletteCell" title={key}>
+                      <label key={key} className="paletteCell" data-tip={key}>
                         <span className="srOnly">{key}</span>
                         <button
                           type="button"
@@ -1091,21 +1091,21 @@ export default function HomePage() {
               <div className="actions">
                 {item.checked ? (
                   <>
-                    <button type="button" className="iconAction" aria-label="Undo" title="Undo" onClick={() => item.kind === "workflow" ? toggleWorkflowDone(item, false) : updateItem(item.id, { checked: false })}><Icon name="undo" /></button>
-                    <button type="button" className="iconAction" aria-label="Hide" title="Hide" onClick={() => hideItem(item.id)}><Icon name="hide" /></button>
+                    <button type="button" className="iconAction" aria-label="Undo" data-tip="Undo" onClick={() => item.kind === "workflow" ? toggleWorkflowDone(item, false) : updateItem(item.id, { checked: false })}><Icon name="undo" /></button>
+                    <button type="button" className="iconAction" aria-label="Hide" data-tip="Hide" onClick={() => hideItem(item.id)}><Icon name="hide" /></button>
                   </>
                 ) : (
                   <>
                     {editingId === item.id ? (
                       <>
-                        <button type="button" className="iconAction" aria-label="Save" title="Save" onClick={() => saveEdit(item.id)}><Icon name="save" /></button>
-                        <button type="button" className="iconAction" aria-label="Cancel" title="Cancel" onClick={() => setEditingId(null)}><Icon name="cancel" /></button>
+                        <button type="button" className="iconAction" aria-label="Save" data-tip="Save" onClick={() => saveEdit(item.id)}><Icon name="save" /></button>
+                        <button type="button" className="iconAction" aria-label="Cancel" data-tip="Cancel" onClick={() => setEditingId(null)}><Icon name="cancel" /></button>
                       </>
                     ) : (
                       <>
-                        <button type="button" className="iconAction" aria-label="Done" title="Done" onClick={() => item.kind === "workflow" ? toggleWorkflowDone(item, true) : updateItem(item.id, { checked: true })}><Icon name="done" /></button>
-                        <button type="button" className="iconAction" aria-label="Edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" /></button>
-                        <button type="button" className="iconAction danger" aria-label="Delete" title="Delete" onClick={() => animateDelete(item.id)}><Icon name="delete" /></button>
+                        <button type="button" className="iconAction" aria-label="Done" data-tip="Done" onClick={() => item.kind === "workflow" ? toggleWorkflowDone(item, true) : updateItem(item.id, { checked: true })}><Icon name="done" /></button>
+                        <button type="button" className="iconAction" aria-label="Edit" data-tip="Edit" onClick={() => startEdit(item)}><Icon name="edit" /></button>
+                        <button type="button" className="iconAction danger" aria-label="Delete" data-tip="Delete" onClick={() => animateDelete(item.id)}><Icon name="delete" /></button>
                       </>
                     )}
                   </>
@@ -1129,10 +1129,10 @@ export default function HomePage() {
                           value={entry.text}
                           onChange={(event) => setEditChecklistEntries((prev) => prev.map((v, i) => i === index ? { ...v, text: event.target.value } : v))}
                         />
-                        <button type="button" className="iconAction compact danger" aria-label="Remove item" title="Remove item" onClick={() => setEditChecklistEntries((prev) => prev.filter((_, i) => i !== index))}><Icon name="delete" /></button>
+                        <button type="button" className="iconAction compact danger" aria-label="Remove item" data-tip="Remove item" onClick={() => setEditChecklistEntries((prev) => prev.filter((_, i) => i !== index))}><Icon name="delete" /></button>
                       </div>
                     ))}
-                    <button type="button" className="iconAction compact" aria-label="Add item" title="Add item" onClick={() => setEditChecklistEntries((prev) => [...prev, { text: "", checked: false }])}><Icon name="add" /></button>
+                    <button type="button" className="iconAction compact" aria-label="Add item" data-tip="Add item" onClick={() => setEditChecklistEntries((prev) => [...prev, { text: "", checked: false }])}><Icon name="add" /></button>
                   </div>
                 ) : item.kind === "timeline" ? (
                   <div className="typeEditor">
@@ -1156,7 +1156,7 @@ export default function HomePage() {
                         type="button"
                         className="iconAction compact"
                         aria-label="Apply minutes"
-                        title="Apply minutes"
+                        data-tip="Apply minutes"
                         onClick={() => {
                           const n = Number(editTimelineOffsetMin);
                           if (!Number.isFinite(n) || n <= 0) return;
@@ -1177,7 +1177,7 @@ export default function HomePage() {
                             value={comment}
                             onChange={(event) => setEditWorkflowComments((prev) => prev.map((v, i) => i === index ? event.target.value : v))}
                           />
-                          <button type="button" className="iconAction compact danger" aria-label="Remove comment" title="Remove comment" onClick={() => setEditWorkflowComments((prev) => prev.filter((_, i) => i !== index))}><Icon name="delete" /></button>
+                          <button type="button" className="iconAction compact danger" aria-label="Remove comment" data-tip="Remove comment" onClick={() => setEditWorkflowComments((prev) => prev.filter((_, i) => i !== index))}><Icon name="delete" /></button>
                         </div>
                       ))}
                     </div>
@@ -1191,7 +1191,7 @@ export default function HomePage() {
                         type="button"
                         className="iconAction compact"
                         aria-label="Add comment"
-                        title="Add comment"
+                        data-tip="Add comment"
                         onClick={() => {
                           const next = newWorkflowComment.trim();
                           if (!next) return;
@@ -1290,7 +1290,7 @@ export default function HomePage() {
                       key={`${item.id}-${step}`}
                       className={item.workflow_status === step ? "workflowDot active" : "workflowDot"}
                       aria-label={step}
-                      title={step}
+                      data-tip={step}
                       onClick={() => moveWorkflowStatus(item, step)}
                     >
                       <Icon name={workflowIcon[step]} />
@@ -1332,4 +1332,5 @@ export default function HomePage() {
     </main>
   );
 }
+
 
