@@ -929,9 +929,14 @@ textarea { min-height: 100px; resize: vertical; }
 .page.theme-midnight .settingsIconRail,
 .page.theme-midnight .modeActions,
 .page.theme-midnight .tagWindow,
-.page.theme-midnight .colorPopover,
-.page.theme-midnight .settingsModal {
+.page.theme-midnight .colorPopover {
   background: #171717;
+}
+
+.page.theme-midnight .settingsInline {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .page.theme-midnight button,
