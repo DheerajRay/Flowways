@@ -574,7 +574,7 @@ export default function HomePage() {
     return mins ? `${hours}h ${mins}m spent` : `${hours}h spent`;
   }
 
-  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "settings" | "petNo" | "petPro" | "petMeh" | "petNuclear" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "color" | "tags" }) {
+  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "settings" | "petNo" | "petPro" | "petMeh" | "petNuclear" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "color" | "tags" | "labelPet" | "labelFont" | "labelText" | "labelColor" }) {
     const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
     if (name === "done" || name === "save") return <svg {...common}><path d="M3 8.5l3 3L13 4.5" /></svg>;
     if (name === "undo" || name === "cancel") return <svg {...common}><path d="M6 4L2.5 7.5 6 11" /><path d="M3 7.5h5.5A4.5 4.5 0 1 1 8.5 16" /></svg>;
@@ -587,6 +587,10 @@ export default function HomePage() {
     if (name === "petPro") return <svg {...common}><path d="M5.2 6.2h5.6a1.2 1.2 0 0 1 1.2 1.2v2.8a1.2 1.2 0 0 1-1.2 1.2H5.2A1.2 1.2 0 0 1 4 10.2V7.4a1.2 1.2 0 0 1 1.2-1.2z" /><path d="M6.3 6.2V5.3a1.2 1.2 0 0 1 1.2-1.2h1a1.2 1.2 0 0 1 1.2 1.2v.9" /></svg>;
     if (name === "petMeh") return <svg {...common}><path d="M4.2 6.2h1.6M10.2 6.2h1.6" /><path d="M5 10h6" /></svg>;
     if (name === "petNuclear") return <svg {...common}><circle cx="8" cy="8" r="1.2" /><path d="M8 3.2v2.3M11.9 5l-1.9 1.2M4.1 5l1.9 1.2M8 12.8v-2.3M11.9 11l-1.9-1.2M4.1 11l1.9-1.2" /></svg>;
+    if (name === "labelPet") return <svg {...common}><circle cx="5" cy="5" r="1.2" /><circle cx="11" cy="5" r="1.2" /><circle cx="8" cy="8.2" r="1.4" /><path d="M4.4 11.8c1 .8 2 .9 3.6.9 1.7 0 2.7-.1 3.7-.9" /></svg>;
+    if (name === "labelFont") return <svg {...common}><path d="M3 12.5 7 3.5h2l4 9" /><path d="M5.2 9.2h5.6" /></svg>;
+    if (name === "labelText") return <svg {...common}><path d="M3 4h10M8 4v8M5.8 12h4.4" /></svg>;
+    if (name === "labelColor") return <svg {...common}><path d="M5.8 10.8 9.7 6.9a1.2 1.2 0 0 1 1.7 1.7l-3.9 3.9a1.6 1.6 0 0 1-1.2.5h-.8v-.8a1.7 1.7 0 0 1 .3-1.4z" /><circle cx="10.8" cy="7.8" r=".7" /></svg>;
     if (name === "add") return <svg {...common}><path d="M8 3.2v9.6M3.2 8h9.6" /></svg>;
     if (name === "search") return <svg {...common}><circle cx="7" cy="7" r="4.3" /><path d="M10.3 10.3 13.5 13.5" /></svg>;
     if (name === "show") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><circle cx="8" cy="8" r="1.5" /></svg>;
@@ -880,13 +884,10 @@ export default function HomePage() {
       {showSettings ? (
         <section className="settingsDock" aria-label="Settings">
           <div className="settingsModal settingsInline">
-            <div className="settingsHeader">
-              <h2>Settings</h2>
-            </div>
             <div className="settingsInner">
               <div className="settingsGrid">
                 <div className="settingsRow">
-                  <span>Pet</span>
+                  <span className="settingsLabelIcon" aria-hidden="true"><Icon name="labelPet" /></span>
                   <div className="settingsIconRail">
                     {(["off", "sweet", "meh", "monster"] as const).map((mode) => (
                       <button
@@ -910,7 +911,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="settingsRow">
-                  <span>Font</span>
+                  <span className="settingsLabelIcon" aria-hidden="true"><Icon name="labelFont" /></span>
                   <div className="settingsIconRail">
                     {fontOptions.map((font) => (
                       <button
@@ -932,7 +933,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="settingsRow">
-                  <span>Text</span>
+                  <span className="settingsLabelIcon" aria-hidden="true"><Icon name="labelText" /></span>
                   <div className="settingsIconRail">
                     {(["s", "m", "l"] as const).map((size) => (
                       <button
@@ -954,7 +955,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="settingsRow colorSettings">
-                  <span>Color</span>
+                  <span className="settingsLabelIcon" aria-hidden="true"><Icon name="labelColor" /></span>
                   <div className="settingsIconRail">
                     {colorKeys.map((key) => (
                       <label key={key} className="paletteCell" title={key}>

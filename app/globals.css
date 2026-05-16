@@ -740,15 +740,14 @@ textarea { min-height: 100px; resize: vertical; }
 }
 .settingsInline {
   width: fit-content;
-  margin-top: 0;
+  margin-top: 2px;
   border-radius: 0;
   border: 0;
   background: transparent;
   box-shadow: none;
   padding: 0;
-  gap: 8px;
+  gap: 6px;
 }
-.settingsInline .settingsHeader h2 { display: none; }
 .settingsHeader {
   display: flex;
   justify-content: flex-start;
@@ -772,19 +771,28 @@ textarea { min-height: 100px; resize: vertical; }
 }
 .settingsGrid {
   display: grid;
-  gap: 10px;
+  gap: 6px;
 }
 .settingsRow {
   display: grid;
-  grid-template-columns: 48px auto;
+  grid-template-columns: 26px auto;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   padding: 0;
 }
 .settingsRow > span {
   font-size: 13px;
   font-weight: 700;
   line-height: 1;
+}
+.settingsLabelIcon {
+  display: inline-grid;
+  place-items: center;
+  color: #6f7b8e;
+}
+.settingsLabelIcon svg {
+  width: 18px;
+  height: 18px;
 }
 .settingsIconRail {
   display: inline-flex;
@@ -798,7 +806,7 @@ textarea { min-height: 100px; resize: vertical; }
   justify-self: start;
 }
 .colorSettings {
-  align-items: start;
+  align-items: center;
 }
 .paletteCell {
   display: inline-flex;
@@ -882,8 +890,8 @@ textarea { min-height: 100px; resize: vertical; }
   }
   .settingsInline { width: 100%; }
   .settingsRow {
-    grid-template-columns: 1fr;
-    align-items: start;
+    grid-template-columns: 22px minmax(0, 1fr);
+    align-items: center;
     gap: 6px;
   }
   .settingsIconRail {
