@@ -16,6 +16,10 @@
 }
 
 * { box-sizing: border-box; }
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
 body {
   margin: 0;
   color: var(--ink);
@@ -81,8 +85,9 @@ body:has(.page.theme-bold) {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   color: var(--ink);
 }
 .page.theme-classic {
@@ -500,12 +505,14 @@ textarea { min-height: 100px; resize: vertical; }
   max-height: none;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
   position: relative;
   padding: 16px 10px 16px 16px;
   margin-right: -2px;
   scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: #8b8b8b #ece6d8;
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
 }
 .feedCards {
   display: grid;
@@ -513,25 +520,8 @@ textarea { min-height: 100px; resize: vertical; }
   margin-right: 8px;
 }
 .feed::-webkit-scrollbar {
-  width: 10px;
-}
-.feed::-webkit-scrollbar-button {
-  display: none;
   width: 0;
   height: 0;
-}
-.feed::-webkit-scrollbar-track {
-  background: #ece6d8;
-  border-radius: 999px;
-  border: 1px solid #d8d1bf;
-}
-.feed::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #9b9b9b 0%, #7f7f7f 100%);
-  border-radius: 999px;
-  border: 1px solid #ece6d8;
-}
-.feed::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #8b8b8b 0%, #6f6f6f 100%);
 }
 .item {
   border: 2px solid #1d1d1d;
