@@ -322,6 +322,42 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   font-weight: 700;
   letter-spacing: 0.2px;
 }
+
+.page.theme-midnight .pixelPal {
+  background: #121722;
+  border-color: #00f2fe;
+  color: #e7fbff;
+  box-shadow: 0 0 0 1px rgba(0, 242, 254, 0.32), 0 8px 18px rgba(0, 0, 0, 0.5);
+}
+.page.theme-midnight .pixelPal.isWarning {
+  background: #2a220f;
+  border-color: #f5c65c;
+  color: #ffe7af;
+}
+.page.theme-midnight .pixelPal.isError {
+  background: #2a1115;
+  border-color: #ff7a88;
+  color: #ffd6dc;
+}
+.page.theme-midnight .pixelPal.isGhost {
+  background: #1f2633;
+  border-color: #6f829f;
+  color: #c4d3e8;
+}
+
+.page.theme-neo .pixelPal {
+  background: linear-gradient(180deg, #ffffff 0%, #eefbff 100%);
+  border-color: #9cd8ea;
+  color: #24445d;
+}
+
+.page.theme-bold .pixelPal {
+  background: #fff;
+  border-width: 2px;
+  border-color: #111827;
+  color: #111827;
+  box-shadow: 3px 3px 0 #111827;
+}
 .captureBar {
   display: grid;
   grid-template-columns: 1fr auto auto;
