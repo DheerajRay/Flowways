@@ -937,7 +937,7 @@ textarea { min-height: 100px; resize: vertical; }
   display: block;
   position: absolute;
   top: 0;
-  left: calc(100% + 18px);
+  right: 0;
   z-index: 10;
 }
 .settingsInline {
