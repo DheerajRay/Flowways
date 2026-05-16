@@ -353,7 +353,7 @@ export default function HomePage() {
     window.setTimeout(async () => {
       await deleteItem(id);
       setDeletingIds((prev) => prev.filter((v) => v !== id));
-    }, 260);
+    }, 420);
   }
 
   function hideItem(id: string) {
