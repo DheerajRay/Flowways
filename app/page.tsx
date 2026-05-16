@@ -59,7 +59,6 @@ export default function HomePage() {
   const [editWorkflowCompletedAt, setEditWorkflowCompletedAt] = useState<string | null>(null);
   const [newWorkflowComment, setNewWorkflowComment] = useState("");
   const [settings, setSettings] = useState<SettingsDraft>(DEFAULT_USER_SETTINGS);
-  const [settingsDraft, setSettingsDraft] = useState<SettingsDraft>(DEFAULT_USER_SETTINGS);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsBusy, setSettingsBusy] = useState(false);
   const [settingsError, setSettingsError] = useState("");
@@ -96,7 +95,6 @@ export default function HomePage() {
     const data = await response.json().catch(() => ({}));
     const next = data?.settings || DEFAULT_USER_SETTINGS;
     setSettings(next);
-    setSettingsDraft(next);
   }
 
   useEffect(() => {
@@ -163,14 +161,14 @@ export default function HomePage() {
     setSelectedColorTag(value);
   }
 
-  async function saveSettings() {
+  async function applySettings(next: SettingsDraft) {
     setSettingsBusy(true);
     setSettingsError("");
     try {
       const response = await fetch("/api/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settingsDraft)
+        body: JSON.stringify(next)
       });
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
@@ -178,10 +176,8 @@ export default function HomePage() {
         return;
       }
       const data = await response.json();
-      const next = data?.settings || settingsDraft;
-      setSettings(next);
-      setSettingsDraft(next);
-      setShowSettings(false);
+      const resolved = data?.settings || next;
+      setSettings(resolved);
     } finally {
       setSettingsBusy(false);
     }
@@ -723,11 +719,11 @@ export default function HomePage() {
     { key: "rounded" as const, label: "R", title: "Nunito Rounded" },
     { key: "mono" as const, label: "P", title: "IBM Plex Mono" }
   ];
-  const petProfile = !settingsDraft.pet_enabled
+  const petProfile = !settings.pet_enabled
     ? "off"
-    : settingsDraft.pet_mode === "monster"
+    : settings.pet_mode === "monster"
       ? "monster"
-      : settingsDraft.pet_mode === "meh"
+      : settings.pet_mode === "meh"
         ? "meh"
         : "sweet";
   const themeStyle = {
@@ -770,7 +766,6 @@ export default function HomePage() {
             aria-label="Settings"
             title="Settings"
             onClick={() => {
-              setSettingsDraft(settings);
               setSettingsError("");
               setShowSettings((prev) => !prev);
             }}
@@ -794,6 +789,8 @@ export default function HomePage() {
         ) : systemNotice ? (
           <div className="systemNotice" aria-live="polite">{systemNotice}</div>
         ) : null}
+        <div className="captureGrid">
+        <div className="captureMainCol">
         <div className="captureBar">
           <input
             id="captureInput"
@@ -879,19 +876,12 @@ export default function HomePage() {
             </div>
           </div>
         ) : null}
+        </div>
       {showSettings ? (
         <section className="settingsDock" aria-label="Settings">
           <div className="settingsModal settingsInline">
             <div className="settingsHeader">
               <h2>Settings</h2>
-              <div className="settingsHeaderActions">
-                <button type="button" className="iconAction compact" aria-label="Save settings" onClick={() => void saveSettings()} disabled={settingsBusy} title="Save settings">
-                  <Icon name="save" />
-                </button>
-                <button type="button" className="iconAction compact" aria-label="Close settings" onClick={() => { setSettingsDraft(settings); setShowSettings(false); }} title="Close settings">
-                  <Icon name="cancel" />
-                </button>
-              </div>
             </div>
             <div className="settingsInner">
               <div className="settingsGrid">
@@ -904,11 +894,14 @@ export default function HomePage() {
                         type="button"
                       className={`iconAction compact ${petProfile === mode ? "active" : ""}`}
                       title={mode === "off" ? "no" : mode === "sweet" ? "professional" : mode === "meh" ? "meh" : "nuclear"}
-                      onClick={() => setSettingsDraft((prev) => (
-                        mode === "off"
-                          ? { ...prev, pet_enabled: false }
-                          : { ...prev, pet_enabled: true, pet_mode: mode }
-                      ))}
+                      onClick={() => {
+                        const next = mode === "off"
+                          ? { ...settings, pet_enabled: false }
+                          : { ...settings, pet_enabled: true, pet_mode: mode };
+                        setSettings(next);
+                        void applySettings(next);
+                      }}
+                      disabled={settingsBusy}
                     >
                       <Icon name={mode === "off" ? "petNo" : mode === "sweet" ? "petPro" : mode === "meh" ? "petMeh" : "petNuclear"} />
                     </button>
@@ -923,9 +916,14 @@ export default function HomePage() {
                       <button
                         key={font.key}
                         type="button"
-                        className={`iconAction compact ${settingsDraft.font_family === font.key ? "active" : ""}`}
+                        className={`iconAction compact ${settings.font_family === font.key ? "active" : ""}`}
                         title={font.title}
-                        onClick={() => setSettingsDraft((prev) => ({ ...prev, font_family: font.key }))}
+                        onClick={() => {
+                          const next = { ...settings, font_family: font.key };
+                          setSettings(next);
+                          void applySettings(next);
+                        }}
+                        disabled={settingsBusy}
                       >
                         {font.label}
                       </button>
@@ -940,9 +938,14 @@ export default function HomePage() {
                       <button
                         key={size}
                         type="button"
-                        className={`iconAction compact ${settingsDraft.font_size === size ? "active" : ""}`}
+                        className={`iconAction compact ${settings.font_size === size ? "active" : ""}`}
                         title={`Text ${size.toUpperCase()}`}
-                        onClick={() => setSettingsDraft((prev) => ({ ...prev, font_size: size }))}
+                        onClick={() => {
+                          const next = { ...settings, font_size: size };
+                          setSettings(next);
+                          void applySettings(next);
+                        }}
+                        disabled={settingsBusy}
                       >
                         {size.toUpperCase()}
                       </button>
@@ -959,20 +962,25 @@ export default function HomePage() {
                         <button
                           type="button"
                           className="colorDot"
-                          style={{ background: settingsDraft.color_palette[key] }}
+                          style={{ background: settings.color_palette[key] }}
                           onClick={() => settingsColorInputRefs.current[key]?.click()}
+                          disabled={settingsBusy}
                         >
-                          <span aria-hidden="true">−</span>
+                          <span aria-hidden="true">-</span>
                         </button>
                         <input
                           type="color"
                           ref={(node) => { settingsColorInputRefs.current[key] = node; }}
                           className="hiddenColorInput"
-                          value={settingsDraft.color_palette[key]}
-                          onChange={(event) => setSettingsDraft((prev) => ({
-                            ...prev,
-                            color_palette: { ...prev.color_palette, [key]: event.target.value }
-                          }))}
+                          value={settings.color_palette[key]}
+                          onChange={(event) => {
+                            const next = {
+                              ...settings,
+                              color_palette: { ...settings.color_palette, [key]: event.target.value }
+                            };
+                            setSettings(next);
+                            void applySettings(next);
+                          }}
                         />
                       </label>
                     ))}
@@ -984,6 +992,7 @@ export default function HomePage() {
           </div>
         </section>
       ) : null}
+      </div>
       </section>
 
       <section className="feedShell" aria-label="Saved items">
@@ -1248,3 +1257,4 @@ export default function HomePage() {
     </main>
   );
 }
+

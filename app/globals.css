@@ -97,6 +97,17 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   position: relative;
   padding-top: 26px;
 }
+.captureGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+.captureMainCol {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
 .systemNotice {
   position: absolute;
   right: 18px;
@@ -725,15 +736,19 @@ textarea { min-height: 100px; resize: vertical; }
   box-shadow: 0 10px 24px rgba(35, 52, 75, 0.2);
 }
 .settingsDock {
-  display: flex;
-  justify-content: flex-end;
+  display: block;
 }
 .settingsInline {
-  width: min(380px, 100%);
-  margin-top: 4px;
-  border-radius: 14px;
-  padding: 12px;
+  width: fit-content;
+  margin-top: 0;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  gap: 8px;
 }
+.settingsInline .settingsHeader h2 { display: none; }
 .settingsHeader {
   display: flex;
   justify-content: flex-start;
@@ -761,9 +776,9 @@ textarea { min-height: 100px; resize: vertical; }
 }
 .settingsRow {
   display: grid;
-  grid-template-columns: 58px auto;
+  grid-template-columns: 48px auto;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   padding: 0;
 }
 .settingsRow > span {
@@ -775,11 +790,11 @@ textarea { min-height: 100px; resize: vertical; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 8px;
+  padding: 3px 8px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: #fff;
-  min-height: 38px;
+  min-height: 36px;
   justify-self: start;
 }
 .colorSettings {
@@ -861,8 +876,9 @@ textarea { min-height: 100px; resize: vertical; }
     margin-top: 2px;
     justify-self: end;
   }
-  .settingsDock {
-    justify-content: stretch;
+  .captureGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
   .settingsInline { width: 100%; }
   .settingsRow {
