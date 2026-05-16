@@ -916,7 +916,7 @@ export default function HomePage() {
                       <button
                         key={font.key}
                         type="button"
-                        className={`iconAction compact ${settings.font_family === font.key ? "active" : ""}`}
+                        className={`iconAction compact glyphButton ${settings.font_family === font.key ? "active" : ""}`}
                         title={font.title}
                         onClick={() => {
                           const next = { ...settings, font_family: font.key };
@@ -938,7 +938,7 @@ export default function HomePage() {
                       <button
                         key={size}
                         type="button"
-                        className={`iconAction compact ${settings.font_size === size ? "active" : ""}`}
+                        className={`iconAction compact glyphButton sizeGlyph ${settings.font_size === size ? "active" : ""}`}
                         title={`Text ${size.toUpperCase()}`}
                         onClick={() => {
                           const next = { ...settings, font_size: size };
