@@ -286,6 +286,9 @@ body:has(.page.theme-sunset) {
   width: 26px;
   height: 26px;
   stroke-width: 1.9;
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke;
 }
 .page.theme-classic .titleIcon {
   color: color-mix(in srgb, #111 65%, var(--accent));
@@ -316,6 +319,14 @@ body:has(.page.theme-sunset) {
   animation: titleIconBlink 260ms ease-out 1;
 }
 .subtitle { margin: 6px 0 0; color: var(--muted); }
+
+.iconAction svg,
+.workflowDot svg,
+.settingsLabelIcon svg {
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke;
+}
 
 @keyframes titleIconSpinPulse {
   0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.8; }

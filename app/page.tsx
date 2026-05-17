@@ -716,7 +716,7 @@ export default function HomePage() {
   }
 
   function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "settings" | "petNo" | "petPro" | "petMeh" | "petNuclear" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "color" | "tags" | "labelPet" | "labelFont" | "labelText" | "labelColor" | "labelTheme" | HeaderSpinIcon }) {
-    const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+    const common = { width: 18, height: 18, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.95, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
     const circleCommon = { width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.75, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
     if (name === "circleBolt") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="M13.3 5.8 9.4 12h2.9l-1.1 6.2 4.1-6.6h-3.1z" /></svg>;
     if (name === "circleStar") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="m12 6.5 1.7 3.5 3.9.6-2.8 2.7.7 3.9-3.5-1.9-3.5 1.9.7-3.9-2.8-2.7 3.9-.6z" /></svg>;
