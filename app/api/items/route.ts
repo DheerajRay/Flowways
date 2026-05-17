@@ -4,6 +4,7 @@ import { requireAuth } from "@/server/api/auth";
 import { classifyWithAiOrFallback } from "@/server/ai/classifier-service";
 import { buildItem } from "@/server/db/item-builder";
 import { defaultTimelineMeta } from "@/shared/domain/timeline";
+import { defaultJournalMeta, formatDiaryEntry, stripDiaryControlTags } from "@/shared/domain/journal";
 
 function normalizeListLine(value: string): string {
   return value
@@ -122,10 +123,20 @@ export async function GET() {
     }
   }
 
-  const items = (data || []).map((item) => ({
-    ...item,
-    timeline_meta: metadataByItemId[item.id] || (item.kind === "timeline" ? defaultTimelineMeta("stopwatch") : null)
-  }));
+  const items = (data || []).map((item) => {
+    const metadata = metadataByItemId[item.id] as Record<string, unknown> | null | undefined;
+    const timelineMeta = item.kind === "timeline"
+      ? (metadata || defaultTimelineMeta("stopwatch"))
+      : null;
+    const journalMeta = item.kind === "journal"
+      ? (metadata || defaultJournalMeta("note"))
+      : null;
+    return {
+      ...item,
+      timeline_meta: timelineMeta,
+      journal_meta: journalMeta
+    };
+  });
   return NextResponse.json({ items });
 }
 
@@ -280,10 +291,119 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Insert failed: ${insertResult.error.message}`, code: insertResult.error.code }, { status: 400 });
     }
 
+    if (item.kind === "journal" && item.journalMeta?.journal_subtype === "diary") {
+      const journalResult = await auth.supabase
+        .from("items")
+        .select("id,title,body,labels,updated_at,checked")
+        .eq("user_id", auth.user.id)
+        .eq("kind", "journal")
+        .eq("checked", false)
+        .order("updated_at", { ascending: false })
+        .limit(50);
+
+      const journalCandidates = journalResult.data || [];
+      const candidateIds = journalCandidates.map((row) => row.id);
+      let existingDiary: { id: string; title: string; body: string; labels: string[] | null } | null = null;
+      if (candidateIds.length) {
+        const journalMetaResult = await auth.supabase
+          .from("item_metadata")
+          .select("item_id,metadata,created_at")
+          .in("item_id", candidateIds)
+          .order("created_at", { ascending: false });
+        if (!journalMetaResult.error) {
+          const seen = new Set<string>();
+          for (const row of journalMetaResult.data || []) {
+            if (seen.has(row.item_id)) continue;
+            seen.add(row.item_id);
+            const meta = row.metadata as { journal_subtype?: string } | null;
+            if (meta?.journal_subtype === "diary") {
+              const match = journalCandidates.find((c) => c.id === row.item_id);
+              if (match) {
+                existingDiary = {
+                  id: match.id,
+                  title: match.title,
+                  body: match.body || "",
+                  labels: match.labels || []
+                };
+                break;
+              }
+            }
+          }
+        }
+      }
+      if (!existingDiary) {
+        const heuristic = journalCandidates.find((candidate) =>
+          /^diary$/i.test((candidate.title || "").trim()) ||
+          (candidate.labels || []).some((label: unknown) => String(label).toLowerCase() === "diary")
+        );
+        if (heuristic) {
+          existingDiary = {
+            id: heuristic.id,
+            title: heuristic.title,
+            body: heuristic.body || "",
+            labels: heuristic.labels || []
+          };
+        }
+      }
+
+      const diaryMessage = stripDiaryControlTags(payload.sourceText) || item.body || item.title;
+      const diaryEntry = formatDiaryEntry(diaryMessage, clientNow);
+      if (existingDiary) {
+        const nextBody = existingDiary.body ? `${existingDiary.body}\n${diaryEntry}` : diaryEntry;
+        const mergedLabels = [...new Set([...(existingDiary.labels || []), ...(item.labels || [])])];
+        const updateDiaryResult = await auth.supabase
+          .from("items")
+          .update({
+            body: nextBody,
+            labels: mergedLabels,
+            updated_at: clientNow.toISOString()
+          })
+          .eq("id", existingDiary.id)
+          .eq("user_id", auth.user.id)
+          .select("*")
+          .single();
+
+        if (!updateDiaryResult.error) {
+          const existingCount = (existingDiary.body || "").split(/\r?\n/).filter(Boolean).length;
+          await auth.supabase.from("item_metadata").insert({
+            item_id: existingDiary.id,
+            metadata: {
+              journal_subtype: "diary",
+              diary_entry_count: existingCount + 1,
+              last_entry_at: clientNow.toISOString()
+            }
+          });
+          return NextResponse.json({
+            item: updateDiaryResult.data,
+            classification: {
+              ...classification,
+              reason: `${classification.reason} | appended entry to global diary`
+            },
+            merged: true,
+            mergedIntoId: existingDiary.id
+          });
+        }
+      } else {
+        item.title = "Diary";
+        item.body = diaryEntry;
+        item.journalMeta = {
+          journal_subtype: "diary",
+          diary_entry_count: 1,
+          last_entry_at: clientNow.toISOString()
+        };
+      }
+    }
+
     if (item.timelineMeta) {
       await auth.supabase.from("item_metadata").insert({
         item_id: item.id,
         metadata: item.timelineMeta
+      });
+    }
+    if (item.journalMeta) {
+      await auth.supabase.from("item_metadata").insert({
+        item_id: item.id,
+        metadata: item.journalMeta
       });
     }
 

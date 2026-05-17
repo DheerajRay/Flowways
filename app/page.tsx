@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { getSupabaseBrowserClient } from "@/shared/supabase-browser";
 import { DEFAULT_USER_SETTINGS, type UserSettings } from "@/shared/types/settings";
 import { defaultTimelineMeta, nextOccurrenceFromRule, type RecurrenceRule, type TimelineMeta, type TimelineSubtype } from "@/shared/domain/timeline";
+import { defaultJournalMeta, type JournalMeta, type JournalSubtype } from "@/shared/domain/journal";
 
 interface DbItem {
   id: string;
@@ -26,6 +27,11 @@ interface DbItem {
     countup_stopped_at: string | null;
     last_notified_at?: string | null;
     last_notified_occurrence_at?: string | null;
+  } | null;
+  journal_meta?: {
+    journal_subtype: JournalSubtype;
+    diary_entry_count?: number;
+    last_entry_at?: string | null;
   } | null;
   created_at?: string;
   checked?: boolean;
@@ -115,6 +121,11 @@ export default function HomePage() {
     reminder: "Reminder",
     recurring: "Recurring",
     countup: "Count-up"
+  };
+  const journalSubtypeLabel: Record<JournalSubtype, string> = {
+    diary: "Diary",
+    note: "Note",
+    idea: "Idea"
   };
   const workflowIcon: Record<(typeof workflowSteps)[number], "backlog" | "progress" | "ready"> = {
     Backlog: "backlog",
@@ -734,6 +745,11 @@ export default function HomePage() {
     return defaultTimelineMeta("stopwatch");
   }
 
+  function resolveJournalMeta(item: DbItem): JournalMeta {
+    if (item.journal_meta) return item.journal_meta as JournalMeta;
+    return defaultJournalMeta("note");
+  }
+
   function formatElapsed(ms: number): string {
     const mins = Math.max(0, Math.floor(ms / 60000));
     if (mins < 60) return `${mins} min`;
@@ -1285,6 +1301,7 @@ export default function HomePage() {
         {sortedItems.length === 0 ? <p className="empty">{initialFeedLoaded ? "No items yet." : "Loading items..."}</p> : null}
         {sortedItems.map((item) => {
           const timelineMeta = item.kind === "timeline" ? resolveTimelineMeta(item) : null;
+          const journalMeta = item.kind === "journal" ? resolveJournalMeta(item) : null;
           const timelineTargetAt = (() => {
             if (item.kind !== "timeline" || !timelineMeta) return null;
             if (timelineMeta.timeline_subtype === "stopwatch") return item.due_at;
@@ -1528,7 +1545,7 @@ export default function HomePage() {
                     ) : null}
                   </div>
                 ) : (
-                  item.body ? <p>{item.body}</p> : null
+                  item.body ? <p className={item.kind === "journal" ? "journalBody" : undefined}>{item.body}</p> : null
                 )}
               </>
             )}
@@ -1537,6 +1554,9 @@ export default function HomePage() {
               {metaDate ? <span className="dateChip">{metaDate}</span> : null}
               {item.kind === "timeline" && timelineMeta ? (
                 <span className="tagChip">{timelineSubtypeLabel[timelineMeta.timeline_subtype]}</span>
+              ) : null}
+              {item.kind === "journal" && journalMeta ? (
+                <span className="tagChip">{journalSubtypeLabel[journalMeta.journal_subtype]}</span>
               ) : null}
               {item.kind === "timeline" && !item.checked && timeState?.done ? <span className="overdueTagChip">OVER DUE</span> : null}
               {item.kind === "workflow" && formatTimeSpent(item) ? <span className="dateChip">{formatTimeSpent(item)}</span> : null}

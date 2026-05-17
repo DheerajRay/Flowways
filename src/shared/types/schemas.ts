@@ -51,6 +51,11 @@ export const classificationResultSchema = z.object({
     last_notified_at: z.string().datetime().nullable().optional(),
     last_notified_occurrence_at: z.string().datetime().nullable().optional()
   }).nullable().optional(),
+  journal_meta: z.object({
+    journal_subtype: z.enum(["diary", "note", "idea"]),
+    diary_entry_count: z.number().int().min(0).optional(),
+    last_entry_at: z.string().datetime().nullable().optional()
+  }).nullable().optional(),
   workflow_status: z.enum(["Backlog", "Paused", "In Progress", "Ready", "Review", "Done"]).nullable(),
   confidence: z.number().min(0).max(1),
   reason: z.string(),
@@ -73,6 +78,7 @@ export const updateItemSchema = z.object({
   workflowStatus: z.enum(["Backlog", "Paused", "In Progress", "Ready", "Review", "Done"]).nullable().optional(),
   dueAt: z.string().datetime().nullable().optional(),
   timelineMeta: classificationResultSchema.shape.timeline_meta.optional(),
+  journalMeta: classificationResultSchema.shape.journal_meta.optional(),
   labels: z.array(z.string()).optional(),
   position: z.number().int().positive().optional()
 });

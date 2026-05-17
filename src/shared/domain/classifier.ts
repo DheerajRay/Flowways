@@ -1,11 +1,13 @@
 import type { ClassificationResult, ItemKind, WorkflowStatus } from "@/shared/types/item";
 import { deriveTimelineMetaFromText } from "@/shared/domain/timeline";
+import { deriveJournalMetaFromText, stripDiaryControlTags } from "@/shared/domain/journal";
 
 const WORKFLOW_CUES = /\b(blocked|backlog|ready|review|handoff|in progress|kanban|prepare|draft|plan|implement|coordinate|dependency|handover|milestone|spec|confluence|jira|rollout|release|design doc)\b/i;
 const CHECKLIST_CUES = /^(\[\s?\]|-|todo\b|fix\b|call\b|email\b|finish\b|buy\b|pick up\b)/i;
 const LIST_PATTERN = /(^|\s)\d+[.)]\s+\w+/i;
 const PROFESSIONAL_WORK_PATTERN = /\b(config|proposal|doc|draft|review|project|launch|release|migration|workflow|handoff|brief|spec|ticket)\b/i;
 const IDEA_OR_NOTE_CUES = /\b(testing\b|test idea\b|idea\b|thought\b|hypothesis\b|explore\b)\b/i;
+const JOURNAL_CUES = /\b(note|journal|diary|reflection|reflect|thoughts?)\b/i;
 const GENERIC_LABELS = new Set([
   "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "in", "is", "it", "me", "my", "of", "on", "or", "that", "the", "this", "to", "was", "with",
   "note", "notes", "task", "tasks", "item", "items", "journal", "timeline", "workflow", "checklist", "reminder", "notification", "timer", "thought"
@@ -146,6 +148,12 @@ export function inferContextLabels(text: string, kind: ItemKind): string[] {
 
   if (kind === "journal") {
     if (/\b(idea|testing|thought|hypothesis)\b/.test(lower)) inferred.push("idea");
+    // Keep concrete topical nouns from "the <topic>" phrasing, e.g. "filtering the tub".
+    const topicalMatches = [...lower.matchAll(/\bthe\s+([a-z][a-z0-9_-]{2,})\b/g)];
+    for (const match of topicalMatches) {
+      const topic = match[1];
+      if (topic && !TAG_STOPWORDS.has(topic) && !GENERIC_LABELS.has(topic)) inferred.push(topic);
+    }
   }
 
   if (kind === "timeline") {
@@ -307,9 +315,14 @@ function stripSyntax(text: string): string {
 
 export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "auto", baseDate = new Date(), clientTimezoneOffsetMinutes?: number): ClassificationResult {
   const clean = normalizeText(text);
+  const hasDiaryControlTag = /#diary\b/i.test(clean);
   const dueAt = parseDueAt(clean, baseDate, clientTimezoneOffsetMinutes);
-  const isJournal = clean.length > 140 || /\n|\. .+\./.test(text);
+  const isJournal =
+    clean.length > 140 ||
+    /\n/.test(text) ||
+    (/[.!?]/.test(clean) && clean.split(/\s+/).length >= 7);
   const isIdeaLike = IDEA_OR_NOTE_CUES.test(clean);
+  const hasJournalCue = JOURNAL_CUES.test(clean);
   const checklistSignals = Number(CHECKLIST_CUES.test(clean)) + Number(LIST_PATTERN.test(clean));
   const workflowSignals = Number(WORKFLOW_CUES.test(clean)) + Number(PROFESSIONAL_WORK_PATTERN.test(clean));
   const temporalCue = /\b(today|tomorrow|next week|(next\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)|\d{1,2}(?::\d{2})?\s*(am|pm)|\d{2}:\d{2})\b/i.test(clean);
@@ -319,8 +332,10 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
 
   let kind: ItemKind = "checklist";
   if (modeHint !== "auto") kind = modeHint;
+  else if (hasDiaryControlTag) kind = "journal";
   else if (dueAt) kind = "timeline";
   else if (temporalCue && (followupActionCue || personCue)) kind = "timeline";
+  else if (hasJournalCue && checklistSignals === 0 && workflowSignals === 0) kind = "journal";
   else if (personCue && directedActionCue && checklistSignals === 0) kind = "workflow";
   else if (isIdeaLike && checklistSignals === 0) kind = "journal";
   else if (workflowSignals > checklistSignals) kind = "workflow";
@@ -333,11 +348,15 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
   const title = kind === "timeline"
     ? (timelineTitle || clean || "Untitled item")
     : (stripSyntax(clean) || clean || "Untitled item");
+  const journalMeta = kind === "journal" ? deriveJournalMetaFromText(clean) : null;
+  const journalBody = kind === "journal"
+    ? (journalMeta?.journal_subtype === "diary" ? stripDiaryControlTags(clean) : clean)
+    : "";
 
   return {
     kind,
     title,
-    body: kind === "journal" ? clean : "",
+    body: journalBody,
     labels: (() => {
       const normalized = normalizeGeneratedLabels(extractLabels(clean), clean);
       const inferred = inferContextLabels(clean, kind);
@@ -352,6 +371,7 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
     })(),
     due_at: dueAt,
     timeline_meta: kind === "timeline" ? deriveTimelineMetaFromText(clean, dueAt, baseDate, clientTimezoneOffsetMinutes) : null,
+    journal_meta: journalMeta,
     workflow_status: workflowStatus,
     confidence: kind === "workflow" ? 0.72 : 0.66,
     reason: `Fallback deterministic classifier used (workflowSignals=${workflowSignals}, checklistSignals=${checklistSignals})`,

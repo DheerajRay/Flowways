@@ -689,23 +689,43 @@ textarea { min-height: 100px; resize: vertical; }
   display: grid;
   gap: 8px;
   animation: cardIn 260ms ease-out;
-  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  max-height: 520px;
+  transition:
+    transform 280ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 220ms ease,
+    border-color 220ms ease,
+    opacity 360ms ease,
+    max-height 460ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    margin 460ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    padding 460ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    filter 360ms ease;
+  will-change: transform, opacity, max-height, margin, padding, filter;
 }
 .item.isDeleting {
   pointer-events: none;
   transform-origin: center;
   overflow: hidden;
-  animation: deleteClassic 480ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-  will-change: transform, opacity, max-height, margin, padding, filter;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.985);
+  filter: blur(0.6px);
+  max-height: 0;
+  margin-top: -6px;
+  margin-bottom: -6px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 .item.isDeleting .itemHead,
 .item.isDeleting .metaRow,
 .item.isDeleting .workflowRailInline {
-  animation: deleteChildFade 260ms ease-out forwards;
+  opacity: 0;
+  transform: translateY(-3px);
+  transition: opacity 220ms ease, transform 260ms ease;
 }
 .item.isDeleting .tagChip,
 .item.isDeleting .dateChip {
-  animation: deleteChipFade 220ms ease-out forwards;
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 180ms ease, transform 220ms ease;
 }
 .item-checklist { border-left: 2px solid #1d1d1d; }
 .item-journal { border-left: 2px solid #1d1d1d; }
@@ -1039,6 +1059,9 @@ textarea { min-height: 100px; resize: vertical; }
 .timelineBlock {
   display: grid;
   gap: 0;
+}
+.journalBody {
+  white-space: pre-line;
 }
 .timelineSubtypeChip {
   margin: 0 0 6px;
@@ -1383,7 +1406,7 @@ textarea { min-height: 100px; resize: vertical; }
 .page.theme-midnight .item.color-green { border-color: var(--tag-green); box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-green) 45%, #000), 0 10px 22px rgba(0, 0, 0, 0.35); }
 .page.theme-midnight .item.color-amber { border-color: var(--tag-amber); box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-amber) 45%, #000), 0 10px 22px rgba(0, 0, 0, 0.35); }
 .page.theme-midnight .item.color-violet { border-color: var(--tag-violet); box-shadow: 0 0 0 1px color-mix(in srgb, var(--tag-violet) 45%, #000), 0 10px 22px rgba(0, 0, 0, 0.35); }
-.page.theme-midnight .item.isDeleting { animation-name: deleteMidnight; }
+.page.theme-midnight .item.isDeleting { filter: blur(1px); transform: translateY(-10px) scale(0.982); }
 
 .page.theme-midnight .item.color-red .actions .iconAction.active { background: color-mix(in srgb, var(--tag-red) 60%, #111); border-color: var(--tag-red); }
 .page.theme-midnight .item.color-blue .actions .iconAction.active { background: color-mix(in srgb, var(--tag-blue) 60%, #111); border-color: var(--tag-blue); }
@@ -1408,7 +1431,7 @@ textarea { min-height: 100px; resize: vertical; }
   background: linear-gradient(180deg, #ffffff 0%, #f3fbff 100%);
   border-color: #cfe2ec;
 }
-.page.theme-neo .item.isDeleting { animation-name: deleteNeo; }
+.page.theme-neo .item.isDeleting { filter: blur(0.5px); transform: translateY(-7px) scale(0.988); }
 
 .page.theme-bold .item,
 .page.theme-bold .capture,
@@ -1440,7 +1463,7 @@ textarea { min-height: 100px; resize: vertical; }
   border-color: #111827;
   box-shadow: 2px 2px 0 #111827;
 }
-.page.theme-bold .item.isDeleting { animation-name: deleteBold; }
+.page.theme-bold .item.isDeleting { filter: blur(0.7px); transform: translateY(-8px) scale(0.984); }
 
 .page.theme-sunset .item,
 .page.theme-sunset .capture,

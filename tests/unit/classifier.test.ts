@@ -106,6 +106,21 @@ describe("classifier fallback", () => {
     expect(c.labels).toContain("tub");
   });
 
+  it("supports journal subtypes including diary control tag", () => {
+    const diary = fallbackClassify("#diary today felt good", "auto", base);
+    expect(diary.kind).toBe("journal");
+    expect(diary.journal_meta?.journal_subtype).toBe("diary");
+    expect((diary.body || "").toLowerCase()).not.toContain("#diary");
+
+    const idea = fallbackClassify("test idea for parser", "auto", base);
+    expect(idea.kind).toBe("journal");
+    expect(idea.journal_meta?.journal_subtype).toBe("idea");
+
+    const note = fallbackClassify("This is a plain note text for later reflection and follow-up details.", "auto", base);
+    expect(note.kind).toBe("journal");
+    expect(note.journal_meta?.journal_subtype).toBe("note");
+  });
+
   it("curates noisy tags and canonicalizes action tags", () => {
     const timeline = curateLabels("timeline", ["jj", "meeting", "connect", "monday", "are", "thought"]);
     expect(timeline).toContain("jj");

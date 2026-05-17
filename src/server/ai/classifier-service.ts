@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { curateLabels, fallbackClassify, inferContextLabels, normalizeGeneratedLabels, normalizeText, parseDueAt } from "@/shared/domain/classifier";
 import { deriveTimelineMetaFromText } from "@/shared/domain/timeline";
+import { deriveJournalMetaFromText, stripDiaryControlTags } from "@/shared/domain/journal";
 import { classificationResultSchema } from "@/shared/types/schemas";
 import type { ClassificationResult, ItemKind } from "@/shared/types/item";
 
@@ -178,15 +179,24 @@ export async function classifyWithAiOrFallback(
     const finalTimelineMeta = refinedKind === "timeline"
       ? deriveTimelineMetaFromText(text, finalDueAt, baseDate, clientTimezoneOffsetMinutes)
       : null;
+    const forcedDiary = /#diary\b/i.test(text);
+    if (forcedDiary) refinedKind = "journal";
+    const finalJournalMeta = refinedKind === "journal"
+      ? deriveJournalMetaFromText(text)
+      : null;
+    const finalBody = refinedKind === "journal" && finalJournalMeta?.journal_subtype === "diary"
+      ? stripDiaryControlTags(refinedBody || text)
+      : refinedBody;
 
     return {
       ...parsed,
       kind: refinedKind,
       title: refinedTitle || parsed.title,
-      body: refinedBody,
+      body: finalBody,
       pet_quip: (parsed.pet_quip || "").trim(),
       due_at: finalDueAt,
       timeline_meta: finalTimelineMeta,
+      journal_meta: finalJournalMeta,
       labels: finalLabels,
       reason: refinedReason
     };

@@ -21,6 +21,12 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       metadata: payload.timelineMeta
     });
   }
+  if (payload.journalMeta !== undefined) {
+    await auth.supabase.from("item_metadata").insert({
+      item_id: id,
+      metadata: payload.journalMeta
+    });
+  }
   if (payload.labels !== undefined) patch.labels = payload.labels;
   if (payload.position !== undefined) patch.position = payload.position;
 
