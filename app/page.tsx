@@ -200,10 +200,16 @@ export default function HomePage() {
       "circlePlus",
       "circleDivide",
       "circleMinus",
-      "circleThreeQuarters",
       "circleDollar"
     ];
-    const pick = () => [...pool].sort(() => Math.random() - 0.5).slice(0, 4);
+    const pick = () => {
+      const unique = [...new Set(pool)];
+      for (let i = unique.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [unique[i], unique[j]] = [unique[j], unique[i]];
+      }
+      return unique.slice(0, 4);
+    };
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reducedMotion) {
       setTitleIcons(pick());
@@ -692,25 +698,26 @@ export default function HomePage() {
 
   function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "settings" | "petNo" | "petPro" | "petMeh" | "petNuclear" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "color" | "tags" | "labelPet" | "labelFont" | "labelText" | "labelColor" | "labelTheme" | HeaderSpinIcon }) {
     const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
-    if (name === "circleBolt") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="M8.8 3.8 6 8.1h2L7.2 12.2 10 7.9H8z" /></svg>;
-    if (name === "circleStar") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="m8 4.4 1.1 2.2 2.4.3-1.8 1.7.4 2.4L8 9.9 5.9 11l.4-2.4-1.8-1.7 2.4-.3z" /></svg>;
-    if (name === "circleHeart") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="M8 11.3s-2.9-1.8-2.9-3.7a1.8 1.8 0 0 1 3-1.3 1.8 1.8 0 0 1 3 1.3c0 1.9-3.1 3.7-3.1 3.7z" /></svg>;
-    if (name === "circleRadiation") return <svg {...common}><circle cx="8" cy="8" r="6" /><circle cx="8" cy="8" r="1" /><path d="M8 7 10.7 5.7M8 9 5.3 10.3M7 8H4.2M9 8h2.8M7.3 6 6.1 3.7M8.7 10l1.2 2.3" /></svg>;
-    if (name === "circleHalfStroke") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="M8 2a6 6 0 0 0 0 12" /></svg>;
-    if (name === "circleThreeQuarters") return <svg {...common}><path d="M8 2a6 6 0 1 1-4.9 2.5" /><path d="M2.7 6.2V3.7H5.2" /></svg>;
-    if (name === "circleCheck") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="M5.4 8.1 7.2 10l3.4-3.8" /></svg>;
-    if (name === "circleX") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="m5.5 5.5 5 5M10.5 5.5l-5 5" /></svg>;
-    if (name === "circleLocationArrow") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="m11.1 4.9-2.6 6.2-1-2.6-2.6-1z" /></svg>;
-    if (name === "circleQuarters") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="M8 2v6h6" /></svg>;
-    if (name === "circleExclamation") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="M8 4.8v4.3" /><circle cx="8" cy="11.5" r=".6" fill="currentColor" stroke="none" /></svg>;
-    if (name === "circleQuestion") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="M6.6 6.4a1.6 1.6 0 1 1 2.2 1.5c-.8.4-1 .8-1 1.5" /><circle cx="8" cy="11.5" r=".6" fill="currentColor" stroke="none" /></svg>;
-    if (name === "circleDot") return <svg {...common}><circle cx="8" cy="8" r="6" /><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none" /></svg>;
-    if (name === "circleArrowDownLeft") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="M10.6 5.4 5.4 10.6M5.4 8.2v2.4h2.4" /></svg>;
-    if (name === "circleArrowRight") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="M5 8h6M8.7 5.3 11.4 8l-2.7 2.7" /></svg>;
-    if (name === "circlePlus") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="M8 5v6M5 8h6" /></svg>;
-    if (name === "circleDivide") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="M5.2 8h5.6" /><circle cx="8" cy="5.6" r=".6" fill="currentColor" stroke="none" /><circle cx="8" cy="10.4" r=".6" fill="currentColor" stroke="none" /></svg>;
-    if (name === "circleMinus") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="M5.2 8h5.6" /></svg>;
-    if (name === "circleDollar") return <svg {...common}><circle cx="8" cy="8" r="6" /><path d="M8 4.2v7.6M9.7 5.6c-.4-.3-1-.5-1.7-.5-1.1 0-1.9.5-1.9 1.3 0 .8.8 1.2 1.9 1.5 1.1.3 1.9.7 1.9 1.5s-.8 1.4-2 1.4c-.8 0-1.5-.2-2.1-.6" /></svg>;
+    const circleCommon = { width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.75, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+    if (name === "circleBolt") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="M13.3 5.8 9.4 12h2.9l-1.1 6.2 4.1-6.6h-3.1z" /></svg>;
+    if (name === "circleStar") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="m12 6.5 1.7 3.5 3.9.6-2.8 2.7.7 3.9-3.5-1.9-3.5 1.9.7-3.9-2.8-2.7 3.9-.6z" /></svg>;
+    if (name === "circleHeart") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="M12 17s-4.6-2.9-4.6-5.8a2.8 2.8 0 0 1 4.6-2.2 2.8 2.8 0 0 1 4.6 2.2c0 2.9-4.6 5.8-4.6 5.8z" /></svg>;
+    if (name === "circleRadiation") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="1.6" /><path d="M12 10.4V6.2M9.2 13l-3.6 2.1M14.8 13l3.6 2.1M9.2 11l-3.6-2.1M14.8 11l3.6-2.1M12 13.6v4.2" /></svg>;
+    if (name === "circleHalfStroke") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="M12 3a9 9 0 0 0 0 18" /></svg>;
+    if (name === "circleThreeQuarters") return <svg {...circleCommon}><path d="M12 3a9 9 0 1 1-7.4 3.8" /><path d="M4 8V4h4" /></svg>;
+    if (name === "circleCheck") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="m8.6 12.2 2.4 2.4 4.5-5.1" /></svg>;
+    if (name === "circleX") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="m8.7 8.7 6.6 6.6M15.3 8.7l-6.6 6.6" /></svg>;
+    if (name === "circleLocationArrow") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="m16.5 7.5-4.1 9.3-1.7-3.4-3.4-1.7z" /></svg>;
+    if (name === "circleQuarters") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="M12 3v9h9" /></svg>;
+    if (name === "circleExclamation") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="M12 7v7" /><circle cx="12" cy="16.8" r="1" fill="currentColor" stroke="none" /></svg>;
+    if (name === "circleQuestion") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="M10.1 10.2a2.2 2.2 0 1 1 3.1 2c-1.1.6-1.3 1.1-1.3 2" /><circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" /></svg>;
+    if (name === "circleDot") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" /></svg>;
+    if (name === "circleArrowDownLeft") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="m16 8-8 8M8 11.7V16h4.3" /></svg>;
+    if (name === "circleArrowRight") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="M7 12h10M13.7 8.7 17 12l-3.3 3.3" /></svg>;
+    if (name === "circlePlus") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="M12 7v10M7 12h10" /></svg>;
+    if (name === "circleDivide") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="M8 12h8" /><circle cx="12" cy="9" r="1" fill="currentColor" stroke="none" /><circle cx="12" cy="15" r="1" fill="currentColor" stroke="none" /></svg>;
+    if (name === "circleMinus") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="M8 12h8" /></svg>;
+    if (name === "circleDollar") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="M12 6.3v11.4M14.6 8.3c-.7-.4-1.5-.6-2.6-.6-1.8 0-3 .8-3 2 0 1.2 1.1 1.8 3 2.3 1.7.4 2.9 1 2.9 2.2 0 1.2-1.2 2.1-3.2 2.1-1.2 0-2.3-.3-3.2-.9" /></svg>;
     if (name === "done" || name === "save") return <svg {...common}><path d="M3 8.5l3 3L13 4.5" /></svg>;
     if (name === "undo" || name === "cancel") return <svg {...common}><path d="M6 4L2.5 7.5 6 11" /><path d="M3 7.5h5.5A4.5 4.5 0 1 1 8.5 16" /></svg>;
     if (name === "edit") return <svg {...common}><path d="M10.8 2.2l3 3-7.8 7.8-3.6.6.6-3.6z" /></svg>;
