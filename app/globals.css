@@ -720,7 +720,17 @@ textarea { min-height: 100px; resize: vertical; }
 }
 .item-done {
   border-color: #2f9e66;
-  box-shadow: 0 0 0 1px rgba(47, 158, 102, 0.22), 0 10px 24px rgba(40, 54, 74, 0.08);
+  box-shadow: 0 0 0 1px rgba(47, 158, 102, 0.28), 0 10px 24px rgba(40, 54, 74, 0.08);
+}
+.item-done .actions .iconAction {
+  border-color: #2f9e66;
+  color: #2f9e66;
+}
+.item-done .actions .iconAction:hover,
+.item-done .actions .iconAction.active {
+  background: rgba(47, 158, 102, 0.16);
+  border-color: #2f9e66;
+  color: #1f7a4f;
 }
 .item.item-hidden {
   border-style: dashed;
@@ -1212,9 +1222,6 @@ textarea { min-height: 100px; resize: vertical; }
 .settingsDock.isOpen .settingsRow:nth-child(3) { transition-delay: 195ms; }
 .settingsDock.isOpen .settingsRow:nth-child(4) { transition-delay: 250ms; }
 .settingsDock.isOpen .settingsRow:nth-child(5) { transition-delay: 305ms; }
-.settingsDock .settingsIconRail {
-  overflow: hidden;
-}
 .settingsRow > span {
   font-size: 13px;
   font-weight: 700;
@@ -1736,4 +1743,37 @@ textarea { min-height: 100px; resize: vertical; }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
+}
+.page.theme-midnight .item.item-done {
+  border-color: #2f9e66;
+  box-shadow: 0 0 0 1px color-mix(in srgb, #2f9e66 50%, #000), 0 10px 22px rgba(0, 0, 0, 0.35);
+}
+.page.theme-midnight .item.item-done .actions .iconAction {
+  border-color: #2f9e66;
+  color: #86f7bf;
+}
+.page.theme-midnight .item.item-done .actions .iconAction:hover {
+  background: color-mix(in srgb, #2f9e66 24%, #171717);
+}
+.page.theme-bold .item.item-done {
+  border-color: #2f9e66;
+  box-shadow: 4px 4px 0 color-mix(in srgb, #2f9e66 72%, #111827);
+}
+.page.theme-bold .item.item-done .actions .iconAction {
+  border-color: #2f9e66;
+  color: #1d8a56;
+}
+.page.theme-bold .item.item-done .actions .iconAction:hover {
+  background: color-mix(in srgb, #2f9e66 14%, #ffffff);
+}
+.page.theme-sunset .item.item-done {
+  border-color: #2f9e66;
+  box-shadow: 0 0 0 1px color-mix(in srgb, #2f9e66 40%, #fff), 0 10px 22px rgba(110, 59, 33, 0.14);
+}
+.page.theme-sunset .item.item-done .actions .iconAction {
+  border-color: #2f9e66;
+  color: #2f9e66;
+}
+.page.theme-sunset .item.item-done .actions .iconAction:hover {
+  background: color-mix(in srgb, #2f9e66 18%, #fff3ea);
 }

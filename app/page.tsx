@@ -1222,7 +1222,11 @@ export default function HomePage() {
                 {item.checked ? (
                   <>
                     <button type="button" className="iconAction" aria-label="Undo" data-tip="Undo" onClick={() => item.kind === "workflow" ? toggleWorkflowDone(item, false) : updateItem(item.id, { checked: false })}><Icon name="undo" /></button>
-                    <button type="button" className="iconAction" aria-label="Hide" data-tip="Hide" onClick={() => hideItem(item.id)}><Icon name="hide" /></button>
+                    {isHiddenItem ? (
+                      <button type="button" className="iconAction danger" aria-label="Delete" data-tip="Delete" onClick={() => animateDelete(item.id)}><Icon name="delete" /></button>
+                    ) : (
+                      <button type="button" className="iconAction" aria-label="Hide" data-tip="Hide" onClick={() => hideItem(item.id)}><Icon name="hide" /></button>
+                    )}
                   </>
                 ) : (
                   <>
