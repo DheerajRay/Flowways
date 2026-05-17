@@ -63,6 +63,8 @@ export default function HomePage() {
   const [settingsBusy, setSettingsBusy] = useState(false);
   const [settingsError, setSettingsError] = useState("");
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
+  const [titleIcons, setTitleIcons] = useState<("timeline" | "workflow" | "done" | "cancel" | "journal" | "checklist" | "tags" | "color" | "search" | "settings")[]>(["timeline", "workflow", "done", "cancel"]);
+  const [titleAnimating, setTitleAnimating] = useState(true);
   const workflowSteps = ["Backlog", "Paused", "In Progress"] as const;
   const workflowIcon: Record<(typeof workflowSteps)[number], "backlog" | "progress" | "ready"> = {
     Backlog: "backlog",
@@ -156,6 +158,31 @@ export default function HomePage() {
     }, 3000);
     return () => window.clearTimeout(timeoutId);
   }, [petNotice, petNoticeTone]);
+
+  useEffect(() => {
+    const pool: ("timeline" | "workflow" | "done" | "cancel" | "journal" | "checklist" | "tags" | "color" | "search" | "settings")[] = [
+      "timeline", "workflow", "done", "cancel", "journal", "checklist", "tags", "color", "search", "settings"
+    ];
+    const pick = () => [...pool].sort(() => Math.random() - 0.5).slice(0, 4);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) {
+      setTitleIcons(pick());
+      setTitleAnimating(false);
+      return;
+    }
+
+    const spin = window.setInterval(() => setTitleIcons(pick()), 120);
+    const stop = window.setTimeout(() => {
+      window.clearInterval(spin);
+      setTitleIcons(pick());
+      setTitleAnimating(false);
+    }, 2400);
+
+    return () => {
+      window.clearInterval(spin);
+      window.clearTimeout(stop);
+    };
+  }, []);
 
   function setColorTag(value: string) {
     selectedColorTagRef.current = value;
@@ -815,7 +842,13 @@ export default function HomePage() {
     <main className={`page font-${settings.font_family} size-${settings.font_size} theme-${settings.theme}`} style={themeStyle}>
       <header className="topbar">
         <div>
-          <h1>FlowWays</h1>
+          <div className={`titleIconStrip${titleAnimating ? " isSpinning" : ""}`} aria-hidden="true">
+            {titleIcons.map((name, index) => (
+              <span key={`${name}-${index}`} className="titleIcon">
+                <Icon name={name} />
+              </span>
+            ))}
+          </div>
           <p className="subtitle">Capture, classify, edit, and manage memory items.</p>
         </div>
         <div className="topbarActions">
