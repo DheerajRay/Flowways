@@ -473,7 +473,7 @@ export default function HomePage() {
     window.setTimeout(async () => {
       await deleteItem(id);
       setDeletingIds((prev) => prev.filter((v) => v !== id));
-    }, 420);
+    }, 560);
   }
 
   function hideItem(id: string) {
@@ -1511,7 +1511,6 @@ export default function HomePage() {
                   </div>
                 ) : item.kind === "timeline" ? (
                   <div className="timelineBlock">
-                    {timelineMeta ? <p className="timelineSubtypeChip">{timelineSubtypeLabel[timelineMeta.timeline_subtype]}</p> : null}
                     {timelineMeta?.timeline_subtype === "reminder" && timelineTargetAt ? (
                       <p>Reminds at {formatDateTime(timelineTargetAt)} ({Math.max(1, timelineMeta.remind_lead_minutes || 5)}m lead)</p>
                     ) : null}
@@ -1536,6 +1535,9 @@ export default function HomePage() {
 
             <div className={`meta metaRow${item.kind === "timeline" ? " timelineMetaRow" : ""}`}>
               {metaDate ? <span className="dateChip">{metaDate}</span> : null}
+              {item.kind === "timeline" && timelineMeta ? (
+                <span className="tagChip">{timelineSubtypeLabel[timelineMeta.timeline_subtype]}</span>
+              ) : null}
               {item.kind === "timeline" && !item.checked && timeState?.done ? <span className="overdueTagChip">OVER DUE</span> : null}
               {item.kind === "workflow" && formatTimeSpent(item) ? <span className="dateChip">{formatTimeSpent(item)}</span> : null}
               {item.labels?.map((label) => {

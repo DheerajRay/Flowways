@@ -43,7 +43,7 @@ function toTime(text: string, baseDate: Date): string {
 
 export function parseRecurrenceRule(text: string, baseDate = new Date()): RecurrenceRule | null {
   const normalized = normalizeText(text).toLowerCase();
-  if (!/\bevery\b|\bdaily\b|\bweekly\b|\bmonthly\b|\bweekdays?\b/.test(normalized)) return null;
+  if (!/\bevery\b|\beveryday\b|\bdaily\b|\bweekly\b|\bmonthly\b|\bweekdays?\b/.test(normalized)) return null;
   const time = toTime(normalized, baseDate);
   const everyN = normalized.match(/\bevery\s+(\d+)\s+(day|days|week|weeks|month|months)\b/);
   const weekdays = [...new Set([...normalized.matchAll(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/g)].map((m) => WEEKDAY_MAP[m[1]]))];
@@ -57,7 +57,7 @@ export function parseRecurrenceRule(text: string, baseDate = new Date()): Recurr
     if (everyN[2].startsWith("week")) return { frequency: "weekly", interval, byWeekday: weekdays.length ? weekdays : undefined, time };
     return { frequency: "monthly", interval, time };
   }
-  if (/\bdaily\b|\bevery day\b/.test(normalized)) return { frequency: "daily", interval: 1, time };
+  if (/\bdaily\b|\bevery day\b|\beveryday\b/.test(normalized)) return { frequency: "daily", interval: 1, time };
   if (/\bmonthly\b|\bevery month\b/.test(normalized)) return { frequency: "monthly", interval: 1, time };
   if (weekdays.length) return { frequency: "weekly", interval: 1, byWeekday: weekdays, time };
   if (/\bweekly\b|\bevery week\b/.test(normalized)) return { frequency: "weekly", interval: 1, time };
@@ -116,6 +116,8 @@ export function deriveTimelineMetaFromText(
   const recurring = parseRecurrenceRule(normalized, baseDate);
   const countupCue = /\b(track|tracking|time spent|since now|start timer|start tracking)\b/i.test(normalized);
   const remindCue = /\b(remind|reminder|notify)\b/i.test(normalized);
+  const actionCue = /\b(meet|meeting|connect|call|book|collect|pickup|pick up|drop off|follow up|follow-up|check with)\b/i.test(normalized);
+  const explicitTaskCue = /\b(by|on|at)\b/i.test(normalized);
   const shortDuration = /\b(in|after|for)\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours)\b/i.test(normalized);
   const resolvedDue = dueAt || parseDueAt(text, baseDate, clientTimezoneOffsetMinutes);
 
@@ -126,9 +128,8 @@ export function deriveTimelineMetaFromText(
     const remindAt = nextOccurrenceFromRule(recurring, baseDate).toISOString();
     return { ...defaultTimelineMeta("recurring"), recurrence_rule: recurring, remind_at: remindAt };
   }
-  if (resolvedDue && remindCue && !shortDuration) {
+  if (resolvedDue && (remindCue || (actionCue && explicitTaskCue)) && !shortDuration) {
     return { ...defaultTimelineMeta("reminder"), remind_at: resolvedDue };
   }
   return { ...defaultTimelineMeta("stopwatch"), remind_at: resolvedDue };
 }
-
