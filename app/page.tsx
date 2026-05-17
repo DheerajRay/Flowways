@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { getSupabaseBrowserClient } from "@/shared/supabase-browser";
 import { DEFAULT_USER_SETTINGS, type UserSettings } from "@/shared/types/settings";
+import { defaultTimelineMeta, nextOccurrenceFromRule, type RecurrenceRule, type TimelineMeta, type TimelineSubtype } from "@/shared/domain/timeline";
 
 interface DbItem {
   id: string;
@@ -11,6 +12,21 @@ interface DbItem {
   body: string;
   labels: string[];
   due_at: string | null;
+  timeline_meta?: {
+    timeline_subtype: TimelineSubtype;
+    remind_at: string | null;
+    remind_lead_minutes: number;
+    recurrence_rule: {
+      frequency: "daily" | "weekly" | "monthly";
+      interval: number;
+      byWeekday?: number[];
+      time: string;
+    } | null;
+    countup_started_at: string | null;
+    countup_stopped_at: string | null;
+    last_notified_at?: string | null;
+    last_notified_occurrence_at?: string | null;
+  } | null;
   created_at?: string;
   checked?: boolean;
   workflow_status?: "Backlog" | "Paused" | "In Progress" | "Ready" | "Review" | "Done" | null;
@@ -73,6 +89,10 @@ export default function HomePage() {
   const [editChecklistEntries, setEditChecklistEntries] = useState<{ text: string; checked: boolean }[]>([]);
   const [editTimelineDueAt, setEditTimelineDueAt] = useState("");
   const [editTimelineOffsetMin, setEditTimelineOffsetMin] = useState("15");
+  const [editTimelineSubtype, setEditTimelineSubtype] = useState<TimelineSubtype>("stopwatch");
+  const [editTimelineLeadMin, setEditTimelineLeadMin] = useState("5");
+  const [editTimelineFreq, setEditTimelineFreq] = useState<"daily" | "weekly" | "monthly">("weekly");
+  const [editTimelineWeekday, setEditTimelineWeekday] = useState("1");
   const [editWorkflowSummary, setEditWorkflowSummary] = useState("");
   const [editWorkflowComments, setEditWorkflowComments] = useState<string[]>([]);
   const [editWorkflowStartedAt, setEditWorkflowStartedAt] = useState<string | null>(null);
@@ -90,6 +110,12 @@ export default function HomePage() {
   const titleSpinStopRef = useRef<number | null>(null);
   const titleBlinkStopRef = useRef<number | null>(null);
   const workflowSteps = ["Backlog", "Paused", "In Progress"] as const;
+  const timelineSubtypeLabel: Record<TimelineSubtype, string> = {
+    stopwatch: "Stopwatch",
+    reminder: "Reminder",
+    recurring: "Recurring",
+    countup: "Count-up"
+  };
   const workflowIcon: Record<(typeof workflowSteps)[number], "backlog" | "progress" | "ready"> = {
     Backlog: "backlog",
     Paused: "progress",
@@ -472,6 +498,18 @@ export default function HomePage() {
     } else {
       setEditTimelineOffsetMin("15");
     }
+    if (item.kind === "timeline") {
+      const meta = resolveTimelineMeta(item);
+      setEditTimelineSubtype(meta.timeline_subtype);
+      setEditTimelineLeadMin(String(meta.remind_lead_minutes || 5));
+      setEditTimelineFreq(meta.recurrence_rule?.frequency || "weekly");
+      setEditTimelineWeekday(String(meta.recurrence_rule?.byWeekday?.[0] ?? 1));
+    } else {
+      setEditTimelineSubtype("stopwatch");
+      setEditTimelineLeadMin("5");
+      setEditTimelineFreq("weekly");
+      setEditTimelineWeekday("1");
+    }
     const workflow = parseWorkflowBody(item.body || "");
     setEditWorkflowSummary(workflow.summary);
     setEditWorkflowComments(workflow.comments);
@@ -494,7 +532,29 @@ export default function HomePage() {
 
     if (item.kind === "timeline") {
       const dueAt = editTimelineDueAt ? new Date(editTimelineDueAt).toISOString() : null;
-      await updateItem(id, { title: editTitle.trim() || "Untitled", dueAt });
+      const timelineMeta: TimelineMeta = {
+        ...defaultTimelineMeta(editTimelineSubtype),
+        timeline_subtype: editTimelineSubtype,
+        remind_lead_minutes: Math.max(1, Number(editTimelineLeadMin) || 5)
+      };
+      if (editTimelineSubtype === "stopwatch") {
+        timelineMeta.remind_at = dueAt;
+      } else if (editTimelineSubtype === "reminder") {
+        timelineMeta.remind_at = dueAt;
+      } else if (editTimelineSubtype === "recurring") {
+        const rule: RecurrenceRule = {
+          frequency: editTimelineFreq,
+          interval: 1,
+          byWeekday: editTimelineFreq === "weekly" ? [Math.max(0, Math.min(6, Number(editTimelineWeekday) || 1))] : undefined,
+          time: dueAt ? `${String(new Date(dueAt).getHours()).padStart(2, "0")}:${String(new Date(dueAt).getMinutes()).padStart(2, "0")}` : "09:00"
+        };
+        timelineMeta.recurrence_rule = rule;
+        timelineMeta.remind_at = nextOccurrenceFromRule(rule).toISOString();
+      } else if (editTimelineSubtype === "countup") {
+        timelineMeta.countup_started_at = item.timeline_meta?.countup_started_at || new Date().toISOString();
+        timelineMeta.countup_stopped_at = item.timeline_meta?.countup_stopped_at || null;
+      }
+      await updateItem(id, { title: editTitle.trim() || "Untitled", dueAt: editTimelineSubtype === "countup" ? null : dueAt, timelineMeta });
       setEditingId(null);
       return;
     }
@@ -669,10 +729,23 @@ export default function HomePage() {
     await updateItem(item.id, { checked, body });
   }
 
-  function timelineState(dueAt: string | null) {
-    if (!dueAt) return { done: false, label: "No due time set" };
+  function resolveTimelineMeta(item: DbItem): TimelineMeta {
+    if (item.timeline_meta) return item.timeline_meta as TimelineMeta;
+    return defaultTimelineMeta("stopwatch");
+  }
+
+  function formatElapsed(ms: number): string {
+    const mins = Math.max(0, Math.floor(ms / 60000));
+    if (mins < 60) return `${mins} min`;
+    const hours = Math.floor(mins / 60);
+    const remMins = mins % 60;
+    return remMins ? `${hours}h ${remMins}m` : `${hours}h`;
+  }
+
+  function timelineState(targetAt: string | null) {
+    if (!targetAt) return { done: false, label: "No due time set" };
     if (!hydrated) return { done: false, label: "Calculating..." };
-    const dueMs = new Date(dueAt).getTime();
+    const dueMs = new Date(targetAt).getTime();
     if (Number.isNaN(dueMs)) return { done: false, label: "Invalid due time" };
     const delta = dueMs - nowMs;
     if (delta <= 0) return { done: true, label: "Timer done" };
@@ -683,20 +756,20 @@ export default function HomePage() {
     return { done: false, label: `Due in ${hours}h ${remMins}m` };
   }
 
-  function timelineProgress(item: DbItem): number {
+  function timelineProgress(dueAt: string | null, createdAt?: string): number {
     if (!hydrated) return 0;
-    if (!item.due_at) return 0;
-    const dueMs = new Date(item.due_at).getTime();
+    if (!dueAt) return 0;
+    const dueMs = new Date(dueAt).getTime();
     if (Number.isNaN(dueMs)) return 0;
-    const createdMs = item.created_at ? new Date(item.created_at).getTime() : nowMs - 60 * 60 * 1000;
+    const createdMs = createdAt ? new Date(createdAt).getTime() : nowMs - 60 * 60 * 1000;
     const startMs = Number.isNaN(createdMs) ? nowMs - 60 * 60 * 1000 : createdMs;
     const span = Math.max(dueMs - startMs, 1);
     const elapsed = nowMs - startMs;
     return Math.min(100, Math.max(0, (elapsed / span) * 100));
   }
 
-  function timelineProgressStyle(item: DbItem) {
-    const pct = timelineProgress(item);
+  function timelineProgressStyle(dueAt: string | null, createdAt?: string) {
+    const pct = timelineProgress(dueAt, createdAt);
     return { width: `${pct}%`, minWidth: pct > 0 ? "10px" : "0px" };
   }
 
@@ -841,6 +914,12 @@ export default function HomePage() {
     const ms = new Date(raw).getTime();
     if (Number.isNaN(ms)) return null;
     return new Date(raw).toLocaleString();
+  }
+
+  function formatDateTime(iso: string): string {
+    const ms = new Date(iso).getTime();
+    if (Number.isNaN(ms)) return iso;
+    return new Date(iso).toLocaleString();
   }
 
   async function signInOrUp() {
@@ -1205,7 +1284,18 @@ export default function HomePage() {
         <div className="feedCards">
         {sortedItems.length === 0 ? <p className="empty">{initialFeedLoaded ? "No items yet." : "Loading items..."}</p> : null}
         {sortedItems.map((item) => {
-          const timeState = item.kind === "timeline" ? timelineState(item.due_at) : null;
+          const timelineMeta = item.kind === "timeline" ? resolveTimelineMeta(item) : null;
+          const timelineTargetAt = (() => {
+            if (item.kind !== "timeline" || !timelineMeta) return null;
+            if (timelineMeta.timeline_subtype === "stopwatch") return item.due_at;
+            if (timelineMeta.timeline_subtype === "reminder") return timelineMeta.remind_at || item.due_at;
+            if (timelineMeta.timeline_subtype === "recurring") {
+              if (timelineMeta.recurrence_rule) return nextOccurrenceFromRule(timelineMeta.recurrence_rule).toISOString();
+              return timelineMeta.remind_at || item.due_at;
+            }
+            return null;
+          })();
+          const timeState = item.kind === "timeline" ? timelineState(timelineTargetAt) : null;
           const metaDate = formatMetaDate(item);
           const isTimelineExpired = item.kind === "timeline" && !item.checked && Boolean(timeState?.done);
           const isDone = Boolean(item.checked);
@@ -1271,35 +1361,79 @@ export default function HomePage() {
                 ) : item.kind === "timeline" ? (
                   <div className="typeEditor">
                     <div className="editRow">
-                      <label>Exact time</label>
+                      <label>Subtype</label>
+                      <select value={editTimelineSubtype} onChange={(event) => setEditTimelineSubtype(event.target.value as TimelineSubtype)}>
+                        <option value="stopwatch">Stopwatch deadline</option>
+                        <option value="reminder">One-time reminder</option>
+                        <option value="recurring">Recurring reminder</option>
+                        <option value="countup">Count-up tracker</option>
+                      </select>
+                    </div>
+                    <div className="editRow">
+                      <label>{editTimelineSubtype === "stopwatch" ? "Due time" : "Trigger time"}</label>
                       <input
                         type="datetime-local"
                         value={editTimelineDueAt}
                         onChange={(event) => setEditTimelineDueAt(event.target.value)}
+                        disabled={editTimelineSubtype === "countup"}
                       />
                     </div>
-                    <div className="editRow">
-                      <label>In minutes</label>
-                      <input
-                        type="number"
-                        min={1}
-                        value={editTimelineOffsetMin}
-                        onChange={(event) => setEditTimelineOffsetMin(event.target.value)}
-                      />
-                      <button
-                        type="button"
-                        className="iconAction compact"
-                        aria-label="Apply minutes"
-                        data-tip="Apply minutes"
-                        onClick={() => {
-                          const n = Number(editTimelineOffsetMin);
-                          if (!Number.isFinite(n) || n <= 0) return;
-                          setEditTimelineDueAt(toDatetimeLocal(new Date(Date.now() + n * 60000).toISOString()));
-                        }}
-                      >
-                        <Icon name="save" />
-                      </button>
-                    </div>
+                    {editTimelineSubtype !== "countup" ? (
+                      <div className="editRow">
+                        <label>In minutes</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={editTimelineOffsetMin}
+                          onChange={(event) => setEditTimelineOffsetMin(event.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="iconAction compact"
+                          aria-label="Apply minutes"
+                          data-tip="Apply minutes"
+                          onClick={() => {
+                            const n = Number(editTimelineOffsetMin);
+                            if (!Number.isFinite(n) || n <= 0) return;
+                            setEditTimelineDueAt(toDatetimeLocal(new Date(Date.now() + n * 60000).toISOString()));
+                          }}
+                        >
+                          <Icon name="save" />
+                        </button>
+                      </div>
+                    ) : null}
+                    {(editTimelineSubtype === "reminder" || editTimelineSubtype === "recurring") ? (
+                      <div className="editRow">
+                        <label>Lead min</label>
+                        <input type="number" min={1} value={editTimelineLeadMin} onChange={(event) => setEditTimelineLeadMin(event.target.value)} />
+                      </div>
+                    ) : null}
+                    {editTimelineSubtype === "recurring" ? (
+                      <>
+                        <div className="editRow">
+                          <label>Frequency</label>
+                          <select value={editTimelineFreq} onChange={(event) => setEditTimelineFreq(event.target.value as "daily" | "weekly" | "monthly")}>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                          </select>
+                        </div>
+                        {editTimelineFreq === "weekly" ? (
+                          <div className="editRow">
+                            <label>Weekday</label>
+                            <select value={editTimelineWeekday} onChange={(event) => setEditTimelineWeekday(event.target.value)}>
+                              <option value="0">Sun</option>
+                              <option value="1">Mon</option>
+                              <option value="2">Tue</option>
+                              <option value="3">Wed</option>
+                              <option value="4">Thu</option>
+                              <option value="5">Fri</option>
+                              <option value="6">Sat</option>
+                            </select>
+                          </div>
+                        ) : null}
+                      </>
+                    ) : null}
                   </div>
                 ) : item.kind === "workflow" ? (
                   <div className="typeEditor">
@@ -1377,6 +1511,22 @@ export default function HomePage() {
                   </div>
                 ) : item.kind === "timeline" ? (
                   <div className="timelineBlock">
+                    {timelineMeta ? <p className="timelineSubtypeChip">{timelineSubtypeLabel[timelineMeta.timeline_subtype]}</p> : null}
+                    {timelineMeta?.timeline_subtype === "reminder" && timelineTargetAt ? (
+                      <p>Reminds at {formatDateTime(timelineTargetAt)} ({Math.max(1, timelineMeta.remind_lead_minutes || 5)}m lead)</p>
+                    ) : null}
+                    {timelineMeta?.timeline_subtype === "recurring" ? (
+                      <p>
+                        Repeats {timelineMeta.recurrence_rule?.frequency || "weekly"}
+                        {timelineMeta.recurrence_rule?.byWeekday?.length ? ` on ${timelineMeta.recurrence_rule.byWeekday.map((d) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d] || d).join(", ")}` : ""}
+                        {timelineTargetAt ? ` • next ${formatDateTime(timelineTargetAt)}` : ""}
+                      </p>
+                    ) : null}
+                    {timelineMeta?.timeline_subtype === "countup" ? (
+                      <p>
+                        Elapsed: {formatElapsed((timelineMeta.countup_stopped_at ? new Date(timelineMeta.countup_stopped_at).getTime() : nowMs) - (timelineMeta.countup_started_at ? new Date(timelineMeta.countup_started_at).getTime() : nowMs))}
+                      </p>
+                    ) : null}
                   </div>
                 ) : (
                   item.body ? <p>{item.body}</p> : null
@@ -1406,12 +1556,12 @@ export default function HomePage() {
                   </button>
                 );
               })}
-              {item.kind === "timeline" && !item.checked && item.due_at && !timeState?.done ? (
+              {item.kind === "timeline" && timelineMeta?.timeline_subtype === "stopwatch" && !item.checked && item.due_at && !timeState?.done ? (
                 <div className="dueRailInline" aria-label="Due progress">
                   <span className="dueLabel">Time ({timeState?.label?.replace("Due in ", "") || "--"})</span>
                   <div className="dueRailWrap">
-                    <div className="dueRail" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(timelineProgress(item))}>
-                      <span className="dueRailFill" style={timelineProgressStyle(item)} />
+                    <div className="dueRail" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(timelineProgress(item.due_at, item.created_at))}>
+                      <span className="dueRailFill" style={timelineProgressStyle(item.due_at, item.created_at)} />
                     </div>
                   </div>
                 </div>

@@ -1,4 +1,5 @@
-﻿import type { ClassificationResult, ItemKind, WorkflowStatus } from "@/shared/types/item";
+import type { ClassificationResult, ItemKind, WorkflowStatus } from "@/shared/types/item";
+import { deriveTimelineMetaFromText } from "@/shared/domain/timeline";
 
 const WORKFLOW_CUES = /\b(blocked|backlog|ready|review|handoff|in progress|kanban|prepare|draft|plan|implement|coordinate|dependency|handover|milestone|spec|confluence|jira|rollout|release|design doc)\b/i;
 const CHECKLIST_CUES = /^(\[\s?\]|-|todo\b|fix\b|call\b|email\b|finish\b|buy\b|pick up\b)/i;
@@ -350,6 +351,7 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
       return `Noted: "${compactTitle}". Future-you will judge this.`;
     })(),
     due_at: dueAt,
+    timeline_meta: kind === "timeline" ? deriveTimelineMetaFromText(clean, dueAt, baseDate, clientTimezoneOffsetMinutes) : null,
     workflow_status: workflowStatus,
     confidence: kind === "workflow" ? 0.72 : 0.66,
     reason: `Fallback deterministic classifier used (workflowSignals=${workflowSignals}, checklistSignals=${checklistSignals})`,

@@ -17,6 +17,7 @@ export function buildItem(userId: string, sourceText: string, position: number, 
     sourceText,
     classificationConfidence: c.confidence,
     classificationReason: c.reason,
+    timelineMeta: c.timeline_meta || null,
     createdAt: now,
     updatedAt: now
   };

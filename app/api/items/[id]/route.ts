@@ -15,6 +15,12 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (payload.checked !== undefined) patch.checked = payload.checked;
   if (payload.workflowStatus !== undefined) patch.workflow_status = payload.workflowStatus;
   if (payload.dueAt !== undefined) patch.due_at = payload.dueAt;
+  if (payload.timelineMeta !== undefined) {
+    await auth.supabase.from("item_metadata").insert({
+      item_id: id,
+      metadata: payload.timelineMeta
+    });
+  }
   if (payload.labels !== undefined) patch.labels = payload.labels;
   if (payload.position !== undefined) patch.position = payload.position;
 

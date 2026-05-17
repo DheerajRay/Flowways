@@ -36,6 +36,21 @@ export const classificationResultSchema = z.object({
   labels: z.array(z.string()),
   pet_quip: z.string().optional().default(""),
   due_at: z.string().datetime().nullable(),
+  timeline_meta: z.object({
+    timeline_subtype: z.enum(["stopwatch", "reminder", "recurring", "countup"]),
+    remind_at: z.string().datetime().nullable(),
+    remind_lead_minutes: z.number().int().min(1).max(1440),
+    recurrence_rule: z.object({
+      frequency: z.enum(["daily", "weekly", "monthly"]),
+      interval: z.number().int().min(1).max(365),
+      byWeekday: z.array(z.number().int().min(0).max(6)).optional(),
+      time: z.string().regex(/^\d{2}:\d{2}$/)
+    }).nullable(),
+    countup_started_at: z.string().datetime().nullable(),
+    countup_stopped_at: z.string().datetime().nullable(),
+    last_notified_at: z.string().datetime().nullable().optional(),
+    last_notified_occurrence_at: z.string().datetime().nullable().optional()
+  }).nullable().optional(),
   workflow_status: z.enum(["Backlog", "Paused", "In Progress", "Ready", "Review", "Done"]).nullable(),
   confidence: z.number().min(0).max(1),
   reason: z.string(),
@@ -57,6 +72,7 @@ export const updateItemSchema = z.object({
   checked: z.boolean().optional(),
   workflowStatus: z.enum(["Backlog", "Paused", "In Progress", "Ready", "Review", "Done"]).nullable().optional(),
   dueAt: z.string().datetime().nullable().optional(),
+  timelineMeta: classificationResultSchema.shape.timeline_meta.optional(),
   labels: z.array(z.string()).optional(),
   position: z.number().int().positive().optional()
 });

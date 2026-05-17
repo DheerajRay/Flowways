@@ -1040,6 +1040,17 @@ textarea { min-height: 100px; resize: vertical; }
   display: grid;
   gap: 0;
 }
+.timelineSubtypeChip {
+  margin: 0 0 6px;
+  display: inline-flex;
+  width: fit-content;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: calc(var(--meta-size) - 1px);
+  font-weight: 700;
+  color: var(--ink);
+}
 .dueRailRow {
   display: flex;
   align-items: center;

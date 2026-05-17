@@ -1,5 +1,24 @@
 export type ItemKind = "checklist" | "journal" | "workflow" | "timeline";
 export type WorkflowStatus = "Backlog" | "Paused" | "In Progress" | "Ready" | "Review" | "Done";
+export type TimelineSubtype = "stopwatch" | "reminder" | "recurring" | "countup";
+
+export interface RecurrenceRule {
+  frequency: "daily" | "weekly" | "monthly";
+  interval: number;
+  byWeekday?: number[];
+  time: string;
+}
+
+export interface TimelineMeta {
+  timeline_subtype: TimelineSubtype;
+  remind_at: string | null;
+  remind_lead_minutes: number;
+  recurrence_rule: RecurrenceRule | null;
+  countup_started_at: string | null;
+  countup_stopped_at: string | null;
+  last_notified_at?: string | null;
+  last_notified_occurrence_at?: string | null;
+}
 
 export interface Item {
   id: string;
@@ -11,6 +30,7 @@ export interface Item {
   workflowStatus: WorkflowStatus | null;
   checked: boolean;
   dueAt: string | null;
+  timelineMeta?: TimelineMeta | null;
   position: number;
   sourceText: string;
   classificationConfidence: number;
@@ -26,6 +46,7 @@ export interface ClassificationResult {
   labels: string[];
   pet_quip?: string;
   due_at: string | null;
+  timeline_meta?: TimelineMeta | null;
   workflow_status: WorkflowStatus | null;
   confidence: number;
   reason: string;

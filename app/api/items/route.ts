@@ -3,6 +3,7 @@ import { createItemSchema } from "@/shared/types/schemas";
 import { requireAuth } from "@/server/api/auth";
 import { classifyWithAiOrFallback } from "@/server/ai/classifier-service";
 import { buildItem } from "@/server/db/item-builder";
+import { defaultTimelineMeta } from "@/shared/domain/timeline";
 
 function normalizeListLine(value: string): string {
   return value
@@ -106,7 +107,26 @@ export async function GET() {
     .order("position", { ascending: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ items: data });
+  const itemIds = (data || []).map((item) => item.id);
+  const metadataByItemId: Record<string, unknown> = {};
+  if (itemIds.length) {
+    const metadataResult = await auth.supabase
+      .from("item_metadata")
+      .select("item_id,metadata,created_at")
+      .in("item_id", itemIds)
+      .order("created_at", { ascending: false });
+    if (!metadataResult.error) {
+      for (const row of metadataResult.data || []) {
+        if (!metadataByItemId[row.item_id]) metadataByItemId[row.item_id] = row.metadata;
+      }
+    }
+  }
+
+  const items = (data || []).map((item) => ({
+    ...item,
+    timeline_meta: metadataByItemId[item.id] || (item.kind === "timeline" ? defaultTimelineMeta("stopwatch") : null)
+  }));
+  return NextResponse.json({ items });
 }
 
 export async function POST(request: Request) {
@@ -258,6 +278,13 @@ export async function POST(request: Request) {
 
     if (insertResult.error) {
       return NextResponse.json({ error: `Insert failed: ${insertResult.error.message}`, code: insertResult.error.code }, { status: 400 });
+    }
+
+    if (item.timelineMeta) {
+      await auth.supabase.from("item_metadata").insert({
+        item_id: item.id,
+        metadata: item.timelineMeta
+      });
     }
 
     return NextResponse.json({ item, classification });

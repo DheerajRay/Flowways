@@ -1,5 +1,6 @@
-﻿import OpenAI from "openai";
+import OpenAI from "openai";
 import { curateLabels, fallbackClassify, inferContextLabels, normalizeGeneratedLabels, normalizeText, parseDueAt } from "@/shared/domain/classifier";
+import { deriveTimelineMetaFromText } from "@/shared/domain/timeline";
 import { classificationResultSchema } from "@/shared/types/schemas";
 import type { ClassificationResult, ItemKind } from "@/shared/types/item";
 
@@ -174,6 +175,9 @@ export async function classifyWithAiOrFallback(
     const finalDueAt = refinedKind === "timeline"
       ? (deterministicDueAt || parsed.due_at)
       : null;
+    const finalTimelineMeta = refinedKind === "timeline"
+      ? deriveTimelineMetaFromText(text, finalDueAt, baseDate, clientTimezoneOffsetMinutes)
+      : null;
 
     return {
       ...parsed,
@@ -182,6 +186,7 @@ export async function classifyWithAiOrFallback(
       body: refinedBody,
       pet_quip: (parsed.pet_quip || "").trim(),
       due_at: finalDueAt,
+      timeline_meta: finalTimelineMeta,
       labels: finalLabels,
       reason: refinedReason
     };
