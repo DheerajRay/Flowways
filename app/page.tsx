@@ -86,6 +86,9 @@ export default function HomePage() {
   const [titleIcons, setTitleIcons] = useState<HeaderSpinIcon[]>(["circleBolt", "circleStar", "circleCheck", "circleX"]);
   const [titleAnimating, setTitleAnimating] = useState(true);
   const [titleBlinking, setTitleBlinking] = useState(false);
+  const titleSpinIntervalRef = useRef<number | null>(null);
+  const titleSpinStopRef = useRef<number | null>(null);
+  const titleBlinkStopRef = useRef<number | null>(null);
   const workflowSteps = ["Backlog", "Paused", "In Progress"] as const;
   const workflowIcon: Record<(typeof workflowSteps)[number], "backlog" | "progress" | "ready"> = {
     Backlog: "backlog",
@@ -180,56 +183,71 @@ export default function HomePage() {
     return () => window.clearTimeout(timeoutId);
   }, [petNotice, petNoticeTone]);
 
-  useEffect(() => {
-    const pool: HeaderSpinIcon[] = [
-      "circleBolt",
-      "circleStar",
-      "circleHeart",
-      "circleRadiation",
-      "circleHalfStroke",
-      "circleThreeQuarters",
-      "circleCheck",
-      "circleX",
-      "circleLocationArrow",
-      "circleQuarters",
-      "circleExclamation",
-      "circleQuestion",
-      "circleDot",
-      "circleArrowDownLeft",
-      "circleArrowRight",
-      "circlePlus",
-      "circleDivide",
-      "circleMinus",
-      "circleDollar"
-    ];
-    const pick = () => {
-      const unique = [...new Set(pool)];
-      for (let i = unique.length - 1; i > 0; i -= 1) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [unique[i], unique[j]] = [unique[j], unique[i]];
-      }
-      return unique.slice(0, 4);
-    };
+  const headerIconPool: HeaderSpinIcon[] = [
+    "circleBolt",
+    "circleStar",
+    "circleHeart",
+    "circleRadiation",
+    "circleCheck",
+    "circleX",
+    "circleLocationArrow",
+    "circleQuarters",
+    "circleExclamation",
+    "circleQuestion",
+    "circleDot",
+    "circleArrowDownLeft",
+    "circleArrowRight",
+    "circlePlus",
+    "circleDivide",
+    "circleMinus",
+    "circleDollar"
+  ];
+
+  function pickTitleIcons() {
+    const unique = [...new Set(headerIconPool)];
+    for (let i = unique.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [unique[i], unique[j]] = [unique[j], unique[i]];
+    }
+    return unique.slice(0, 4);
+  }
+
+  function clearTitleSpinTimers() {
+    if (titleSpinIntervalRef.current) window.clearInterval(titleSpinIntervalRef.current);
+    if (titleSpinStopRef.current) window.clearTimeout(titleSpinStopRef.current);
+    if (titleBlinkStopRef.current) window.clearTimeout(titleBlinkStopRef.current);
+    titleSpinIntervalRef.current = null;
+    titleSpinStopRef.current = null;
+    titleBlinkStopRef.current = null;
+  }
+
+  function startTitleSpin() {
+    clearTitleSpinTimers();
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reducedMotion) {
-      setTitleIcons(pick());
+      setTitleIcons(pickTitleIcons());
       setTitleAnimating(false);
+      setTitleBlinking(false);
       return;
     }
 
-    const spin = window.setInterval(() => setTitleIcons(pick()), 132);
-    const stop = window.setTimeout(() => {
-      window.clearInterval(spin);
-      setTitleIcons(pick());
+    setTitleBlinking(false);
+    setTitleAnimating(true);
+    setTitleIcons(pickTitleIcons());
+    titleSpinIntervalRef.current = window.setInterval(() => setTitleIcons(pickTitleIcons()), 132);
+    titleSpinStopRef.current = window.setTimeout(() => {
+      if (titleSpinIntervalRef.current) window.clearInterval(titleSpinIntervalRef.current);
+      titleSpinIntervalRef.current = null;
+      setTitleIcons(pickTitleIcons());
       setTitleAnimating(false);
       setTitleBlinking(true);
-      window.setTimeout(() => setTitleBlinking(false), 260);
+      titleBlinkStopRef.current = window.setTimeout(() => setTitleBlinking(false), 260);
     }, 3400);
+  }
 
-    return () => {
-      window.clearInterval(spin);
-      window.clearTimeout(stop);
-    };
+  useEffect(() => {
+    startTitleSpin();
+    return () => clearTitleSpinTimers();
   }, []);
 
   function setColorTag(value: string) {
@@ -381,6 +399,7 @@ export default function HomePage() {
       } else {
         setPetNotice("");
       }
+      startTitleSpin();
       setSourceText("");
       await loadItems();
     } catch {
@@ -909,7 +928,18 @@ export default function HomePage() {
   return (
     <main className={`page font-${settings.font_family} size-${settings.font_size} theme-${settings.theme}`} style={themeStyle}>
       <header className="topbar">
-        <div>
+        <div
+          className="titleClickZone"
+          role="button"
+          tabIndex={0}
+          onClick={startTitleSpin}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              startTitleSpin();
+            }
+          }}
+        >
           <div className={`titleIconStrip${titleAnimating ? " isSpinning" : ""}${titleBlinking ? " isBlinking" : ""}`} aria-hidden="true">
             {titleIcons.map((name, index) => (
               <span key={`${name}-${index}`} className="titleIcon">
