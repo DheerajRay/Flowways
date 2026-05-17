@@ -63,7 +63,7 @@ export default function HomePage() {
   const [settingsBusy, setSettingsBusy] = useState(false);
   const [settingsError, setSettingsError] = useState("");
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
-  const [titleIcons, setTitleIcons] = useState<("timeline" | "workflow" | "done" | "cancel" | "journal" | "checklist" | "tags" | "color" | "search" | "settings")[]>(["timeline", "workflow", "done", "cancel"]);
+  const [titleIcons, setTitleIcons] = useState<("timeline" | "auto" | "search" | "show" | "settings" | "color")[]>(["timeline", "auto", "search", "show"]);
   const [titleAnimating, setTitleAnimating] = useState(true);
   const workflowSteps = ["Backlog", "Paused", "In Progress"] as const;
   const workflowIcon: Record<(typeof workflowSteps)[number], "backlog" | "progress" | "ready"> = {
@@ -160,8 +160,8 @@ export default function HomePage() {
   }, [petNotice, petNoticeTone]);
 
   useEffect(() => {
-    const pool: ("timeline" | "workflow" | "done" | "cancel" | "journal" | "checklist" | "tags" | "color" | "search" | "settings")[] = [
-      "timeline", "workflow", "done", "cancel", "journal", "checklist", "tags", "color", "search", "settings"
+    const pool: ("timeline" | "auto" | "search" | "show" | "settings" | "color")[] = [
+      "timeline", "auto", "search", "show", "settings", "color"
     ];
     const pick = () => [...pool].sort(() => Math.random() - 0.5).slice(0, 4);
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -176,7 +176,7 @@ export default function HomePage() {
       window.clearInterval(spin);
       setTitleIcons(pick());
       setTitleAnimating(false);
-    }, 2400);
+    }, 3400);
 
     return () => {
       window.clearInterval(spin);
