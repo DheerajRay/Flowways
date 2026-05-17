@@ -85,6 +85,7 @@ export default function HomePage() {
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
   const [titleIcons, setTitleIcons] = useState<HeaderSpinIcon[]>(["circleBolt", "circleStar", "circleCheck", "circleX"]);
   const [titleAnimating, setTitleAnimating] = useState(true);
+  const [titleBlinking, setTitleBlinking] = useState(false);
   const workflowSteps = ["Backlog", "Paused", "In Progress"] as const;
   const workflowIcon: Record<(typeof workflowSteps)[number], "backlog" | "progress" | "ready"> = {
     Backlog: "backlog",
@@ -210,11 +211,13 @@ export default function HomePage() {
       return;
     }
 
-    const spin = window.setInterval(() => setTitleIcons(pick()), 120);
+    const spin = window.setInterval(() => setTitleIcons(pick()), 132);
     const stop = window.setTimeout(() => {
       window.clearInterval(spin);
       setTitleIcons(pick());
       setTitleAnimating(false);
+      setTitleBlinking(true);
+      window.setTimeout(() => setTitleBlinking(false), 260);
     }, 3400);
 
     return () => {
@@ -900,7 +903,7 @@ export default function HomePage() {
     <main className={`page font-${settings.font_family} size-${settings.font_size} theme-${settings.theme}`} style={themeStyle}>
       <header className="topbar">
         <div>
-          <div className={`titleIconStrip${titleAnimating ? " isSpinning" : ""}`} aria-hidden="true">
+          <div className={`titleIconStrip${titleAnimating ? " isSpinning" : ""}${titleBlinking ? " isBlinking" : ""}`} aria-hidden="true">
             {titleIcons.map((name, index) => (
               <span key={`${name}-${index}`} className="titleIcon">
                 <Icon name={name} />

@@ -281,17 +281,25 @@ body:has(.page.theme-sunset) {
   stroke-width: 1.9;
 }
 .titleIconStrip.isSpinning .titleIcon {
-  animation: titleIconSpinPulse 420ms ease-in-out infinite;
+  animation: titleIconSpinPulse 462ms ease-in-out infinite;
 }
 .titleIconStrip.isSpinning .titleIcon:nth-child(2) { animation-delay: 50ms; }
 .titleIconStrip.isSpinning .titleIcon:nth-child(3) { animation-delay: 100ms; }
 .titleIconStrip.isSpinning .titleIcon:nth-child(4) { animation-delay: 150ms; }
+.titleIconStrip.isBlinking .titleIcon {
+  animation: titleIconBlink 260ms ease-out 1;
+}
 .subtitle { margin: 6px 0 0; color: var(--muted); }
 
 @keyframes titleIconSpinPulse {
   0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.8; }
   50% { transform: translateY(-1px) scale(1.08) rotate(8deg); opacity: 1; }
   100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.88; }
+}
+@keyframes titleIconBlink {
+  0% { opacity: 1; filter: brightness(1); }
+  45% { opacity: 0.45; filter: brightness(1.35); }
+  100% { opacity: 1; filter: brightness(1); }
 }
 
 button {
