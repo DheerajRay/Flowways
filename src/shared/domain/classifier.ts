@@ -202,7 +202,8 @@ export function parseDueAt(text: string, baseDate = new Date(), clientTimezoneOf
   const fromLocalFrame = (d: Date) => new Date(d.getTime() + offsetMin * 60000);
   const result = toLocalFrame(baseDate);
   const hasYesterday = /\byesterday\b/.test(normalized);
-  const relative = normalized.match(/\b(in|after|for)\s+(\d+)\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/);
+  const relative = normalized.match(/\b(in|after|for)\s+(\d+)\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)(?:\s+from\s+today)?\b/);
+  const fromToday = normalized.match(/\b(\d+)\s*(day|days|week|weeks|month|months)\s+from\s+today\b/);
   const bareRelative = normalized.match(/^\s*(\d+)\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\s*$/);
 
   if (relative || bareRelative) {
@@ -214,6 +215,18 @@ export function parseDueAt(text: string, baseDate = new Date(), clientTimezoneOf
           /h|hr|hour/.test(unit) ? amount * 60 * 60 * 1000 :
             /sec|second/.test(unit) ? amount * 1000 :
               amount * 60 * 1000;
+      return new Date(baseDate.getTime() + deltaMs).toISOString();
+    }
+  }
+
+  if (fromToday) {
+    const amount = Number(fromToday[1]);
+    const unit = fromToday[2];
+    if (Number.isFinite(amount) && amount > 0) {
+      const deltaMs =
+        /month/.test(unit) ? amount * 30 * 24 * 60 * 60 * 1000 :
+          /week/.test(unit) ? amount * 7 * 24 * 60 * 60 * 1000 :
+            amount * 24 * 60 * 60 * 1000;
       return new Date(baseDate.getTime() + deltaMs).toISOString();
     }
   }

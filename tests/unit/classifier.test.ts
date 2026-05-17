@@ -46,6 +46,12 @@ describe("classifier fallback", () => {
     const yesterday = parseDueAt("remind me yesterday at 7 pm", morning, 240);
     expect(yesterday).toBeTruthy();
     expect(new Date(yesterday!).getTime()).toBeLessThan(morning.getTime());
+
+    const afterDays = parseDueAt("remind me after 29 days from today", morning, 240);
+    expect(afterDays).toBeTruthy();
+    const afterDaysDelta = Math.round((new Date(afterDays!).getTime() - morning.getTime()) / (24 * 60 * 60 * 1000));
+    expect(afterDaysDelta).toBeGreaterThanOrEqual(28);
+    expect(afterDaysDelta).toBeLessThanOrEqual(29);
   });
 
   it("classifies timeline items", () => {

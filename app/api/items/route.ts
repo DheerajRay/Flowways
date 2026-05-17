@@ -169,8 +169,18 @@ export async function POST(request: Request) {
       payload.clientNow ? new Date(payload.clientNow) : undefined,
       payload.clientTimezoneOffsetMinutes
     );
-    const item = buildItem(auth.user.id, payload.sourceText, (countResult.count || 0) + 1, classification);
-    const clientNow = payload.clientNow ? new Date(payload.clientNow) : new Date();
+  const item = buildItem(auth.user.id, payload.sourceText, (countResult.count || 0) + 1, classification);
+  const clientNow = payload.clientNow ? new Date(payload.clientNow) : new Date();
+  const forcedDiaryTag = /#diary\b/i.test(payload.sourceText);
+  if (forcedDiaryTag) {
+    item.kind = "journal";
+    item.title = "Diary";
+    item.journalMeta = {
+      journal_subtype: "diary",
+      last_entry_at: clientNow.toISOString()
+    };
+    if (!item.labels.includes("diary")) item.labels = [...item.labels, "diary"];
+  }
 
     if (item.kind === "timeline") {
       if (!item.dueAt) {
@@ -271,26 +281,6 @@ export async function POST(request: Request) {
       }
     }
 
-    const insertResult = await auth.supabase.from("items").insert({
-      id: item.id,
-      user_id: item.userId,
-      kind: item.kind,
-      title: item.title,
-      body: item.body,
-      labels: item.labels,
-      workflow_status: item.workflowStatus,
-      checked: item.checked,
-      due_at: item.dueAt,
-      position: item.position,
-      source_text: item.sourceText,
-      classification_confidence: item.classificationConfidence,
-      classification_reason: item.classificationReason
-    });
-
-    if (insertResult.error) {
-      return NextResponse.json({ error: `Insert failed: ${insertResult.error.message}`, code: insertResult.error.code }, { status: 400 });
-    }
-
     if (item.kind === "journal" && item.journalMeta?.journal_subtype === "diary") {
       const journalResult = await auth.supabase
         .from("items")
@@ -354,6 +344,7 @@ export async function POST(request: Request) {
         const updateDiaryResult = await auth.supabase
           .from("items")
           .update({
+            title: "Diary",
             body: nextBody,
             labels: mergedLabels,
             updated_at: clientNow.toISOString()
@@ -391,7 +382,28 @@ export async function POST(request: Request) {
           diary_entry_count: 1,
           last_entry_at: clientNow.toISOString()
         };
+        if (!item.labels.includes("diary")) item.labels = [...item.labels, "diary"];
       }
+    }
+
+    const insertResult = await auth.supabase.from("items").insert({
+      id: item.id,
+      user_id: item.userId,
+      kind: item.kind,
+      title: item.title,
+      body: item.body,
+      labels: item.labels,
+      workflow_status: item.workflowStatus,
+      checked: item.checked,
+      due_at: item.dueAt,
+      position: item.position,
+      source_text: item.sourceText,
+      classification_confidence: item.classificationConfidence,
+      classification_reason: item.classificationReason
+    });
+
+    if (insertResult.error) {
+      return NextResponse.json({ error: `Insert failed: ${insertResult.error.message}`, code: insertResult.error.code }, { status: 400 });
     }
 
     if (item.timelineMeta) {

@@ -745,6 +745,18 @@ export default function HomePage() {
     return defaultTimelineMeta("stopwatch");
   }
 
+  function parseDiaryEntries(body: string): { stamp: string; message: string }[] {
+    return body
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const match = line.match(/^\[([^\]]+)\]\s*<(.+)>$/);
+        if (match) return { stamp: match[1], message: match[2] };
+        return { stamp: "", message: line };
+      });
+  }
+
   function resolveJournalMeta(item: DbItem): JournalMeta {
     if (item.journal_meta) return item.journal_meta as JournalMeta;
     return defaultJournalMeta("note");
@@ -1543,6 +1555,15 @@ export default function HomePage() {
                         Elapsed: {formatElapsed((timelineMeta.countup_stopped_at ? new Date(timelineMeta.countup_stopped_at).getTime() : nowMs) - (timelineMeta.countup_started_at ? new Date(timelineMeta.countup_started_at).getTime() : nowMs))}
                       </p>
                     ) : null}
+                  </div>
+                ) : item.kind === "journal" && journalMeta?.journal_subtype === "diary" ? (
+                  <div className="diaryBlock">
+                    {parseDiaryEntries(item.body || "").map((entry, index) => (
+                      <div className="diaryEntry" key={`${item.id}-diary-${index}`}>
+                        <span className="diaryStamp">{entry.stamp}</span>
+                        <p className="diaryMessage">{entry.message}</p>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   item.body ? <p className={item.kind === "journal" ? "journalBody" : undefined}>{item.body}</p> : null
