@@ -274,11 +274,32 @@ body:has(.page.theme-sunset) {
   width: 29px;
   height: 29px;
   opacity: 0.95;
+  color: color-mix(in srgb, var(--accent) 72%, var(--ink));
+  transition: color 180ms ease, filter 180ms ease, text-shadow 180ms ease;
 }
 .titleIcon svg {
   width: 26px;
   height: 26px;
   stroke-width: 1.9;
+}
+.page.theme-classic .titleIcon {
+  color: color-mix(in srgb, #111 65%, var(--accent));
+}
+.page.theme-neo .titleIcon {
+  color: color-mix(in srgb, var(--accent) 82%, #0f6c84);
+  filter: drop-shadow(0 1px 4px rgba(6, 182, 212, 0.18));
+}
+.page.theme-midnight .titleIcon {
+  color: color-mix(in srgb, var(--accent) 90%, #dff9ff);
+  filter: drop-shadow(0 0 5px rgba(0, 242, 254, 0.35));
+}
+.page.theme-bold .titleIcon {
+  color: color-mix(in srgb, var(--accent) 78%, #111827);
+  text-shadow: 1px 1px 0 rgba(17, 24, 39, 0.22);
+}
+.page.theme-sunset .titleIcon {
+  color: color-mix(in srgb, var(--accent) 84%, #8b3f28);
+  filter: drop-shadow(0 1px 4px rgba(176, 88, 56, 0.2));
 }
 .titleIconStrip.isSpinning .titleIcon {
   animation: titleIconSpinPulse 462ms ease-in-out infinite;
