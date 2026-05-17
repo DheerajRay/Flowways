@@ -346,6 +346,7 @@ export default function HomePage() {
 
   async function submitItem() {
     if (!sourceText.trim() || authRequired) return;
+    startTitleSpin();
     const colorTagAtSubmit = selectedColorTagRef.current;
     setBusy(true);
     setSubmitMessage("");
@@ -399,7 +400,6 @@ export default function HomePage() {
       } else {
         setPetNotice("");
       }
-      startTitleSpin();
       setSourceText("");
       await loadItems();
     } catch {
@@ -1066,8 +1066,7 @@ export default function HomePage() {
           </div>
         ) : null}
       </section>
-      {showSettings ? (
-        <section className="settingsDock" aria-label="Settings">
+      <section className={`settingsDock${showSettings ? " isOpen" : ""}`} aria-label="Settings" aria-hidden={!showSettings}>
           <div className="settingsModal settingsInline">
             <div className="settingsInner">
               <div className="settingsGrid">
@@ -1199,7 +1198,6 @@ export default function HomePage() {
             {settingsError ? <p className="settingsError">{settingsError}</p> : null}
           </div>
         </section>
-      ) : null}
       </section>
 
       <section className="feedShell" aria-label="Saved items">
