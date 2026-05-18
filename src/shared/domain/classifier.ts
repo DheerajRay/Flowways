@@ -328,7 +328,7 @@ function stripSyntax(text: string): string {
 
 export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "auto", baseDate = new Date(), clientTimezoneOffsetMinutes?: number): ClassificationResult {
   const clean = normalizeText(text);
-  const hasDiaryControlTag = /#diary\b/i.test(clean);
+  const hasDiaryControlTag = /#\s*diary\b/i.test(clean);
   const dueAt = parseDueAt(clean, baseDate, clientTimezoneOffsetMinutes);
   const isJournal =
     clean.length > 140 ||

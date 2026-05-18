@@ -171,7 +171,7 @@ export async function POST(request: Request) {
     );
   const item = buildItem(auth.user.id, payload.sourceText, (countResult.count || 0) + 1, classification);
   const clientNow = payload.clientNow ? new Date(payload.clientNow) : new Date();
-  const forcedDiaryTag = /#diary\b/i.test(payload.sourceText);
+  const forcedDiaryTag = /#\s*diary\b/i.test(payload.sourceText);
   if (forcedDiaryTag) {
     item.kind = "journal";
     item.title = "Diary";

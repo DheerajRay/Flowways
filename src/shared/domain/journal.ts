@@ -14,13 +14,13 @@ export function defaultJournalMeta(subtype: JournalSubtype): JournalMeta {
 
 export function deriveJournalMetaFromText(text: string): JournalMeta {
   const normalized = normalizeText(text).toLowerCase();
-  if (/#diary\b/i.test(normalized)) return defaultJournalMeta("diary");
+  if (/#\s*diary\b/i.test(normalized)) return defaultJournalMeta("diary");
   if (/\b(test idea|idea|hypothesis|explore|thought|brainstorm)\b/i.test(normalized)) return defaultJournalMeta("idea");
   return defaultJournalMeta("note");
 }
 
 export function stripDiaryControlTags(text: string): string {
-  return normalizeText(text.replace(/#diary\b/gi, "")).trim();
+  return normalizeText(text.replace(/#\s*diary\b/gi, "")).trim();
 }
 
 export function formatDiaryEntry(message: string, when = new Date()): string {
@@ -35,4 +35,3 @@ export function formatDiaryEntry(message: string, when = new Date()): string {
   }).format(when);
   return `[${stamp}] <${message}>`;
 }
-

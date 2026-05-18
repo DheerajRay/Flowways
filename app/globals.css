@@ -1066,19 +1066,21 @@ textarea { min-height: 100px; resize: vertical; }
 
 .diaryBlock {
   display: grid;
-  gap: 10px;
+  gap: 4px;
 }
 
 .diaryEntry {
-  display: grid;
-  gap: 4px;
-  padding: 2px 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 1px 0;
 }
 
 .diaryStamp {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--muted);
-  justify-self: end;
+  margin-left: 4px;
+  white-space: nowrap;
   order: 2;
 }
 

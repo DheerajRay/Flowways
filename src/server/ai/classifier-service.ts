@@ -179,7 +179,7 @@ export async function classifyWithAiOrFallback(
     const finalTimelineMeta = refinedKind === "timeline"
       ? deriveTimelineMetaFromText(text, finalDueAt, baseDate, clientTimezoneOffsetMinutes)
       : null;
-    const forcedDiary = /#diary\b/i.test(text);
+    const forcedDiary = /#\s*diary\b/i.test(text);
     if (forcedDiary) refinedKind = "journal";
     const finalJournalMeta = refinedKind === "journal"
       ? deriveJournalMetaFromText(text)
