@@ -8,6 +8,7 @@ const LIST_PATTERN = /(^|\s)\d+[.)]\s+\w+/i;
 const PROFESSIONAL_WORK_PATTERN = /\b(config|proposal|doc|draft|review|project|launch|release|migration|workflow|handoff|brief|spec|ticket)\b/i;
 const IDEA_OR_NOTE_CUES = /\b(testing\b|test idea\b|idea\b|thought\b|hypothesis\b|explore\b)\b/i;
 const JOURNAL_CUES = /\b(note|journal|diary|reflection|reflect|thoughts?)\b/i;
+const REFLECTIVE_JOURNAL_CUES = /\b(i feel|i felt|i am feeling|today was|i learned|note to self|i think|i'm feeling)\b/i;
 const GENERIC_LABELS = new Set([
   "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "in", "is", "it", "me", "my", "of", "on", "or", "that", "the", "this", "to", "was", "with",
   "note", "notes", "task", "tasks", "item", "items", "journal", "timeline", "workflow", "checklist", "reminder", "notification", "timer", "thought"
@@ -342,12 +343,17 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
   const followupActionCue = /\b(remind|follow up|follow-up|connect|call|meet|check with|book|collect|pick up|pickup|drop off|dropoff)\b/i.test(clean);
   const personCue = /\b(note from|from\s+[a-z][a-z0-9_-]{1,20}\b|[a-z][a-z0-9_-]{1,20}\s+(said|asked|called|told))\b/i.test(clean);
   const directedActionCue = /\b(collect|bring|send|share|review|prepare|fix|connect|call|meet|check|follow up|follow-up|book|pick up|pickup)\b/i.test(clean);
+  const reflectiveCue = REFLECTIVE_JOURNAL_CUES.test(clean);
+  const hardReminderCue = /\b(remind|reminder|alarm|timer)\b/i.test(clean);
+  const multiActionWorkflowCue = /\b(action items?|assign|handoff|coordinate|dependency|blocked|milestone)\b/i.test(clean);
 
   let kind: ItemKind = "checklist";
   if (modeHint !== "auto") kind = modeHint;
   else if (hasDiaryControlTag) kind = "journal";
+  else if (!hardReminderCue && multiActionWorkflowCue && workflowSignals >= checklistSignals) kind = "workflow";
   else if (dueAt) kind = "timeline";
   else if (temporalCue && (followupActionCue || personCue)) kind = "timeline";
+  else if (reflectiveCue && checklistSignals === 0 && workflowSignals === 0) kind = "journal";
   else if (hasJournalCue && checklistSignals === 0 && workflowSignals === 0) kind = "journal";
   else if (personCue && directedActionCue && checklistSignals === 0) kind = "workflow";
   else if (isIdeaLike && checklistSignals === 0) kind = "journal";

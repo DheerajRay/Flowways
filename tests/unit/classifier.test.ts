@@ -127,6 +127,16 @@ describe("classifier fallback", () => {
     expect(note.journal_meta?.journal_subtype).toBe("note");
   });
 
+  it("classifies reflective first-person input as journal", () => {
+    const c = fallbackClassify("I feel burned out after that meeting", "auto", base);
+    expect(c.kind).toBe("journal");
+  });
+
+  it("keeps action-items style input as workflow instead of timeline coercion", () => {
+    const c = fallbackClassify("meeting notes: action items send invoice and follow up friday", "auto", base);
+    expect(c.kind).toBe("workflow");
+  });
+
   it("curates noisy tags and canonicalizes action tags", () => {
     const timeline = curateLabels("timeline", ["jj", "meeting", "connect", "monday", "are", "thought"]);
     expect(timeline).toContain("jj");

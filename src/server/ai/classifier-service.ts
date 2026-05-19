@@ -105,6 +105,8 @@ export async function classifyWithAiOrFallback(
       ((text.match(/\d+\.\s+[^0-9]+(?=(\d+\.\s+)|$)/g)?.length || 0) >= 2) ||
       (text.split("\n").filter((line) => /^[-*]\s+/.test(line.trim())).length >= 2);
     const hardWorkflowLike = /\b(blocked|review|in progress|handoff|dependency|milestone|jira|kanban)\b/i.test(text);
+    const explicitReminderLike = /\b(remind|reminder|alarm|timer)\b/i.test(text);
+    const workflowActionItemsLike = /\b(action items?|assign|handoff|coordinate|dependency|blocked|milestone)\b/i.test(text);
 
     let refinedKind = parsed.kind;
     let refinedTitle = parsed.title;
@@ -120,12 +122,27 @@ export async function classifyWithAiOrFallback(
     const deterministicDueAt = parseDueAt(text, baseDate, clientTimezoneOffsetMinutes);
     const inferredDueAt = deterministicDueAt || parsed.due_at;
 
-    if (modeHint === "auto" && (hasTemporalCue || (parsed.kind === "timeline" && hasTemporalCue) || (weekdayLike && (followupActionLike || personLike)) || Boolean(deterministicDueAt && (followupActionLike || personLike)))) {
+    if (
+      modeHint === "auto" &&
+      !(workflowActionItemsLike && !explicitReminderLike) &&
+      (hasTemporalCue || (parsed.kind === "timeline" && hasTemporalCue) || (weekdayLike && (followupActionLike || personLike)) || Boolean(deterministicDueAt && (followupActionLike || personLike)))
+    ) {
       const parsedDueAt = inferredDueAt;
       refinedKind = "timeline";
       if (parsedDueAt) {
         refinedReason = `${refinedReason} | post-rule: reminder-like input mapped to timeline`;
       }
+    }
+
+    if (
+      modeHint === "auto" &&
+      refinedKind === "timeline" &&
+      workflowActionItemsLike &&
+      !explicitReminderLike &&
+      !structuredListLike
+    ) {
+      refinedKind = "workflow";
+      refinedReason = `${refinedReason} | post-rule: action-items text mapped to workflow`;
     }
 
     if (modeHint === "auto" && refinedKind === "timeline" && !deterministicDueAt && !hasTemporalCue) {
