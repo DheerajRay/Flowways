@@ -976,6 +976,9 @@ textarea { min-height: 100px; resize: vertical; }
 .tagChip.active .colorSwatch {
   border-color: #fff;
 }
+.tagChipMore {
+  opacity: 0.78;
+}
 .overdueTagChip {
   border: 1px solid #111;
   border-radius: 999px;
@@ -1753,6 +1756,12 @@ textarea { min-height: 100px; resize: vertical; }
   .overdueTagChip {
     font-size: 11px;
     padding: 4px 8px;
+  }
+
+  .captureActions .iconAction,
+  .modeActions .iconAction {
+    min-width: 46px;
+    min-height: 46px;
   }
 
   .dueRailInline {

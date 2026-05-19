@@ -106,6 +106,7 @@ export default function HomePage() {
   const [newWorkflowComment, setNewWorkflowComment] = useState("");
   const [settings, setSettings] = useState<SettingsDraft>(DEFAULT_USER_SETTINGS);
   const [showSettings, setShowSettings] = useState(false);
+  const [mobileCompactMeta, setMobileCompactMeta] = useState(false);
   const [settingsBusy, setSettingsBusy] = useState(false);
   const [settingsError, setSettingsError] = useState("");
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
@@ -196,6 +197,30 @@ export default function HomePage() {
     const timer = window.setInterval(() => setNowMs(Date.now()), 30000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const applyCompact = () => setMobileCompactMeta(window.innerWidth <= 430);
+    applyCompact();
+    window.addEventListener("resize", applyCompact);
+    return () => window.removeEventListener("resize", applyCompact);
+  }, []);
+
+  function toggleSettingsDock() {
+    setSettingsError("");
+    setShowSettings((prev) => {
+      const next = !prev;
+      if (next) setShowTagWindow(false);
+      return next;
+    });
+  }
+
+  function toggleTagWindow() {
+    setShowTagWindow((prev) => {
+      const next = !prev;
+      if (next) setShowSettings(false);
+      return next;
+    });
+  }
 
   useEffect(() => {
     try {
@@ -1063,8 +1088,7 @@ export default function HomePage() {
             aria-label="Settings"
             data-tip="Settings"
             onClick={() => {
-              setSettingsError("");
-              setShowSettings((prev) => !prev);
+              toggleSettingsDock();
             }}
           >
             <Icon name="settings" />
@@ -1143,7 +1167,7 @@ export default function HomePage() {
           <div className="captureActions">
             <button type="button" className="iconAction" aria-label="Add task" data-tip="Add task" onClick={() => void submitItem()} disabled={busy || !sourceText.trim()}><Icon name="add" /></button>
             <button type="button" className="iconAction" aria-label="Search tasks" data-tip="Search tasks" onClick={runSearch}><Icon name="search" /></button>
-            <button type="button" className={`iconAction${showTagWindow ? " active" : ""}`} aria-label="Tag filters" data-tip="Tag filters" onClick={() => setShowTagWindow((prev) => !prev)}><Icon name="tags" /></button>
+            <button type="button" className={`iconAction${showTagWindow ? " active" : ""}`} aria-label="Tag filters" data-tip="Tag filters" onClick={toggleTagWindow}><Icon name="tags" /></button>
             <button type="button" className={`iconAction${showHidden ? " active" : ""}`} aria-label={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} data-tip={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} onClick={() => setShowHidden((prev) => !prev)}><Icon name={showHidden ? "show" : "hide"} /></button>
           </div>
         </div>
@@ -1581,24 +1605,37 @@ export default function HomePage() {
               ) : null}
               {item.kind === "timeline" && !item.checked && timeState?.done ? <span className="overdueTagChip">OVER DUE</span> : null}
               {item.kind === "workflow" && formatTimeSpent(item) ? <span className="dateChip">{formatTimeSpent(item)}</span> : null}
-              {item.labels?.map((label) => {
-                const isColorLabel = label.startsWith("color-");
-                const colorName = label.replace("color-", "");
+              {(() => {
+                const labels = item.labels || [];
+                const visibleLabels = mobileCompactMeta ? labels.slice(0, 2) : labels;
+                const hiddenLabelCount = mobileCompactMeta ? Math.max(0, labels.length - visibleLabels.length) : 0;
                 return (
-                  <button
-                    type="button"
-                    className={`${activeTagFilters.includes(label) ? "tagChip active" : "tagChip"}${isColorLabel ? ` colorTag ${label}` : ""}`}
-                    key={label}
-                    onClick={() => {
-                      setActiveTagFilters((prev) => prev.includes(label) ? prev.filter((v) => v !== label) : [...prev, label]);
-                      if (!showTagWindow) setShowTagWindow(true);
-                    }}
-                  >
-                    {isColorLabel ? <span className="colorSwatch" aria-hidden="true" /> : null}
-                    {isColorLabel ? colorName : `#${label}`}
-                  </button>
+                  <>
+                    {visibleLabels.map((label) => {
+                      const isColorLabel = label.startsWith("color-");
+                      const colorName = label.replace("color-", "");
+                      return (
+                        <button
+                          type="button"
+                          className={`${activeTagFilters.includes(label) ? "tagChip itemLabelChip active" : "tagChip itemLabelChip"}${isColorLabel ? ` colorTag ${label}` : ""}`}
+                          key={label}
+                          onClick={() => {
+                            setActiveTagFilters((prev) => prev.includes(label) ? prev.filter((v) => v !== label) : [...prev, label]);
+                            if (!showTagWindow) {
+                              setShowSettings(false);
+                              setShowTagWindow(true);
+                            }
+                          }}
+                        >
+                          {isColorLabel ? <span className="colorSwatch" aria-hidden="true" /> : null}
+                          {isColorLabel ? colorName : `#${label}`}
+                        </button>
+                      );
+                    })}
+                    {hiddenLabelCount > 0 ? <span className="tagChip tagChipMore">+{hiddenLabelCount}</span> : null}
+                  </>
                 );
-              })}
+              })()}
               {item.kind === "timeline" && timelineMeta?.timeline_subtype === "stopwatch" && !item.checked && item.due_at && !timeState?.done ? (
                 <div className="dueRailInline" aria-label="Due progress">
                   <span className="dueLabel">Time ({timeState?.label?.replace("Due in ", "") || "--"})</span>

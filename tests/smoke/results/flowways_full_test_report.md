@@ -100,3 +100,4 @@
 2. Run full classification versatility suite twice for consistency after classifier changes.
 3. Re-run complete API section `K` on both authenticated and unauthenticated sessions.
 4. Go/No-Go recommendation: **No-Go** until `DEF-20260519-003` is fixed.
+5. Mobile persona iPhone rerun reference: `tests/smoke/results/flowways_mobile_persona_report.md` (viewports `393x852`, `375x812`).
