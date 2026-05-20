@@ -953,7 +953,7 @@ export default function HomePage() {
     if (name === "labelText") return <svg {...common}><path d="M3 4h10M8 4v8" /></svg>;
     if (name === "labelColor") return <svg {...common}><path d="M5.8 10.8 9.7 6.9a1.2 1.2 0 0 1 1.7 1.7l-3.9 3.9a1.6 1.6 0 0 1-1.2.5h-.8v-.8a1.7 1.7 0 0 1 .3-1.4z" /><circle cx="10.8" cy="7.8" r=".7" /></svg>;
     if (name === "labelTheme") return <svg {...common}><path d="M8 2.6v2.2M8 11.2v2.2M2.6 8h2.2M11.2 8h2.2M4.3 4.3l1.5 1.5M10.2 10.2l1.5 1.5M11.7 4.3l-1.5 1.5M5.8 10.2l-1.5 1.5" /><circle cx="8" cy="8" r="1.5" /></svg>;
-    if (name === "add") return <svg {...common}><circle cx="8" cy="8" r="5.4" /><path d="M8 5.2v5.6M5.2 8h5.6" /></svg>;
+    if (name === "add") return <svg {...common}><path d="M8 3.2v9.6M3.2 8h9.6" /></svg>;
     if (name === "search") return <svg {...common}><circle cx="7" cy="7" r="4.3" /><path d="M10.3 10.3 13.5 13.5" /></svg>;
     if (name === "show") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><circle cx="8" cy="8" r="1.5" /></svg>;
     if (name === "auto") return <svg {...common}><path d="m4.2 11.7 4.6-6.6" /><path d="m7.7 4.1 4.1 4.1" /><path d="M11.9 3.1v1.3M11.25 3.75h1.3M3.1 8.9v1M2.6 9.4h1" /></svg>;
