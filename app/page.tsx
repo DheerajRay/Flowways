@@ -1286,7 +1286,7 @@ export default function HomePage() {
               <button type="button" className={savedView === "all" ? "active" : ""} onClick={() => setSavedView("all")}>All</button>
               <button type="button" className={savedView === "today" ? "active" : ""} onClick={() => setSavedView("today")}>Today</button>
               <button type="button" className={savedView === "overdue" ? "active" : ""} onClick={() => setSavedView("overdue")}>Overdue</button>
-              <button type="button" className={savedView === "reminderRecurring" ? "active" : ""} onClick={() => setSavedView("reminderRecurring")}>Reminder/Recurring</button>
+              <button type="button" className={savedView === "reminderRecurring" ? "active" : ""} onClick={() => setSavedView("reminderRecurring")}>Remainder</button>
               <button type="button" className={savedView === "diary" ? "active" : ""} onClick={() => setSavedView("diary")}>Diary</button>
               {(savedView !== "all" || searchText || selectedColorTag || activeTagFilters.length || captureMode !== "auto") ? (
                 <button
