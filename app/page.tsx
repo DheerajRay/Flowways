@@ -953,11 +953,11 @@ export default function HomePage() {
     if (name === "labelText") return <svg {...common}><path d="M3 4h10M8 4v8" /></svg>;
     if (name === "labelColor") return <svg {...common}><path d="M5.8 10.8 9.7 6.9a1.2 1.2 0 0 1 1.7 1.7l-3.9 3.9a1.6 1.6 0 0 1-1.2.5h-.8v-.8a1.7 1.7 0 0 1 .3-1.4z" /><circle cx="10.8" cy="7.8" r=".7" /></svg>;
     if (name === "labelTheme") return <svg {...common}><path d="M8 2.6v2.2M8 11.2v2.2M2.6 8h2.2M11.2 8h2.2M4.3 4.3l1.5 1.5M10.2 10.2l1.5 1.5M11.7 4.3l-1.5 1.5M5.8 10.2l-1.5 1.5" /><circle cx="8" cy="8" r="1.5" /></svg>;
-    if (name === "add") return <svg {...common}><rect x="3" y="3" width="10" height="10" rx="2" /><path d="M8 5.6v4.8M5.6 8h4.8" /></svg>;
+    if (name === "add") return <svg {...common}><circle cx="8" cy="8" r="5.4" /><path d="M8 5.2v5.6M5.2 8h5.6" /></svg>;
     if (name === "search") return <svg {...common}><circle cx="7" cy="7" r="4.3" /><path d="M10.3 10.3 13.5 13.5" /></svg>;
     if (name === "show") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><circle cx="8" cy="8" r="1.5" /></svg>;
-    if (name === "auto") return <svg {...common}><path d="m4.2 11.8 5.4-7.6" /><path d="m8.2 4.2 3.6 3.6" /><path d="M11.8 2.8v1.6M11 3.6h1.6M3.2 6.8v1.2M2.6 7.4h1.2" /></svg>;
-    if (name === "recast") return <svg {...common}><path d="M3.2 5.3h6.2" /><path d="m7.8 3 1.6 2.3-1.6 2.3" /><path d="M12.8 10.7H6.6" /><path d="m8.2 8.4-1.6 2.3 1.6 2.3" /></svg>;
+    if (name === "auto") return <svg {...common}><path d="m4.2 11.7 4.6-6.6" /><path d="m7.7 4.1 4.1 4.1" /><path d="M11.9 3.1v1.3M11.25 3.75h1.3M3.1 8.9v1M2.6 9.4h1" /></svg>;
+    if (name === "recast") return <svg {...common}><path d="M4.1 5.6h5.8" /><path d="m8.2 3.8 2 1.8-2 1.8" /><path d="M11.9 10.4H6.1" /><path d="m7.8 8.6-2 1.8 2 1.8" /></svg>;
     if (name === "timeline") return <svg {...common}><circle cx="8" cy="8" r="5.5" /><path d="M8 5v3.2l2.2 1.2" /></svg>;
     if (name === "workflow") return <svg {...common}><path d="M4.3 6.4h7.4a.9.9 0 0 1 .9.9v3.8a.9.9 0 0 1-.9.9H4.3a.9.9 0 0 1-.9-.9V7.3a.9.9 0 0 1 .9-.9z" /><path d="M6 6.4V5.3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.1" /><path d="M7.4 8.9h1.2" /></svg>;
     if (name === "journal") return <svg {...common}><path d="M4 2.8h7.5a1 1 0 0 1 1 1v8.4a1 1 0 0 1-1 1H4" /><path d="M4 2.8v10.4" /><path d="M6.2 5.6h4M6.2 8h4" /></svg>;
@@ -1275,28 +1275,30 @@ export default function HomePage() {
             <button type="button" className={`iconAction${showHidden ? " active" : ""}`} aria-label={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} data-tip={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} onClick={() => setShowHidden((prev) => !prev)}><Icon name={showHidden ? "show" : "hide"} /></button>
           </div>
         </div>
-        <div className="savedViews" aria-label="Saved views">
-          <button type="button" className={savedView === "all" ? "active" : ""} onClick={() => setSavedView("all")}>All</button>
-          <button type="button" className={savedView === "today" ? "active" : ""} onClick={() => setSavedView("today")}>Today</button>
-          <button type="button" className={savedView === "overdue" ? "active" : ""} onClick={() => setSavedView("overdue")}>Overdue</button>
-          <button type="button" className={savedView === "deepwork" ? "active" : ""} onClick={() => setSavedView("deepwork")}>Deep Work</button>
-          <button type="button" className={savedView === "journal" ? "active" : ""} onClick={() => setSavedView("journal")}>Journal</button>
-          {(savedView !== "all" || searchText || selectedColorTag || activeTagFilters.length || captureMode !== "auto") ? (
-            <button
-              type="button"
-              className="clearFilters"
-              onClick={() => {
-                setSavedView("all");
-                setSearchText("");
-                setSourceText("");
-                setCaptureMode("auto");
-                setSelectedColorTag("");
-                setActiveTagFilters([]);
-              }}
-            >
-              Reset
-            </button>
-          ) : null}
+        <div className="savedViewsRow" aria-label="Saved views">
+          <div className="savedViews">
+            <button type="button" className={savedView === "all" ? "active" : ""} onClick={() => setSavedView("all")}>All</button>
+            <button type="button" className={savedView === "today" ? "active" : ""} onClick={() => setSavedView("today")}>Today</button>
+            <button type="button" className={savedView === "overdue" ? "active" : ""} onClick={() => setSavedView("overdue")}>Overdue</button>
+            <button type="button" className={savedView === "deepwork" ? "active" : ""} onClick={() => setSavedView("deepwork")}>Deep Work</button>
+            <button type="button" className={savedView === "journal" ? "active" : ""} onClick={() => setSavedView("journal")}>Journal</button>
+            {(savedView !== "all" || searchText || selectedColorTag || activeTagFilters.length || captureMode !== "auto") ? (
+              <button
+                type="button"
+                className="clearFilters"
+                onClick={() => {
+                  setSavedView("all");
+                  setSearchText("");
+                  setSourceText("");
+                  setCaptureMode("auto");
+                  setSelectedColorTag("");
+                  setActiveTagFilters([]);
+                }}
+              >
+                Reset
+              </button>
+            ) : null}
+          </div>
           <span className="resultCount">{sortedItems.length} result{sortedItems.length === 1 ? "" : "s"}</span>
         </div>
         {showTagWindow && !showSettings ? (
@@ -1487,7 +1489,7 @@ export default function HomePage() {
             <div className="itemHead">
               <span className="kind">
                 <Icon name={item.kind} />
-                <span>{item.title}</span>
+                <span className="kindLabel">{item.title}</span>
                 {(typeof item.classification_confidence === "number" || item.classification_reason) ? (
                   <button
                     type="button"
