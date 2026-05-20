@@ -1,0 +1,65 @@
+name: Epic
+description: Umbrella requirement and dependency tracker for multi-story delivery.
+title: "[Epic] "
+labels:
+  - epic
+body:
+  - type: input
+    id: epic_id
+    attributes:
+      label: Epic ID
+      description: Use canonical ID from docs/implementation-backlog-source-of-truth.md
+      placeholder: EPIC-001
+    validations:
+      required: true
+  - type: dropdown
+    id: status_marker
+    attributes:
+      label: Status
+      options:
+        - Open
+        - In Progress
+        - Verified
+    validations:
+      required: true
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Primary Phase
+      options:
+        - phase:now
+        - phase:next
+        - phase:later
+    validations:
+      required: true
+  - type: input
+    id: figma_sot_url
+    attributes:
+      label: Figma SOT URL
+      placeholder: https://www.figma.com/board/...
+    validations:
+      required: true
+  - type: textarea
+    id: scope_summary
+    attributes:
+      label: Scope Summary
+      description: What this epic delivers end-to-end.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Upstream epics/stories and dependency rails.
+      placeholder: |
+        - Depends on:
+        - Blocks:
+    validations:
+      required: true
+  - type: textarea
+    id: completion_definition
+    attributes:
+      label: Epic Completion Definition
+      description: Decision-complete definition of done for this epic.
+    validations:
+      required: true

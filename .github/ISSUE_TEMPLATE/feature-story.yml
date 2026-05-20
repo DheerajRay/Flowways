@@ -1,0 +1,88 @@
+name: Feature Story
+description: Implementation ticket mapped to an epic, phase, and Figma SOT source.
+title: "[Story] "
+labels:
+  - story
+  - qa:required
+body:
+  - type: input
+    id: story_id
+    attributes:
+      label: Story ID
+      description: Use canonical ID from docs/implementation-backlog-source-of-truth.md
+      placeholder: STORY-101
+    validations:
+      required: true
+  - type: input
+    id: epic_link
+    attributes:
+      label: Parent Epic
+      description: Link the canonical parent epic issue.
+      placeholder: #123
+    validations:
+      required: true
+  - type: dropdown
+    id: status_marker
+    attributes:
+      label: Status
+      options:
+        - Open
+        - In Progress
+        - Verified
+    validations:
+      required: true
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Phase
+      options:
+        - phase:now
+        - phase:next
+        - phase:later
+    validations:
+      required: true
+  - type: input
+    id: area_label
+    attributes:
+      label: Area Label
+      description: One of area:auth, area:capture, area:classification, area:lifecycle, area:feed, area:visual, area:pwa, area:ops
+      placeholder: area:capture
+    validations:
+      required: true
+  - type: input
+    id: persona_label
+    attributes:
+      label: Persona Label
+      description: One of persona:power, persona:casual, persona:time, persona:journal, persona:workflow, persona:all
+      placeholder: persona:all
+    validations:
+      required: true
+  - type: input
+    id: figma_sot_url
+    attributes:
+      label: Figma SOT URL
+      description: Must map to exactly one SOT file.
+      placeholder: https://www.figma.com/board/...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - [ ] Behavior
+        - [ ] Data/API
+        - [ ] UX/visual
+    validations:
+      required: true
+  - type: textarea
+    id: qa_gates
+    attributes:
+      label: QA Gates
+      description: Include smoke requirements and evidence links.
+      placeholder: |
+        - Desktop smoke pass:
+        - iPhone 390x844 smoke pass:
+        - Report path:
+    validations:
+      required: true

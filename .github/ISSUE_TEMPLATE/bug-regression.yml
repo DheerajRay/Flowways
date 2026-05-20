@@ -1,0 +1,50 @@
+name: Bug Regression
+description: Track non-smoke regressions with reproducible evidence and status markers.
+title: "[Bug][P?] "
+labels:
+  - bug
+  - qa:required
+body:
+  - type: dropdown
+    id: status_marker
+    attributes:
+      label: Status
+      options:
+        - Open
+        - In Progress
+        - Verified
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: URL + device/viewport + branch/commit if relevant
+      placeholder: https://flowways.vercel.app | iPhone 390x844 | main@abcdef
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction Steps
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected_actual
+    attributes:
+      label: Expected vs Actual
+      placeholder: |
+        Expected: ...
+        Actual: ...
+    validations:
+      required: true
+  - type: input
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Screenshot/report/log links or paths
+      placeholder: tests/smoke/results/...
