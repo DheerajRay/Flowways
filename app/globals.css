@@ -1705,7 +1705,7 @@ textarea { min-height: 100px; resize: vertical; }
 
   .captureBar {
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 6px;
   }
 
   .captureBar input {
@@ -1715,8 +1715,9 @@ textarea { min-height: 100px; resize: vertical; }
   .modeActions,
   .captureActions {
     width: 100%;
-    justify-content: center;
+    justify-content: flex-start;
     flex-wrap: wrap;
+    gap: 6px;
   }
 
   .item {
@@ -1758,10 +1759,14 @@ textarea { min-height: 100px; resize: vertical; }
     padding: 4px 8px;
   }
 
-  .captureActions .iconAction,
+  .captureActions .iconAction {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
   .modeActions .iconAction {
-    min-width: 46px;
-    min-height: 46px;
+    min-width: 34px;
+    min-height: 34px;
   }
 
   .dueRailInline {

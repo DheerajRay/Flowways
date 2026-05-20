@@ -1171,7 +1171,7 @@ export default function HomePage() {
             <button type="button" className={`iconAction${showHidden ? " active" : ""}`} aria-label={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} data-tip={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} onClick={() => setShowHidden((prev) => !prev)}><Icon name={showHidden ? "show" : "hide"} /></button>
           </div>
         </div>
-        {showTagWindow ? (
+        {showTagWindow && !showSettings ? (
           <div className="tagWindow" aria-label="Tag filters window">
             <div className="tagWindowTop">
               <div className="tagMatchToggle">
@@ -1197,7 +1197,7 @@ export default function HomePage() {
           </div>
         ) : null}
       </section>
-      <section className={`settingsDock${showSettings ? " isOpen" : ""}`} aria-label="Settings" aria-hidden={!showSettings}>
+      <section className={`settingsDock${showSettings && !showTagWindow ? " isOpen" : ""}`} aria-label="Settings" aria-hidden={!showSettings || showTagWindow}>
           <div className="settingsModal settingsInline">
             <div className="settingsInner">
               <div className="settingsGrid">
