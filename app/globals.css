@@ -526,6 +526,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   height: 44px;
   border-radius: 999px;
   padding: 10px 14px;
+  font-size: 16px;
 }
 .captureActions {
   display: flex;
