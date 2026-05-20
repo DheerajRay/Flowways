@@ -860,6 +860,10 @@ textarea { min-height: 100px; resize: vertical; }
   margin-left: 4px;
   flex: 0 0 auto;
 }
+.kindInfo[data-tip]::after {
+  top: calc(100% + 8px);
+  bottom: auto;
+}
 
 .opsNotices {
   display: flex;
