@@ -7,11 +7,10 @@
   </defs>
 
   <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <line x1="76" y1="256" x2="436" y2="256" stroke="#1f2d4d" stroke-width="18" stroke-linecap="round"/>
 
-  <path d="M72 328c52 0 64-136 120-136s68 136 124 136 64-136 124-136" fill="none" stroke="#1f2d4d" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-
-  <circle cx="72" cy="328" r="22" fill="#2f8f83" stroke="#1f2d4d" stroke-width="7"/>
-  <circle cx="192" cy="192" r="22" fill="#f0b451" stroke="#1f2d4d" stroke-width="7"/>
-  <circle cx="316" cy="328" r="22" fill="#db6558" stroke="#1f2d4d" stroke-width="7"/>
-  <circle cx="440" cy="192" r="22" fill="#5577b8" stroke="#1f2d4d" stroke-width="7"/>
+  <circle cx="112" cy="256" r="22" fill="#2f8f83" stroke="#1f2d4d" stroke-width="7"/>
+  <circle cx="224" cy="256" r="22" fill="#f0b451" stroke="#1f2d4d" stroke-width="7"/>
+  <circle cx="336" cy="256" r="22" fill="#db6558" stroke="#1f2d4d" stroke-width="7"/>
+  <circle cx="400" cy="256" r="22" fill="#5577b8" stroke="#1f2d4d" stroke-width="7"/>
 </svg>
