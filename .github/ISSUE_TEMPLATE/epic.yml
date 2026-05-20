@@ -8,7 +8,7 @@ body:
     id: epic_id
     attributes:
       label: Epic ID
-      description: Use canonical ID from docs/implementation-backlog-source-of-truth.md
+      description: Use canonical ID from docs/tracking/implementation-backlog.md
       placeholder: EPIC-001
     validations:
       required: true

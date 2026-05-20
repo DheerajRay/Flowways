@@ -19,4 +19,4 @@
 
 ## Notes
 - Figma board update reference (if applicable):
-- Ticket Map alignment check (`docs/implementation-backlog-source-of-truth.md`) completed
+- Ticket Map alignment check (`docs/tracking/implementation-backlog.md`) completed

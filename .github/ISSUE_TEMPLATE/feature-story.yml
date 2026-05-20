@@ -9,7 +9,7 @@ body:
     id: story_id
     attributes:
       label: Story ID
-      description: Use canonical ID from docs/implementation-backlog-source-of-truth.md
+      description: Use canonical ID from docs/tracking/implementation-backlog.md
       placeholder: STORY-101
     validations:
       required: true

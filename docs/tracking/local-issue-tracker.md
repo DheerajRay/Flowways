@@ -5,9 +5,9 @@ Tracker owner: PM + Eng
 Status model: `Open` -> `In Progress` -> `Blocked` -> `In Review` -> `Verified` -> `Closed`
 
 Related source docs:
-- [PM Optimization Master Plan](/F:/Task/FlowWays/docs/pm-optimization-master-plan-2026-05-20.md)
-- [Implementation Backlog Source of Truth](/F:/Task/FlowWays/docs/implementation-backlog-source-of-truth.md)
-- [Ticketing Playbook](/F:/Task/FlowWays/docs/ticketing-playbook.md)
+- [PM Optimization Master Plan](/F:/Task/FlowWays/docs/product/pm-optimization-master-plan.md)
+- [Implementation Backlog Source of Truth](/F:/Task/FlowWays/docs/tracking/implementation-backlog.md)
+- [Ticketing Playbook](/F:/Task/FlowWays/docs/tracking/ticketing-playbook.md)
 
 Figma source-of-truth set:
 - Index: https://www.figma.com/board/IvZzIu6fJRdj6mTRyNZ3a1
@@ -32,7 +32,7 @@ Figma source-of-truth set:
 
 | Epic ID | Title | Phase | Area | Depends On | Status | Figma File | Completion Definition |
 |---|---|---|---|---|---|---|---|
-| EPIC-001 | Auth and Session Foundation | Later | auth | none | Open | Overall Workflow | onboarding + session expiry UX + account lifecycle shipped |
+| EPIC-001 | Auth and Session Foundation | Later | auth | none | In Progress | Overall Workflow | onboarding + session expiry UX + account lifecycle shipped |
 | EPIC-002 | Capture and Submit Throughput | Now | capture | EPIC-011 (rollout) | Open | Overall Workflow | create/search split + throughput interactions stable |
 | EPIC-003 | Classification Trust and Control | Now | classification | EPIC-008, EPIC-009 | Open | Classification & Help | confidence + recast + control profile delivered |
 | EPIC-004 | Item Lifecycle Depth | Next | lifecycle | EPIC-003 | Open | Overall Workflow | deeper checklist/journal/timeline/workflow behavior |
@@ -108,6 +108,26 @@ Figma source-of-truth set:
 
 ---
 
+## 4.1 Epic Demonstration: EPIC-001 Process Walkthrough
+
+Purpose: show the exact operating process before bulk updates.
+
+Current example state:
+1. `EPIC-001` moved from `Open` to `In Progress` for process demonstration.
+2. Candidate child story selected: `STORY-304` (account lifecycle screens).
+3. Draft decomposition for `STORY-304`:
+- reset password flow UX
+- change email flow UX
+- session/device management view
+- smoke + visual QA acceptance
+4. Completion rule for this epic remains unchanged:
+- Do not move to `Verified` until deployed smoke evidence is linked and Figma status is updated.
+
+Next action for this epic:
+- create and move `STORY-304` to `In Progress` once implementation begins.
+
+---
+
 ## 5) Update Log
 
 Use this log for every status move or scope change.
@@ -115,6 +135,7 @@ Use this log for every status move or scope change.
 | Date | ID | Change | From | To | By | Evidence |
 |---|---|---|---|---|---|---|
 | 2026-05-20 | EPIC-001..EPIC-012 | Tracker initialized | n/a | Open | Codex | this document |
+| 2026-05-20 | EPIC-001 | Demonstration kickoff | Open | In Progress | Codex | section 4.1 in this document |
 
 ---
 

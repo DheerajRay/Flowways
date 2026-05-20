@@ -2,7 +2,7 @@
 
 Date: 2026-05-20  
 Source inputs:
-- [pm-optimization-master-plan-2026-05-20.md](/F:/Task/FlowWays/docs/pm-optimization-master-plan-2026-05-20.md)
+- [pm-optimization-master-plan-2026-05-20.md](/F:/Task/FlowWays/docs/product/pm-optimization-master-plan.md)
 - Figma SOT Index: https://www.figma.com/board/IvZzIu6fJRdj6mTRyNZ3a1
 
 ## 1) Label Taxonomy

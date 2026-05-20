@@ -1,6 +1,6 @@
 # Local Issue Tracker Operations
 
-This file defines how to operate [local-issue-tracker.md](/F:/Task/FlowWays/docs/local-issue-tracker.md) as the canonical execution tracker while GitHub connector automation is unavailable.
+This file defines how to operate [local-issue-tracker.md](/F:/Task/FlowWays/docs/tracking/local-issue-tracker.md) as the canonical execution tracker while GitHub connector automation is unavailable.
 
 ## 1) Cadence
 

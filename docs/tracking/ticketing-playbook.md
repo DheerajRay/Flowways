@@ -32,7 +32,7 @@ Rules:
 ## 3) Story Creation Checklist
 
 Before creating a story, confirm:
-1. Story ID exists in [implementation-backlog-source-of-truth.md](/F:/Task/FlowWays/docs/implementation-backlog-source-of-truth.md).
+1. Story ID exists in [implementation-backlog-source-of-truth.md](/F:/Task/FlowWays/docs/tracking/implementation-backlog.md).
 2. Parent epic exists and is linked.
 3. Labels include:
 - `story`

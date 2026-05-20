@@ -44,7 +44,7 @@ Labels: `epic`, `phase:now`, `area:ops`, `figma-linked`
 ## Story Seeds
 
 Use story IDs and phase mapping from:
-- [implementation-backlog-source-of-truth.md](/F:/Task/FlowWays/docs/implementation-backlog-source-of-truth.md)
+- [implementation-backlog-source-of-truth.md](/F:/Task/FlowWays/docs/tracking/implementation-backlog.md)
 
 Required labels for all stories:
 - `story`
