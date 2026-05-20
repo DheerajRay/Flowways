@@ -1,0 +1,48 @@
+name: Smoke Regression
+description: Track a smoke-test failure with reproducible steps and status markers.
+title: "[Smoke][P?] "
+labels:
+  - smoke
+body:
+  - type: dropdown
+    id: status_marker
+    attributes:
+      label: Status
+      options:
+        - Open
+        - In Progress
+        - Verified
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: URL + device/viewport used
+      placeholder: https://flowways.vercel.app | iPhone 390x844
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction Steps
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected_actual
+    attributes:
+      label: Expected vs Actual
+      placeholder: |
+        Expected: ...
+        Actual: ...
+    validations:
+      required: true
+  - type: input
+    id: report_ref
+    attributes:
+      label: Smoke Report Reference
+      placeholder: tests/smoke/results/flowways_thorough_smoke_report_YYYY-MM-DD.md

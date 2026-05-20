@@ -1,0 +1,23 @@
+{
+  "name": "FlowWays",
+  "short_name": "FlowWays",
+  "description": "A local-first minimalist task management PWA.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f3ea",
+  "theme_color": "#f6f3ea",
+  "icons": [
+    {
+      "src": "/icons/icon-192-v3.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512-v3.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

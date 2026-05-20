@@ -410,6 +410,7 @@ export default function HomePage() {
     if (!sourceText.trim() || authRequired) return;
     startTitleSpin();
     const colorTagAtSubmit = selectedColorTagRef.current;
+    let releaseBusyInFinally = true;
     setBusy(true);
     setSubmitMessage("");
     setPetNotice("");
@@ -463,6 +464,8 @@ export default function HomePage() {
         setPetNotice("");
       }
       setSourceText("");
+      setBusy(false);
+      releaseBusyInFinally = false;
       await loadItems();
     } catch {
       setSubmitMessage("Save failed due to a network or server error.");
@@ -470,7 +473,7 @@ export default function HomePage() {
       setPetNoticeTone("error");
       setPetExpression("x_x");
     } finally {
-      setBusy(false);
+      if (releaseBusyInFinally) setBusy(false);
     }
   }
 
@@ -944,6 +947,7 @@ export default function HomePage() {
   const autoPetNotice = overduePetCount > 0
     ? `Overdue: ${overduePetCount} timeline ${overduePetCount === 1 ? "item" : "items"}`
     : "";
+  const canSubmit = !authRequired && !busy && Boolean(sourceText.trim());
   const resolvedPetNotice = settings.pet_enabled ? (showHidden ? "Hide mode" : (petNotice || autoPetNotice)) : "";
   const resolvedPetTone: "info" | "warning" | "error" = settings.pet_enabled
     ? (showHidden ? "info" : (petNotice ? petNoticeTone : (autoPetNotice ? "warning" : "info")))
@@ -1119,7 +1123,7 @@ export default function HomePage() {
             onKeyDown={(event) => {
               if (event.key !== "Enter") return;
               event.preventDefault();
-              if (busy || !sourceText.trim()) return;
+              if (!canSubmit) return;
               void submitItem();
             }}
             placeholder="Add task | Search"
@@ -1165,7 +1169,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="captureActions">
-            <button type="button" className="iconAction" aria-label="Add task" data-tip="Add task" onClick={() => void submitItem()} disabled={busy || !sourceText.trim()}><Icon name="add" /></button>
+            <button type="button" className="iconAction" aria-label="Add task" data-tip="Add task" onClick={() => void submitItem()} disabled={!canSubmit}><Icon name="add" /></button>
             <button type="button" className="iconAction" aria-label="Search tasks" data-tip="Search tasks" onClick={runSearch}><Icon name="search" /></button>
             <button type="button" className={`iconAction${showTagWindow ? " active" : ""}`} aria-label="Tag filters" data-tip="Tag filters" onClick={toggleTagWindow}><Icon name="tags" /></button>
             <button type="button" className={`iconAction${showHidden ? " active" : ""}`} aria-label={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} data-tip={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} onClick={() => setShowHidden((prev) => !prev)}><Icon name={showHidden ? "show" : "hide"} /></button>
