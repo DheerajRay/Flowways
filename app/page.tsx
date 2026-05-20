@@ -65,7 +65,7 @@ type HeaderSpinIcon =
 export default function HomePage() {
   type CaptureMode = "auto" | "timeline" | "workflow" | "journal" | "checklist";
   type CaptureIntent = "create" | "search";
-  type SavedView = "all" | "today" | "overdue" | "deepwork" | "journal";
+  type SavedView = "all" | "today" | "overdue" | "reminderRecurring" | "diary";
   const APP_VERSION = "2026.05.20-phase1";
   const [sourceText, setSourceText] = useState("");
   const [captureIntent, setCaptureIntent] = useState<CaptureIntent>("create");
@@ -983,16 +983,21 @@ export default function HomePage() {
     .filter((item) => captureMode === "auto" ? true : item.kind === captureMode)
     .filter((item) => {
       if (savedView === "all") return true;
-      if (savedView === "journal") return item.kind === "journal";
+      if (savedView === "diary") {
+        if (item.kind !== "journal") return false;
+        const jm = resolveJournalMeta(item);
+        return jm.journal_subtype === "diary";
+      }
       if (savedView === "today") return isToday(item.due_at || item.created_at);
       if (savedView === "overdue") {
         if (item.kind !== "timeline" || item.checked || !item.due_at) return false;
         const dueMs = new Date(item.due_at).getTime();
         return Number.isFinite(dueMs) && dueMs <= nowMs;
       }
-      if (savedView === "deepwork") {
-        const labels = (item.labels || []).map((label) => label.toLowerCase());
-        return (item.kind === "workflow" && !item.checked) || labels.includes("focus") || labels.includes("deepwork");
+      if (savedView === "reminderRecurring") {
+        if (item.kind !== "timeline") return false;
+        const tm = resolveTimelineMeta(item);
+        return tm.timeline_subtype === "reminder" || tm.timeline_subtype === "recurring";
       }
       return true;
     })
@@ -1275,34 +1280,34 @@ export default function HomePage() {
             <button type="button" className={`iconAction${showHidden ? " active" : ""}`} aria-label={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} data-tip={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} onClick={() => setShowHidden((prev) => !prev)}><Icon name={showHidden ? "show" : "hide"} /></button>
           </div>
         </div>
-        <div className="savedViewsRow" aria-label="Saved views">
-          <div className="savedViews">
-            <button type="button" className={savedView === "all" ? "active" : ""} onClick={() => setSavedView("all")}>All</button>
-            <button type="button" className={savedView === "today" ? "active" : ""} onClick={() => setSavedView("today")}>Today</button>
-            <button type="button" className={savedView === "overdue" ? "active" : ""} onClick={() => setSavedView("overdue")}>Overdue</button>
-            <button type="button" className={savedView === "deepwork" ? "active" : ""} onClick={() => setSavedView("deepwork")}>Deep Work</button>
-            <button type="button" className={savedView === "journal" ? "active" : ""} onClick={() => setSavedView("journal")}>Journal</button>
-            {(savedView !== "all" || searchText || selectedColorTag || activeTagFilters.length || captureMode !== "auto") ? (
-              <button
-                type="button"
-                className="clearFilters"
-                onClick={() => {
-                  setSavedView("all");
-                  setSearchText("");
-                  setSourceText("");
-                  setCaptureMode("auto");
-                  setSelectedColorTag("");
-                  setActiveTagFilters([]);
-                }}
-              >
-                Reset
-              </button>
-            ) : null}
+        <div className="tagWindow" aria-label="Tag filters window">
+          <div className="savedViewsRow" aria-label="Saved views">
+            <div className="savedViews">
+              <button type="button" className={savedView === "all" ? "active" : ""} onClick={() => setSavedView("all")}>All</button>
+              <button type="button" className={savedView === "today" ? "active" : ""} onClick={() => setSavedView("today")}>Today</button>
+              <button type="button" className={savedView === "overdue" ? "active" : ""} onClick={() => setSavedView("overdue")}>Overdue</button>
+              <button type="button" className={savedView === "reminderRecurring" ? "active" : ""} onClick={() => setSavedView("reminderRecurring")}>Reminder/Recurring</button>
+              <button type="button" className={savedView === "diary" ? "active" : ""} onClick={() => setSavedView("diary")}>Diary</button>
+              {(savedView !== "all" || searchText || selectedColorTag || activeTagFilters.length || captureMode !== "auto") ? (
+                <button
+                  type="button"
+                  className="clearFilters"
+                  onClick={() => {
+                    setSavedView("all");
+                    setSearchText("");
+                    setSourceText("");
+                    setCaptureMode("auto");
+                    setSelectedColorTag("");
+                    setActiveTagFilters([]);
+                  }}
+                >
+                  Reset
+                </button>
+              ) : null}
+            </div>
+            <span className="resultCount">{sortedItems.length} result{sortedItems.length === 1 ? "" : "s"}</span>
           </div>
-          <span className="resultCount">{sortedItems.length} result{sortedItems.length === 1 ? "" : "s"}</span>
-        </div>
-        {showTagWindow && !showSettings ? (
-          <div className="tagWindow" aria-label="Tag filters window">
+          {showTagWindow && !showSettings ? (
             <div className="tagWindowTop">
               <div className="tagMatchToggle">
                 <button type="button" className={tagMatchMode === "AND" ? "active" : ""} onClick={() => setTagMatchMode("AND")}>AND</button>
@@ -1310,6 +1315,8 @@ export default function HomePage() {
               </div>
               <button type="button" className="tagClear" onClick={() => setActiveTagFilters([])} disabled={!activeTagFilters.length}>Clear tags</button>
             </div>
+          ) : null}
+          {showTagWindow && !showSettings ? (
             <div className="tagWindowChips">
               {availableTagFilters.length === 0 ? <span className="tagWindowEmpty">No tags in current result.</span> : null}
               {availableTagFilters.map((tag) => (
@@ -1324,8 +1331,8 @@ export default function HomePage() {
                 </button>
               ))}
             </div>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </section>
       <section className={`settingsDock${showSettings && !showTagWindow ? " isOpen" : ""}`} aria-label="Settings" aria-hidden={!showSettings || showTagWindow}>
           <div className="settingsModal settingsInline">
@@ -1735,7 +1742,7 @@ export default function HomePage() {
                   <div className="diaryBlock">
                     {parseDiaryEntries(item.body || "").map((entry, index) => (
                       <div className="diaryEntry" key={`${item.id}-diary-${index}`}>
-                        <span className="diaryStamp">{entry.stamp}</span>
+                        <button type="button" className="diaryStamp" onClick={() => setSavedView("diary")}>{entry.stamp}</button>
                         <p className="diaryMessage">{entry.message}</p>
                       </div>
                     ))}
@@ -1758,7 +1765,9 @@ export default function HomePage() {
               {item.kind === "timeline" && !item.checked && timeState?.done ? <span className="overdueTagChip">OVER DUE</span> : null}
               {item.kind === "workflow" && formatTimeSpent(item) ? <span className="dateChip">{formatTimeSpent(item)}</span> : null}
               {(() => {
-                const labels = item.labels || [];
+                const labels = item.kind === "journal" && journalMeta?.journal_subtype === "diary"
+                  ? (item.labels || []).filter((label) => label.toLowerCase() !== "diary")
+                  : (item.labels || []);
                 const visibleLabels = mobileCompactMeta ? labels.slice(0, 2) : labels;
                 const hiddenLabelCount = mobileCompactMeta ? Math.max(0, labels.length - visibleLabels.length) : 0;
                 return (
