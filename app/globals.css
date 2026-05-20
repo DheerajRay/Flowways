@@ -1668,6 +1668,10 @@ textarea { min-height: 100px; resize: vertical; }
   }
   .settingsDock {
     position: static;
+    display: none;
+  }
+  .settingsDock.isOpen {
+    display: block;
   }
   .settingsInline { width: 100%; }
   .settingsRow {
