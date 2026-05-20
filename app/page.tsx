@@ -915,7 +915,7 @@ export default function HomePage() {
     return mins ? `${hours}h ${mins}m spent` : `${hours}h spent`;
   }
 
-  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "settings" | "petNo" | "petPro" | "petMeh" | "petNuclear" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "color" | "tags" | "labelPet" | "labelFont" | "labelText" | "labelColor" | "labelTheme" | HeaderSpinIcon }) {
+  function Icon({ name }: { name: "done" | "undo" | "edit" | "delete" | "save" | "cancel" | "hide" | "add" | "backlog" | "ready" | "progress" | "review" | "search" | "show" | "signout" | "settings" | "petNo" | "petPro" | "petMeh" | "petNuclear" | "timeline" | "workflow" | "journal" | "checklist" | "auto" | "recast" | "color" | "tags" | "labelPet" | "labelFont" | "labelText" | "labelColor" | "labelTheme" | HeaderSpinIcon }) {
     const common = { width: 18, height: 18, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.95, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
     const circleCommon = { width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.75, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
     if (name === "circleBolt") return <svg {...circleCommon}><circle cx="12" cy="12" r="9" /><path d="M13.3 5.8 9.4 12h2.9l-1.1 6.2 4.1-6.6h-3.1z" /></svg>;
@@ -953,10 +953,11 @@ export default function HomePage() {
     if (name === "labelText") return <svg {...common}><path d="M3 4h10M8 4v8" /></svg>;
     if (name === "labelColor") return <svg {...common}><path d="M5.8 10.8 9.7 6.9a1.2 1.2 0 0 1 1.7 1.7l-3.9 3.9a1.6 1.6 0 0 1-1.2.5h-.8v-.8a1.7 1.7 0 0 1 .3-1.4z" /><circle cx="10.8" cy="7.8" r=".7" /></svg>;
     if (name === "labelTheme") return <svg {...common}><path d="M8 2.6v2.2M8 11.2v2.2M2.6 8h2.2M11.2 8h2.2M4.3 4.3l1.5 1.5M10.2 10.2l1.5 1.5M11.7 4.3l-1.5 1.5M5.8 10.2l-1.5 1.5" /><circle cx="8" cy="8" r="1.5" /></svg>;
-    if (name === "add") return <svg {...common}><path d="M8 3.2v9.6M3.2 8h9.6" /></svg>;
+    if (name === "add") return <svg {...common}><rect x="3" y="3" width="10" height="10" rx="2" /><path d="M8 5.6v4.8M5.6 8h4.8" /></svg>;
     if (name === "search") return <svg {...common}><circle cx="7" cy="7" r="4.3" /><path d="M10.3 10.3 13.5 13.5" /></svg>;
     if (name === "show") return <svg {...common}><path d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4z" /><circle cx="8" cy="8" r="1.5" /></svg>;
-    if (name === "auto") return <svg {...common}><path d="M8 2.8v10.4" /><path d="M2.8 8h10.4" /><circle cx="8" cy="8" r="1.6" /></svg>;
+    if (name === "auto") return <svg {...common}><path d="m4.2 11.8 5.4-7.6" /><path d="m8.2 4.2 3.6 3.6" /><path d="M11.8 2.8v1.6M11 3.6h1.6M3.2 6.8v1.2M2.6 7.4h1.2" /></svg>;
+    if (name === "recast") return <svg {...common}><path d="M3.2 5.3h6.2" /><path d="m7.8 3 1.6 2.3-1.6 2.3" /><path d="M12.8 10.7H6.6" /><path d="m8.2 8.4-1.6 2.3 1.6 2.3" /></svg>;
     if (name === "timeline") return <svg {...common}><circle cx="8" cy="8" r="5.5" /><path d="M8 5v3.2l2.2 1.2" /></svg>;
     if (name === "workflow") return <svg {...common}><path d="M4.3 6.4h7.4a.9.9 0 0 1 .9.9v3.8a.9.9 0 0 1-.9.9H4.3a.9.9 0 0 1-.9-.9V7.3a.9.9 0 0 1 .9-.9z" /><path d="M6 6.4V5.3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.1" /><path d="M7.4 8.9h1.2" /></svg>;
     if (name === "journal") return <svg {...common}><path d="M4 2.8h7.5a1 1 0 0 1 1 1v8.4a1 1 0 0 1-1 1H4" /><path d="M4 2.8v10.4" /><path d="M6.2 5.6h4M6.2 8h4" /></svg>;
@@ -1029,13 +1030,6 @@ export default function HomePage() {
     const bCreated = b.created_at ? new Date(b.created_at).getTime() : 0;
     return bCreated - aCreated;
   });
-
-  const activeSummary: string[] = [];
-  if (savedView !== "all") activeSummary.push(`view:${savedView}`);
-  if (captureMode !== "auto") activeSummary.push(`mode:${captureMode}`);
-  if (searchText) activeSummary.push(`search:${searchText}`);
-  if (selectedColorTag) activeSummary.push(selectedColorTag);
-  if (activeTagFilters.length) activeSummary.push(`${tagMatchMode}:${activeTagFilters.join(",")}`);
 
   const overduePetCount = items
     .filter((item) => (showHidden || !hiddenItemIds.includes(item.id)))
@@ -1275,8 +1269,8 @@ export default function HomePage() {
             </div>
           </div>
           <div className="captureActions">
-            <button type="button" className={`iconAction${captureIntent === "create" ? " active" : ""}`} aria-label="Add task" data-tip="Add task" onClick={() => { setCaptureIntent("create"); void submitItem(); }} disabled={!canClickSubmit}><Icon name="add" /></button>
-            <button type="button" className={`iconAction${captureIntent === "search" ? " active" : ""}`} aria-label="Search tasks" data-tip="Search tasks" onClick={() => { setCaptureIntent("search"); runSearch(); }}><Icon name="search" /></button>
+            <button type="button" className={`iconAction${captureIntent === "create" ? " active" : ""}`} aria-label="Add task" data-tip="Add mode (Enter submits)" onClick={() => { setCaptureIntent("create"); void submitItem(); }} disabled={!canClickSubmit}><Icon name="add" /></button>
+            <button type="button" className={`iconAction${captureIntent === "search" ? " active" : ""}`} aria-label="Search tasks" data-tip="Search mode (Enter filters)" onClick={() => { setCaptureIntent("search"); runSearch(); }}><Icon name="search" /></button>
             <button type="button" className={`iconAction${showTagWindow ? " active" : ""}`} aria-label="Tag filters" data-tip="Tag filters" onClick={toggleTagWindow}><Icon name="tags" /></button>
             <button type="button" className={`iconAction${showHidden ? " active" : ""}`} aria-label={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} data-tip={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} onClick={() => setShowHidden((prev) => !prev)}><Icon name={showHidden ? "show" : "hide"} /></button>
           </div>
@@ -1287,27 +1281,22 @@ export default function HomePage() {
           <button type="button" className={savedView === "overdue" ? "active" : ""} onClick={() => setSavedView("overdue")}>Overdue</button>
           <button type="button" className={savedView === "deepwork" ? "active" : ""} onClick={() => setSavedView("deepwork")}>Deep Work</button>
           <button type="button" className={savedView === "journal" ? "active" : ""} onClick={() => setSavedView("journal")}>Journal</button>
-        </div>
-        <div className="filterSummary" aria-live="polite">
-          <div className="filterSummaryLeft">
-            {activeSummary.length ? <span>{activeSummary.join(" · ")}</span> : <span>All items</span>}
-            {(savedView !== "all" || searchText || selectedColorTag || activeTagFilters.length || captureMode !== "auto") ? (
-              <button
-                type="button"
-                className="clearFilters"
-                onClick={() => {
-                  setSavedView("all");
-                  setSearchText("");
-                  setSourceText("");
-                  setCaptureMode("auto");
-                  setSelectedColorTag("");
-                  setActiveTagFilters([]);
-                }}
-              >
-                Reset
-              </button>
-            ) : null}
-          </div>
+          {(savedView !== "all" || searchText || selectedColorTag || activeTagFilters.length || captureMode !== "auto") ? (
+            <button
+              type="button"
+              className="clearFilters"
+              onClick={() => {
+                setSavedView("all");
+                setSearchText("");
+                setSourceText("");
+                setCaptureMode("auto");
+                setSelectedColorTag("");
+                setActiveTagFilters([]);
+              }}
+            >
+              Reset
+            </button>
+          ) : null}
           <span className="resultCount">{sortedItems.length} result{sortedItems.length === 1 ? "" : "s"}</span>
         </div>
         {showTagWindow && !showSettings ? (
@@ -1470,25 +1459,6 @@ export default function HomePage() {
         </section>
       </section>
 
-      <footer className="opsNotices" aria-label="Build and PWA status">
-        <span className="versionChip">v{APP_VERSION}</span>
-        {versionRefreshHint ? (
-          <button
-            type="button"
-            className="tagChip itemLabelChip active"
-            onClick={() => window.location.reload()}
-          >
-            New version detected · Refresh
-          </button>
-        ) : null}
-        <button type="button" className="tagChip itemLabelChip" onClick={() => void runPwaDiagnostics()}>Run PWA diagnostics</button>
-        {pwaDiagnostics ? (
-          <span className="diagText">
-            manifest:{pwaDiagnostics.manifestOk ? "ok" : "fail"} · icon192:{pwaDiagnostics.icon192Ok ? "ok" : "fail"} · icon512:{pwaDiagnostics.icon512Ok ? "ok" : "fail"} · sw:{pwaDiagnostics.swSupported ? (pwaDiagnostics.swControlled ? "controlled" : "supported") : "unsupported"}
-          </span>
-        ) : null}
-      </footer>
-
       <section className="feedShell" aria-label="Saved items">
         <div className="feed">
         <div className="feedCards">
@@ -1518,6 +1488,16 @@ export default function HomePage() {
               <span className="kind">
                 <Icon name={item.kind} />
                 <span>{item.title}</span>
+                {(typeof item.classification_confidence === "number" || item.classification_reason) ? (
+                  <button
+                    type="button"
+                    className="confidenceInfo kindInfo"
+                    data-tip={`confidence ${typeof item.classification_confidence === "number" ? `${Math.round(item.classification_confidence * 100)}%` : "n/a"}${item.classification_reason ? ` | why: ${item.classification_reason}` : ""}`}
+                    aria-label="Classification info"
+                  >
+                    i
+                  </button>
+                ) : null}
               </span>
               <div className="actions">
                 {item.checked ? (
@@ -1539,7 +1519,7 @@ export default function HomePage() {
                     ) : (
                       <>
                         <div className="recastMenuWrap">
-                          <button type="button" className={`iconAction${recastMenuItemId === item.id ? " active" : ""}`} aria-label="Change type" data-tip="Change type" onClick={() => setRecastMenuItemId((prev) => (prev === item.id ? null : item.id))}><Icon name="auto" /></button>
+                          <button type="button" className={`iconAction${recastMenuItemId === item.id ? " active" : ""}`} aria-label="Change type" data-tip="Change type" onClick={() => setRecastMenuItemId((prev) => (prev === item.id ? null : item.id))}><Icon name="recast" /></button>
                           {recastMenuItemId === item.id ? (
                             <div className="recastMenu" role="menu" aria-label="Reclassify item">
                               <button type="button" className="iconAction compact" data-tip="Checklist" onClick={() => { void recastItem(item, "checklist"); setRecastMenuItemId(null); }}><Icon name="checklist" /></button>
@@ -1761,18 +1741,7 @@ export default function HomePage() {
                 ) : (
                   item.body ? <p className={item.kind === "journal" ? "journalBody" : undefined}>{item.body}</p> : null
                 )}
-                <div className="classificationMeta">
-                  {(typeof item.classification_confidence === "number" || item.classification_reason) ? (
-                    <button
-                      type="button"
-                      className="confidenceInfo"
-                      data-tip={`confidence ${typeof item.classification_confidence === "number" ? `${Math.round(item.classification_confidence * 100)}%` : "n/a"}${item.classification_reason ? ` | why: ${item.classification_reason}` : ""}`}
-                      aria-label="Classification info"
-                    >
-                      i
-                    </button>
-                  ) : null}
-                </div>
+                
               </>
             )}
 
@@ -1874,9 +1843,31 @@ export default function HomePage() {
         </div>
         </div>
       </section>
+      <footer className="opsNotices" aria-label="Build and PWA status">
+        <span className="versionChip">v{APP_VERSION}</span>
+        {versionRefreshHint ? (
+          <button
+            type="button"
+            className="tagChip itemLabelChip active"
+            onClick={() => window.location.reload()}
+          >
+            New version detected · Refresh
+          </button>
+        ) : null}
+        <button type="button" className="tagChip itemLabelChip" onClick={() => void runPwaDiagnostics()}>Run PWA diagnostics</button>
+        {pwaDiagnostics ? (
+          <span className="diagText">
+            manifest:{pwaDiagnostics.manifestOk ? "ok" : "fail"} · icon192:{pwaDiagnostics.icon192Ok ? "ok" : "fail"} · icon512:{pwaDiagnostics.icon512Ok ? "ok" : "fail"} · sw:{pwaDiagnostics.swSupported ? (pwaDiagnostics.swControlled ? "controlled" : "supported") : "unsupported"}
+          </span>
+        ) : null}
+      </footer>
     </main>
   );
 }
+
+
+
+
 
 
 

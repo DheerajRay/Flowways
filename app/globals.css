@@ -613,8 +613,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
 }
 .savedViews {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
   gap: 6px;
+  align-items: center;
 }
 .savedViews button {
   border-radius: 999px;
@@ -644,6 +646,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   margin-left: auto;
   text-align: right;
   white-space: nowrap;
+  padding-left: 10px;
 }
 .clearFilters {
   border-radius: 999px;
@@ -824,17 +827,21 @@ textarea { min-height: 100px; resize: vertical; }
   justify-content: flex-end;
 }
 .confidenceInfo {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--panel);
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   display: inline-grid;
   place-items: center;
   padding: 0;
+}
+.kindInfo {
+  margin-left: 4px;
+  flex: 0 0 auto;
 }
 
 .opsNotices {
@@ -844,7 +851,7 @@ textarea { min-height: 100px; resize: vertical; }
   gap: 8px;
   margin-top: 6px;
   position: sticky;
-  bottom: 6px;
+  bottom: 8px;
   z-index: 40;
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(4px);
