@@ -393,6 +393,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   transform: translateX(-50%) translateY(0) scale(1);
 }
 
+.topbar :where(button, span, label)[data-tip]::after,
+.settingsDock :where(button, span, label)[data-tip]::after {
+  top: calc(100% + 8px);
+  bottom: auto;
+}
+
 .capture,
 .feedShell,
 .authCard {
@@ -1816,6 +1822,19 @@ textarea { min-height: 100px; resize: vertical; }
 
   .topbarAction {
     margin-top: 0;
+  }
+
+  :where(button, span, label)[data-tip]::after {
+    z-index: 200;
+  }
+
+  .item {
+    position: relative;
+  }
+
+  .item:has(.iconAction:hover),
+  .item:has(.iconAction:focus-visible) {
+    z-index: 6;
   }
 }
 
