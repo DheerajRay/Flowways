@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { getSupabaseBrowserClient } from "@/shared/supabase-browser";
@@ -91,6 +91,7 @@ export default function HomePage() {
   const selectedColorTagRef = useRef<string>("");
   const settingsColorInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [recastMenuItemId, setRecastMenuItemId] = useState<string | null>(null);
   const [showTagWindow, setShowTagWindow] = useState(false);
   const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
   const [tagMatchMode, setTagMatchMode] = useState<"AND" | "OR">("AND");
@@ -399,7 +400,7 @@ export default function HomePage() {
       const options = [
         { text: "Folded into your checklist. No duplicates on my watch.", face: "^_-" },
         { text: "Merged clean. Your list game is suspiciously strong.", face: "u_u" },
-        { text: "Checklist upgraded. I even pretended it was hard.", face: "¬_¬" }
+        { text: "Checklist upgraded. I even pretended it was hard.", face: "Â¬_Â¬" }
       ];
       return options[Math.floor(Math.random() * options.length)];
     }
@@ -407,23 +408,23 @@ export default function HomePage() {
     const byKind: Record<DbItem["kind"], { text: string; face: string }[]> = {
       timeline: [
         { text: `Timer locked: ${shortTitle || "that task"}. Try beating the clock this time.`, face: "o_o" },
-        { text: `Scheduled: ${shortTitle || "timeline item"}. Time waits for nobody.`, face: "•_•" },
+        { text: `Scheduled: ${shortTitle || "timeline item"}. Time waits for nobody.`, face: "â€¢_â€¢" },
         { text: `Timeline set. ${shortTitle || "It"} is now officially your problem.`, face: "^_~" }
       ],
       workflow: [
-        { text: `Workflow queued: ${shortTitle || "new work"}. Pretend this is under control.`, face: "¬‿¬" },
+        { text: `Workflow queued: ${shortTitle || "new work"}. Pretend this is under control.`, face: "Â¬â€¿Â¬" },
         { text: `Backlog fed with ${shortTitle || "a fresh task"}. Very corporate of you.`, face: "u_u" },
         { text: `Task pipelined: ${shortTitle || "it"}. Look at you being organized.`, face: "^_^" }
       ],
       checklist: [
-        { text: `Checklist saved: ${shortTitle || "new list"}. Tiny boxes, big ambition.`, face: "•‿•" },
+        { text: `Checklist saved: ${shortTitle || "new list"}. Tiny boxes, big ambition.`, face: "â€¢â€¿â€¢" },
         { text: `List captured. ${shortTitle || "It"} now has accountability.`, face: "^_-" },
         { text: `Checklist ready. One more thing to cross off dramatically.`, face: "o_o" }
       ],
       journal: [
-        { text: `Noted: ${shortTitle || "that thought"}. Future-you can decode this later.`, face: "¬_¬" },
+        { text: `Noted: ${shortTitle || "that thought"}. Future-you can decode this later.`, face: "Â¬_Â¬" },
         { text: `Journaled: ${shortTitle || "entry saved"}. Main character energy noted.`, face: "^_^" },
-        { text: `Captured your note. Surprisingly coherent, too.`, face: "•_•" }
+        { text: `Captured your note. Surprisingly coherent, too.`, face: "â€¢_â€¢" }
       ]
     };
 
@@ -1057,7 +1058,7 @@ export default function HomePage() {
     ? (showHidden ? "Hide mode" : (petNotice || autoPetNotice || ""))
     : "";
   const resolvedPetFace = busy
-    ? "•_•"
+    ? "â€¢_â€¢"
     : resolvedPetTone === "error"
       ? "x_x"
       : resolvedPetTone === "warning"
@@ -1201,24 +1202,6 @@ export default function HomePage() {
           <button type="button" className="iconAction topbarAction" aria-label="Sign Out" data-tip="Sign Out" onClick={signOut}><Icon name="signout" /></button>
         </div>
       </header>
-      <div className="opsNotices">
-        <span className="versionChip">v{APP_VERSION}</span>
-        {versionRefreshHint ? (
-          <button
-            type="button"
-            className="tagChip itemLabelChip active"
-            onClick={() => window.location.reload()}
-          >
-            New version detected · Refresh
-          </button>
-        ) : null}
-        <button type="button" className="tagChip itemLabelChip" onClick={() => void runPwaDiagnostics()}>Run PWA diagnostics</button>
-        {pwaDiagnostics ? (
-          <span className="diagText">
-            manifest:{pwaDiagnostics.manifestOk ? "ok" : "fail"} · icon192:{pwaDiagnostics.icon192Ok ? "ok" : "fail"} · icon512:{pwaDiagnostics.icon512Ok ? "ok" : "fail"} · sw:{pwaDiagnostics.swSupported ? (pwaDiagnostics.swControlled ? "controlled" : "supported") : "unsupported"}
-          </span>
-        ) : null}
-      </div>
 
       <section className="captureShell">
       <section className="capture">
@@ -1235,10 +1218,6 @@ export default function HomePage() {
           <div className="systemNotice" aria-live="polite">{systemNotice}</div>
         ) : null}
         <div className="captureBar">
-          <div className="intentToggle" aria-label="Capture intent">
-            <button type="button" className={captureIntent === "create" ? "active" : ""} onClick={() => setCaptureIntent("create")}>Create</button>
-            <button type="button" className={captureIntent === "search" ? "active" : ""} onClick={() => setCaptureIntent("search")}>Search</button>
-          </div>
           <input
             id="captureInput"
             value={sourceText}
@@ -1280,7 +1259,7 @@ export default function HomePage() {
               </button>
               {showColorPicker ? (
                 <div className="colorPopover">
-                  <button type="button" className="colorDot clear" onClick={() => { setColorTag(""); setShowColorPicker(false); }} data-tip="No color">×</button>
+                  <button type="button" className="colorDot clear" onClick={() => { setColorTag(""); setShowColorPicker(false); }} data-tip="No color">Ã—</button>
                   {colorTagIds.map((c) => (
                     <button
                       type="button"
@@ -1310,24 +1289,26 @@ export default function HomePage() {
           <button type="button" className={savedView === "journal" ? "active" : ""} onClick={() => setSavedView("journal")}>Journal</button>
         </div>
         <div className="filterSummary" aria-live="polite">
-          <span>{sortedItems.length} result{sortedItems.length === 1 ? "" : "s"}</span>
-          {activeSummary.length ? <span> · {activeSummary.join(" · ")}</span> : null}
-          {(savedView !== "all" || searchText || selectedColorTag || activeTagFilters.length || captureMode !== "auto") ? (
-            <button
-              type="button"
-              className="clearFilters"
-              onClick={() => {
-                setSavedView("all");
-                setSearchText("");
-                setSourceText("");
-                setCaptureMode("auto");
-                setSelectedColorTag("");
-                setActiveTagFilters([]);
-              }}
-            >
-              Reset
-            </button>
-          ) : null}
+          <div className="filterSummaryLeft">
+            {activeSummary.length ? <span>{activeSummary.join(" · ")}</span> : <span>All items</span>}
+            {(savedView !== "all" || searchText || selectedColorTag || activeTagFilters.length || captureMode !== "auto") ? (
+              <button
+                type="button"
+                className="clearFilters"
+                onClick={() => {
+                  setSavedView("all");
+                  setSearchText("");
+                  setSourceText("");
+                  setCaptureMode("auto");
+                  setSelectedColorTag("");
+                  setActiveTagFilters([]);
+                }}
+              >
+                Reset
+              </button>
+            ) : null}
+          </div>
+          <span className="resultCount">{sortedItems.length} result{sortedItems.length === 1 ? "" : "s"}</span>
         </div>
         {showTagWindow && !showSettings ? (
           <div className="tagWindow" aria-label="Tag filters window">
@@ -1489,6 +1470,25 @@ export default function HomePage() {
         </section>
       </section>
 
+      <footer className="opsNotices" aria-label="Build and PWA status">
+        <span className="versionChip">v{APP_VERSION}</span>
+        {versionRefreshHint ? (
+          <button
+            type="button"
+            className="tagChip itemLabelChip active"
+            onClick={() => window.location.reload()}
+          >
+            New version detected · Refresh
+          </button>
+        ) : null}
+        <button type="button" className="tagChip itemLabelChip" onClick={() => void runPwaDiagnostics()}>Run PWA diagnostics</button>
+        {pwaDiagnostics ? (
+          <span className="diagText">
+            manifest:{pwaDiagnostics.manifestOk ? "ok" : "fail"} · icon192:{pwaDiagnostics.icon192Ok ? "ok" : "fail"} · icon512:{pwaDiagnostics.icon512Ok ? "ok" : "fail"} · sw:{pwaDiagnostics.swSupported ? (pwaDiagnostics.swControlled ? "controlled" : "supported") : "unsupported"}
+          </span>
+        ) : null}
+      </footer>
+
       <section className="feedShell" aria-label="Saved items">
         <div className="feed">
         <div className="feedCards">
@@ -1538,6 +1538,17 @@ export default function HomePage() {
                       </>
                     ) : (
                       <>
+                        <div className="recastMenuWrap">
+                          <button type="button" className={`iconAction${recastMenuItemId === item.id ? " active" : ""}`} aria-label="Change type" data-tip="Change type" onClick={() => setRecastMenuItemId((prev) => (prev === item.id ? null : item.id))}><Icon name="auto" /></button>
+                          {recastMenuItemId === item.id ? (
+                            <div className="recastMenu" role="menu" aria-label="Reclassify item">
+                              <button type="button" className="iconAction compact" data-tip="Checklist" onClick={() => { void recastItem(item, "checklist"); setRecastMenuItemId(null); }}><Icon name="checklist" /></button>
+                              <button type="button" className="iconAction compact" data-tip="Journal" onClick={() => { void recastItem(item, "journal"); setRecastMenuItemId(null); }}><Icon name="journal" /></button>
+                              <button type="button" className="iconAction compact" data-tip="Workflow" onClick={() => { void recastItem(item, "workflow"); setRecastMenuItemId(null); }}><Icon name="workflow" /></button>
+                              <button type="button" className="iconAction compact" data-tip="Timeline" onClick={() => { void recastItem(item, "timeline"); setRecastMenuItemId(null); }}><Icon name="timeline" /></button>
+                            </div>
+                          ) : null}
+                        </div>
                         <button type="button" className="iconAction" aria-label="Done" data-tip="Done" onClick={() => item.kind === "workflow" ? toggleWorkflowDone(item, true) : updateItem(item.id, { checked: true })}><Icon name="done" /></button>
                         <button type="button" className="iconAction" aria-label="Edit" data-tip="Edit" onClick={() => startEdit(item)}><Icon name="edit" /></button>
                         <button type="button" className="iconAction danger" aria-label="Delete" data-tip="Delete" onClick={() => animateDelete(item.id)}><Icon name="delete" /></button>
@@ -1729,7 +1740,7 @@ export default function HomePage() {
                       <p>
                         Repeats {timelineMeta.recurrence_rule?.frequency || "weekly"}
                         {timelineMeta.recurrence_rule?.byWeekday?.length ? ` on ${timelineMeta.recurrence_rule.byWeekday.map((d) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d] || d).join(", ")}` : ""}
-                        {timelineTargetAt ? ` • next ${formatDateTime(timelineTargetAt)}` : ""}
+                        {timelineTargetAt ? ` â€¢ next ${formatDateTime(timelineTargetAt)}` : ""}
                       </p>
                     ) : null}
                     {timelineMeta?.timeline_subtype === "countup" ? (
@@ -1751,21 +1762,17 @@ export default function HomePage() {
                   item.body ? <p className={item.kind === "journal" ? "journalBody" : undefined}>{item.body}</p> : null
                 )}
                 <div className="classificationMeta">
-                  {typeof item.classification_confidence === "number" ? (
-                    <span className="confidenceChip">confidence {Math.round(item.classification_confidence * 100)}%</span>
-                  ) : null}
-                  {item.classification_reason ? (
-                    <span className="reasonText">why: {item.classification_reason}</span>
+                  {(typeof item.classification_confidence === "number" || item.classification_reason) ? (
+                    <button
+                      type="button"
+                      className="confidenceInfo"
+                      data-tip={`confidence ${typeof item.classification_confidence === "number" ? `${Math.round(item.classification_confidence * 100)}%` : "n/a"}${item.classification_reason ? ` | why: ${item.classification_reason}` : ""}`}
+                      aria-label="Classification info"
+                    >
+                      i
+                    </button>
                   ) : null}
                 </div>
-                {!item.checked ? (
-                  <div className="recastRow" aria-label="Recast item type">
-                    <button type="button" className={`tagChip itemLabelChip${item.kind === "checklist" ? " active" : ""}`} onClick={() => void recastItem(item, "checklist")}>Checklist</button>
-                    <button type="button" className={`tagChip itemLabelChip${item.kind === "journal" ? " active" : ""}`} onClick={() => void recastItem(item, "journal")}>Journal</button>
-                    <button type="button" className={`tagChip itemLabelChip${item.kind === "workflow" ? " active" : ""}`} onClick={() => void recastItem(item, "workflow")}>Workflow</button>
-                    <button type="button" className={`tagChip itemLabelChip${item.kind === "timeline" ? " active" : ""}`} onClick={() => void recastItem(item, "timeline")}>Timeline</button>
-                  </div>
-                ) : null}
               </>
             )}
 
@@ -1870,5 +1877,6 @@ export default function HomePage() {
     </main>
   );
 }
+
 
 
