@@ -1664,7 +1664,7 @@ textarea { min-height: 100px; resize: vertical; }
   }
   .captureShell {
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 4px;
   }
   .settingsDock {
     position: static;
@@ -1694,7 +1694,7 @@ textarea { min-height: 100px; resize: vertical; }
 
   .feedCards {
     margin-right: 6px;
-    padding: 10px 8px 10px 10px;
+    padding: 4px 8px 10px 10px;
   }
 
   .pixelPal {
@@ -1715,7 +1715,7 @@ textarea { min-height: 100px; resize: vertical; }
   .modeActions,
   .captureActions {
     width: 100%;
-    justify-content: flex-start;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 6px;
   }
