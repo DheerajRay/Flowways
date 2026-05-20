@@ -10,6 +10,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const payload = updateItemSchema.parse(await request.json());
 
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (payload.kind !== undefined) patch.kind = payload.kind;
   if (payload.title !== undefined) patch.title = payload.title;
   if (payload.body !== undefined) patch.body = payload.body;
   if (payload.checked !== undefined) patch.checked = payload.checked;

@@ -72,6 +72,7 @@ export const createItemSchema = z.object({
 });
 
 export const updateItemSchema = z.object({
+  kind: z.enum(["checklist", "journal", "workflow", "timeline"]).optional(),
   title: z.string().min(1).optional(),
   body: z.string().optional(),
   checked: z.boolean().optional(),

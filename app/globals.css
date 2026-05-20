@@ -527,6 +527,27 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   gap: 10px;
   align-items: center;
 }
+.intentToggle {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  width: fit-content;
+  background: #fff;
+}
+.intentToggle button {
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  padding: 5px 12px;
+  font-size: 12px;
+}
+.intentToggle button:last-child { border-right: 0; }
+.intentToggle button.active {
+  background: var(--toggle-active-bg);
+  color: var(--toggle-active-ink);
+}
 .captureBar input {
   min-height: 44px;
   height: 44px;
@@ -588,6 +609,34 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
 }
 .tagWindowEmpty {
   color: var(--muted);
+  font-size: 12px;
+}
+.savedViews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.savedViews button {
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+.savedViews button.active {
+  background: var(--toggle-active-bg);
+  color: var(--toggle-active-ink);
+  border-color: var(--toggle-active-border);
+}
+.filterSummary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.clearFilters {
+  border-radius: 999px;
+  padding: 4px 9px;
   font-size: 12px;
 }
 .modeActions {
@@ -758,6 +807,49 @@ textarea { min-height: 100px; resize: vertical; }
   background: rgba(47, 158, 102, 0.16);
   border-color: #2f9e66;
   color: #1f7a4f;
+}
+.classificationMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.confidenceChip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--due-label);
+}
+.reasonText {
+  font-size: 11px;
+  color: var(--muted);
+}
+.recastRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.recastRow .tagChip {
+  cursor: pointer;
+}
+
+.opsNotices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: -4px;
+}
+.versionChip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 11px;
+}
+.diagText {
+  font-size: 11px;
+  color: var(--muted);
 }
 .item.item-hidden {
   border-style: dashed;

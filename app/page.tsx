@@ -36,6 +36,8 @@ interface DbItem {
   created_at?: string;
   checked?: boolean;
   workflow_status?: "Backlog" | "Paused" | "In Progress" | "Ready" | "Review" | "Done" | null;
+  classification_confidence?: number | null;
+  classification_reason?: string | null;
 }
 
 type SettingsDraft = UserSettings;
@@ -62,8 +64,13 @@ type HeaderSpinIcon =
 
 export default function HomePage() {
   type CaptureMode = "auto" | "timeline" | "workflow" | "journal" | "checklist";
+  type CaptureIntent = "create" | "search";
+  type SavedView = "all" | "today" | "overdue" | "deepwork" | "journal";
+  const APP_VERSION = "2026.05.20-phase1";
   const [sourceText, setSourceText] = useState("");
+  const [captureIntent, setCaptureIntent] = useState<CaptureIntent>("create");
   const [captureMode, setCaptureMode] = useState<CaptureMode>("auto");
+  const [savedView, setSavedView] = useState<SavedView>("all");
   const [items, setItems] = useState<DbItem[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
@@ -109,6 +116,8 @@ export default function HomePage() {
   const [mobileCompactMeta, setMobileCompactMeta] = useState(false);
   const [settingsBusy, setSettingsBusy] = useState(false);
   const [settingsError, setSettingsError] = useState("");
+  const [pwaDiagnostics, setPwaDiagnostics] = useState<{ manifestOk: boolean; icon192Ok: boolean; icon512Ok: boolean; swSupported: boolean; swControlled: boolean } | null>(null);
+  const [versionRefreshHint, setVersionRefreshHint] = useState(false);
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
   const [titleIcons, setTitleIcons] = useState<HeaderSpinIcon[]>(["circleBolt", "circleStar", "circleCheck", "circleX"]);
   const [titleAnimating, setTitleAnimating] = useState(true);
@@ -238,12 +247,28 @@ export default function HomePage() {
   }, [hiddenItemIds]);
 
   useEffect(() => {
+    const previous = window.localStorage.getItem("flowways:app-version");
+    if (previous && previous !== APP_VERSION) setVersionRefreshHint(true);
+    window.localStorage.setItem("flowways:app-version", APP_VERSION);
+  }, []);
+
+  useEffect(() => {
     if (!petNotice || petNoticeTone !== "info") return;
     const timeoutId = window.setTimeout(() => {
       setPetNotice("");
     }, 3000);
     return () => window.clearTimeout(timeoutId);
   }, [petNotice, petNoticeTone]);
+
+  async function runPwaDiagnostics() {
+    const manifestCheck = fetch("/manifest.webmanifest", { cache: "no-store" }).then((res) => res.ok).catch(() => false);
+    const icon192Check = fetch("/icons/icon-192-v3.png", { method: "HEAD", cache: "no-store" }).then((res) => res.ok).catch(() => false);
+    const icon512Check = fetch("/icons/icon-512-v3.png", { method: "HEAD", cache: "no-store" }).then((res) => res.ok).catch(() => false);
+    const [manifestOk, icon192Ok, icon512Ok] = await Promise.all([manifestCheck, icon192Check, icon512Check]);
+    const swSupported = typeof navigator !== "undefined" && "serviceWorker" in navigator;
+    const swControlled = swSupported ? Boolean(navigator.serviceWorker.controller) : false;
+    setPwaDiagnostics({ manifestOk, icon192Ok, icon512Ok, swSupported, swControlled });
+  }
 
   const headerIconPool: HeaderSpinIcon[] = [
     "circleBolt",
@@ -478,6 +503,7 @@ export default function HomePage() {
   }
 
   function runSearch() {
+    setCaptureIntent("search");
     setSearchText(sourceText.trim().toLowerCase());
   }
 
@@ -494,6 +520,50 @@ export default function HomePage() {
     }
     await loadItems();
     return true;
+  }
+
+  async function recastItem(item: DbItem, targetKind: CaptureMode) {
+    if (targetKind === "auto" || item.kind === targetKind) return;
+    setBusy(true);
+    setSubmitMessage("");
+    try {
+      const source = `${item.title}\n${item.body || ""}`.trim();
+      const classifyResponse = await fetch("/api/classify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: source,
+          modeHint: targetKind,
+          petMode: settings.pet_mode,
+          petEnabled: settings.pet_enabled,
+          clientNow: new Date().toISOString(),
+          clientTimezoneOffsetMinutes: new Date().getTimezoneOffset()
+        })
+      });
+      if (!classifyResponse.ok) {
+        setSubmitMessage("Recast classification failed.");
+        return;
+      }
+      const payload = await classifyResponse.json();
+      const c = payload?.result;
+      if (!c) {
+        setSubmitMessage("Recast payload missing.");
+        return;
+      }
+      const ok = await updateItem(item.id, {
+        kind: c.kind,
+        title: c.title,
+        body: c.body,
+        labels: c.labels,
+        dueAt: c.due_at,
+        workflowStatus: c.workflow_status,
+        timelineMeta: c.timeline_meta,
+        journalMeta: c.journal_meta
+      });
+      if (ok) setSubmitMessage(`Recasted to ${c.kind}.`);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function deleteItem(id: string) {
@@ -898,9 +968,32 @@ export default function HomePage() {
     return <svg {...common}><circle cx="8" cy="8" r="5.2" /><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none" /></svg>;
   }
 
+  const isToday = (iso: string | null | undefined) => {
+    if (!iso) return false;
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return false;
+    const now = new Date();
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  };
+
   const baseVisibleItems = items
     .filter((item) => showHidden || !hiddenItemIds.includes(item.id))
     .filter((item) => captureMode === "auto" ? true : item.kind === captureMode)
+    .filter((item) => {
+      if (savedView === "all") return true;
+      if (savedView === "journal") return item.kind === "journal";
+      if (savedView === "today") return isToday(item.due_at || item.created_at);
+      if (savedView === "overdue") {
+        if (item.kind !== "timeline" || item.checked || !item.due_at) return false;
+        const dueMs = new Date(item.due_at).getTime();
+        return Number.isFinite(dueMs) && dueMs <= nowMs;
+      }
+      if (savedView === "deepwork") {
+        const labels = (item.labels || []).map((label) => label.toLowerCase());
+        return (item.kind === "workflow" && !item.checked) || labels.includes("focus") || labels.includes("deepwork");
+      }
+      return true;
+    })
     .filter((item) => {
       if (!searchText) return true;
       const haystack = `${item.title} ${item.body} ${(item.labels || []).join(" ")}`.toLowerCase();
@@ -935,6 +1028,13 @@ export default function HomePage() {
     const bCreated = b.created_at ? new Date(b.created_at).getTime() : 0;
     return bCreated - aCreated;
   });
+
+  const activeSummary: string[] = [];
+  if (savedView !== "all") activeSummary.push(`view:${savedView}`);
+  if (captureMode !== "auto") activeSummary.push(`mode:${captureMode}`);
+  if (searchText) activeSummary.push(`search:${searchText}`);
+  if (selectedColorTag) activeSummary.push(selectedColorTag);
+  if (activeTagFilters.length) activeSummary.push(`${tagMatchMode}:${activeTagFilters.join(",")}`);
 
   const overduePetCount = items
     .filter((item) => (showHidden || !hiddenItemIds.includes(item.id)))
@@ -1101,6 +1201,24 @@ export default function HomePage() {
           <button type="button" className="iconAction topbarAction" aria-label="Sign Out" data-tip="Sign Out" onClick={signOut}><Icon name="signout" /></button>
         </div>
       </header>
+      <div className="opsNotices">
+        <span className="versionChip">v{APP_VERSION}</span>
+        {versionRefreshHint ? (
+          <button
+            type="button"
+            className="tagChip itemLabelChip active"
+            onClick={() => window.location.reload()}
+          >
+            New version detected · Refresh
+          </button>
+        ) : null}
+        <button type="button" className="tagChip itemLabelChip" onClick={() => void runPwaDiagnostics()}>Run PWA diagnostics</button>
+        {pwaDiagnostics ? (
+          <span className="diagText">
+            manifest:{pwaDiagnostics.manifestOk ? "ok" : "fail"} · icon192:{pwaDiagnostics.icon192Ok ? "ok" : "fail"} · icon512:{pwaDiagnostics.icon512Ok ? "ok" : "fail"} · sw:{pwaDiagnostics.swSupported ? (pwaDiagnostics.swControlled ? "controlled" : "supported") : "unsupported"}
+          </span>
+        ) : null}
+      </div>
 
       <section className="captureShell">
       <section className="capture">
@@ -1117,6 +1235,10 @@ export default function HomePage() {
           <div className="systemNotice" aria-live="polite">{systemNotice}</div>
         ) : null}
         <div className="captureBar">
+          <div className="intentToggle" aria-label="Capture intent">
+            <button type="button" className={captureIntent === "create" ? "active" : ""} onClick={() => setCaptureIntent("create")}>Create</button>
+            <button type="button" className={captureIntent === "search" ? "active" : ""} onClick={() => setCaptureIntent("search")}>Search</button>
+          </div>
           <input
             id="captureInput"
             value={sourceText}
@@ -1124,6 +1246,10 @@ export default function HomePage() {
             onKeyDown={(event) => {
               if (event.key !== "Enter") return;
               event.preventDefault();
+              if (captureIntent === "search") {
+                runSearch();
+                return;
+              }
               if (!canSubmit) return;
               void submitItem();
             }}
@@ -1170,11 +1296,38 @@ export default function HomePage() {
             </div>
           </div>
           <div className="captureActions">
-            <button type="button" className="iconAction" aria-label="Add task" data-tip="Add task" onClick={() => void submitItem()} disabled={!canClickSubmit}><Icon name="add" /></button>
-            <button type="button" className="iconAction" aria-label="Search tasks" data-tip="Search tasks" onClick={runSearch}><Icon name="search" /></button>
+            <button type="button" className={`iconAction${captureIntent === "create" ? " active" : ""}`} aria-label="Add task" data-tip="Add task" onClick={() => { setCaptureIntent("create"); void submitItem(); }} disabled={!canClickSubmit}><Icon name="add" /></button>
+            <button type="button" className={`iconAction${captureIntent === "search" ? " active" : ""}`} aria-label="Search tasks" data-tip="Search tasks" onClick={() => { setCaptureIntent("search"); runSearch(); }}><Icon name="search" /></button>
             <button type="button" className={`iconAction${showTagWindow ? " active" : ""}`} aria-label="Tag filters" data-tip="Tag filters" onClick={toggleTagWindow}><Icon name="tags" /></button>
             <button type="button" className={`iconAction${showHidden ? " active" : ""}`} aria-label={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} data-tip={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} onClick={() => setShowHidden((prev) => !prev)}><Icon name={showHidden ? "show" : "hide"} /></button>
           </div>
+        </div>
+        <div className="savedViews" aria-label="Saved views">
+          <button type="button" className={savedView === "all" ? "active" : ""} onClick={() => setSavedView("all")}>All</button>
+          <button type="button" className={savedView === "today" ? "active" : ""} onClick={() => setSavedView("today")}>Today</button>
+          <button type="button" className={savedView === "overdue" ? "active" : ""} onClick={() => setSavedView("overdue")}>Overdue</button>
+          <button type="button" className={savedView === "deepwork" ? "active" : ""} onClick={() => setSavedView("deepwork")}>Deep Work</button>
+          <button type="button" className={savedView === "journal" ? "active" : ""} onClick={() => setSavedView("journal")}>Journal</button>
+        </div>
+        <div className="filterSummary" aria-live="polite">
+          <span>{sortedItems.length} result{sortedItems.length === 1 ? "" : "s"}</span>
+          {activeSummary.length ? <span> · {activeSummary.join(" · ")}</span> : null}
+          {(savedView !== "all" || searchText || selectedColorTag || activeTagFilters.length || captureMode !== "auto") ? (
+            <button
+              type="button"
+              className="clearFilters"
+              onClick={() => {
+                setSavedView("all");
+                setSearchText("");
+                setSourceText("");
+                setCaptureMode("auto");
+                setSelectedColorTag("");
+                setActiveTagFilters([]);
+              }}
+            >
+              Reset
+            </button>
+          ) : null}
         </div>
         {showTagWindow && !showSettings ? (
           <div className="tagWindow" aria-label="Tag filters window">
@@ -1597,6 +1750,22 @@ export default function HomePage() {
                 ) : (
                   item.body ? <p className={item.kind === "journal" ? "journalBody" : undefined}>{item.body}</p> : null
                 )}
+                <div className="classificationMeta">
+                  {typeof item.classification_confidence === "number" ? (
+                    <span className="confidenceChip">confidence {Math.round(item.classification_confidence * 100)}%</span>
+                  ) : null}
+                  {item.classification_reason ? (
+                    <span className="reasonText">why: {item.classification_reason}</span>
+                  ) : null}
+                </div>
+                {!item.checked ? (
+                  <div className="recastRow" aria-label="Recast item type">
+                    <button type="button" className={`tagChip itemLabelChip${item.kind === "checklist" ? " active" : ""}`} onClick={() => void recastItem(item, "checklist")}>Checklist</button>
+                    <button type="button" className={`tagChip itemLabelChip${item.kind === "journal" ? " active" : ""}`} onClick={() => void recastItem(item, "journal")}>Journal</button>
+                    <button type="button" className={`tagChip itemLabelChip${item.kind === "workflow" ? " active" : ""}`} onClick={() => void recastItem(item, "workflow")}>Workflow</button>
+                    <button type="button" className={`tagChip itemLabelChip${item.kind === "timeline" ? " active" : ""}`} onClick={() => void recastItem(item, "timeline")}>Timeline</button>
+                  </div>
+                ) : null}
               </>
             )}
 

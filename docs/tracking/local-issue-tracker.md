@@ -33,17 +33,17 @@ Figma source-of-truth set:
 | Epic ID | Title | Phase | Area | Depends On | Status | Figma File | Completion Definition |
 |---|---|---|---|---|---|---|---|
 | EPIC-001 | Auth and Session Foundation | Later | auth | none | In Progress | Overall Workflow | onboarding + session expiry UX + account lifecycle shipped |
-| EPIC-002 | Capture and Submit Throughput | Now | capture | EPIC-011 (rollout) | Open | Overall Workflow | create/search split + throughput interactions stable |
-| EPIC-003 | Classification Trust and Control | Now | classification | EPIC-008, EPIC-009 | Open | Classification & Help | confidence + recast + control profile delivered |
+| EPIC-002 | Capture and Submit Throughput | Now | capture | EPIC-011 (rollout) | In Review | Overall Workflow | create/search split + throughput interactions stable |
+| EPIC-003 | Classification Trust and Control | Now | classification | EPIC-008, EPIC-009 | In Review | Classification & Help | confidence + recast + control profile delivered |
 | EPIC-004 | Item Lifecycle Depth | Next | lifecycle | EPIC-003 | Open | Overall Workflow | deeper checklist/journal/timeline/workflow behavior |
-| EPIC-005 | Feed and Retrieval UX | Now | feed | EPIC-002 | Open | Overall Workflow | saved views + chips + summary/counts live |
+| EPIC-005 | Feed and Retrieval UX | Now | feed | EPIC-002 | In Review | Overall Workflow | saved views + chips + summary/counts live |
 | EPIC-006 | Settings and Visual Utility | Next | visual | EPIC-005 | Open | Visual QA | readability/accessibility + mobile action UX |
-| EPIC-007 | PWA and Platform Reliability | Now | pwa | EPIC-010 | Open | Visual QA | install diagnostics + cache refresh + guidance |
+| EPIC-007 | PWA and Platform Reliability | Now | pwa | EPIC-010 | In Review | Visual QA | install diagnostics + cache refresh + guidance |
 | EPIC-008 | Product Analytics Taxonomy | Next | ops | none | Open | Index | event taxonomy instrumented |
 | EPIC-009 | Reliability and SLO Framework | Next | ops | EPIC-008 | Open | Index | SLO baselines + weekly reliability cadence |
 | EPIC-010 | Support and Incident Workflow | Later | ops | EPIC-009 | Open | Index | error IDs + incident runbook integration |
 | EPIC-011 | Experimentation and Feature Flags | Next | ops | EPIC-008, EPIC-009 | Open | Index | feature flag and A/B framework ready |
-| EPIC-012 | Release Governance and QA Gates | Now | ops | none | Open | Index | pre-merge and post-deploy gates enforced |
+| EPIC-012 | Release Governance and QA Gates | Now | ops | none | In Review | Index | pre-merge and post-deploy gates enforced |
 
 ---
 
@@ -53,14 +53,14 @@ Figma source-of-truth set:
 
 | Story ID | Epic | Title | Persona | Status | Priority | Figma File | QA Required |
 |---|---|---|---|---|---|---|---|
-| STORY-101 | EPIC-002 | Capture intent split (Create vs Search) | all | Open | P0 | Overall Workflow | Yes |
-| STORY-102 | EPIC-003 | Classification confidence and rationale | all | Open | P0 | Classification & Help | Yes |
-| STORY-103 | EPIC-003 | One-click recast across item kinds | power | Open | P1 | Classification & Help | Yes |
-| STORY-104 | EPIC-005 | Saved views (Today/Overdue/Deep Work/Journal) | power | Open | P1 | Persona Testing | Yes |
-| STORY-105 | EPIC-005 | Filter summary bar with result count | power | Open | P1 | Overall Workflow | Yes |
-| STORY-106 | EPIC-007 | In-app install diagnostics | all | Open | P0 | Visual QA | Yes |
-| STORY-107 | EPIC-007 | Version stamp + cache refresh prompt | all | Open | P1 | Visual QA | Yes |
-| STORY-108 | EPIC-012 | Enforce PR smoke/report checklist | workflow | Open | P0 | Index | Yes |
+| STORY-101 | EPIC-002 | Capture intent split (Create vs Search) | all | In Review | P0 | Overall Workflow | Yes |
+| STORY-102 | EPIC-003 | Classification confidence and rationale | all | In Review | P0 | Classification & Help | Yes |
+| STORY-103 | EPIC-003 | One-click recast across item kinds | power | In Review | P1 | Classification & Help | Yes |
+| STORY-104 | EPIC-005 | Saved views (Today/Overdue/Deep Work/Journal) | power | In Review | P1 | Persona Testing | Yes |
+| STORY-105 | EPIC-005 | Filter summary bar with result count | power | In Review | P1 | Overall Workflow | Yes |
+| STORY-106 | EPIC-007 | In-app install diagnostics | all | In Review | P0 | Visual QA | Yes |
+| STORY-107 | EPIC-007 | Version stamp + cache refresh prompt | all | In Review | P1 | Visual QA | Yes |
+| STORY-108 | EPIC-012 | Enforce PR smoke/report checklist | workflow | In Review | P0 | Index | Yes |
 
 ### 3.2 Phase Next
 
@@ -136,6 +136,7 @@ Use this log for every status move or scope change.
 |---|---|---|---|---|---|---|
 | 2026-05-20 | EPIC-001..EPIC-012 | Tracker initialized | n/a | Open | Codex | this document |
 | 2026-05-20 | EPIC-001 | Demonstration kickoff | Open | In Progress | Codex | section 4.1 in this document |
+| 2026-05-20 | EPIC-002/003/005/007/012 + STORY-101..108 | Phase-Now implementation batch completed, pending deployed smoke verification | Open | In Review | Codex | app/page.tsx, app/globals.css, api/schema updates |
 
 ---
 
