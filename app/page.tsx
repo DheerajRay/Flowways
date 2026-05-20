@@ -948,6 +948,7 @@ export default function HomePage() {
     ? `Overdue: ${overduePetCount} timeline ${overduePetCount === 1 ? "item" : "items"}`
     : "";
   const canSubmit = !authRequired && !busy && Boolean(sourceText.trim());
+  const canClickSubmit = !authRequired && !busy;
   const resolvedPetNotice = settings.pet_enabled ? (showHidden ? "Hide mode" : (petNotice || autoPetNotice)) : "";
   const resolvedPetTone: "info" | "warning" | "error" = settings.pet_enabled
     ? (showHidden ? "info" : (petNotice ? petNoticeTone : (autoPetNotice ? "warning" : "info")))
@@ -1169,7 +1170,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="captureActions">
-            <button type="button" className="iconAction" aria-label="Add task" data-tip="Add task" onClick={() => void submitItem()} disabled={!canSubmit}><Icon name="add" /></button>
+            <button type="button" className="iconAction" aria-label="Add task" data-tip="Add task" onClick={() => void submitItem()} disabled={!canClickSubmit}><Icon name="add" /></button>
             <button type="button" className="iconAction" aria-label="Search tasks" data-tip="Search tasks" onClick={runSearch}><Icon name="search" /></button>
             <button type="button" className={`iconAction${showTagWindow ? " active" : ""}`} aria-label="Tag filters" data-tip="Tag filters" onClick={toggleTagWindow}><Icon name="tags" /></button>
             <button type="button" className={`iconAction${showHidden ? " active" : ""}`} aria-label={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} data-tip={showHidden ? "Hide hidden tasks" : "Show hidden tasks"} onClick={() => setShowHidden((prev) => !prev)}><Icon name={showHidden ? "show" : "hide"} /></button>
