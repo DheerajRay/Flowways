@@ -266,7 +266,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!newlyInsertedId) return;
-    const timeoutId = window.setTimeout(() => setNewlyInsertedId(null), 1200);
+    const timeoutId = window.setTimeout(() => setNewlyInsertedId(null), 850);
     return () => window.clearTimeout(timeoutId);
   }, [newlyInsertedId]);
 
@@ -503,7 +503,7 @@ export default function HomePage() {
       if (!data.merged && createdId) {
         setNewTaskMotion({ id: createdId, text: createdTitle || "New task" });
         setNewlyInsertedId(createdId);
-        window.setTimeout(() => setNewTaskMotion((prev) => (prev?.id === createdId ? null : prev)), 900);
+        window.setTimeout(() => setNewTaskMotion((prev) => (prev?.id === createdId ? null : prev)), 650);
       }
       setBusy(false);
       releaseBusyInFinally = false;
@@ -1260,7 +1260,7 @@ export default function HomePage() {
                   initial={{ opacity: 0.88, y: 0 }}
                   animate={{ opacity: 0.88, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
+                  transition={{ duration: 0.2, ease: [0.22, 0.61, 0.36, 1] }}
                 >
                   {newTaskMotion.text}
                 </motion.span>
@@ -1533,10 +1533,10 @@ export default function HomePage() {
           <motion.article
             key={item.id}
             layout
-            initial={newlyInsertedId === item.id ? { opacity: 0, scale: 0.93, y: -12 } : false}
+            initial={newlyInsertedId === item.id ? { opacity: 0, scale: 0.95, y: -8 } : false}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: -6, height: 0, marginTop: 0, marginBottom: 0, overflow: "hidden" }}
-            transition={{ type: "spring", stiffness: 280, damping: 26, mass: 0.95 }}
+            transition={{ type: "spring", stiffness: 340, damping: 28, mass: 0.86 }}
             className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}${isDone ? " item-done" : ""}${isHiddenItem ? " item-hidden" : ""}${colorLabel ? ` ${colorLabel}` : ""}`}
           >
             <div className="itemHead">
