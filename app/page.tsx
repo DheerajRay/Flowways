@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { getSupabaseBrowserClient } from "@/shared/supabase-browser";
 import { DEFAULT_USER_SETTINGS, type UserSettings } from "@/shared/types/settings";
 import { defaultTimelineMeta, nextOccurrenceFromRule, type RecurrenceRule, type TimelineMeta, type TimelineSubtype } from "@/shared/domain/timeline";
@@ -120,6 +121,8 @@ export default function HomePage() {
   const [pwaDiagnostics, setPwaDiagnostics] = useState<{ manifestOk: boolean; icon192Ok: boolean; icon512Ok: boolean; swSupported: boolean; swControlled: boolean } | null>(null);
   const [versionRefreshHint, setVersionRefreshHint] = useState(false);
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
+  const [newTaskMotion, setNewTaskMotion] = useState<{ id: string; text: string } | null>(null);
+  const [newlyInsertedId, setNewlyInsertedId] = useState<string | null>(null);
   const [titleIcons, setTitleIcons] = useState<HeaderSpinIcon[]>(["circleBolt", "circleStar", "circleCheck", "circleX"]);
   const [titleAnimating, setTitleAnimating] = useState(true);
   const [titleBlinking, setTitleBlinking] = useState(false);
@@ -204,7 +207,7 @@ export default function HomePage() {
   useEffect(() => {
     setHydrated(true);
     setNowMs(Date.now());
-    const timer = window.setInterval(() => setNowMs(Date.now()), 30000);
+    const timer = window.setInterval(() => setNowMs(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -260,6 +263,12 @@ export default function HomePage() {
     }, 3000);
     return () => window.clearTimeout(timeoutId);
   }, [petNotice, petNoticeTone]);
+
+  useEffect(() => {
+    if (!newlyInsertedId) return;
+    const timeoutId = window.setTimeout(() => setNewlyInsertedId(null), 1200);
+    return () => window.clearTimeout(timeoutId);
+  }, [newlyInsertedId]);
 
   async function runPwaDiagnostics() {
     const manifestCheck = fetch("/manifest.webmanifest", { cache: "no-store" }).then((res) => res.ok).catch(() => false);
@@ -468,6 +477,7 @@ export default function HomePage() {
 
       const data = await response.json();
       const createdId: string | undefined = data?.item?.id;
+      const createdTitle = String(data?.classification?.title || sourceText).trim();
       if (colorTagAtSubmit && createdId) {
         const existing = Array.isArray(data?.item?.labels) ? data.item.labels : [];
         const withoutOldColor = existing.filter((label: string) => !label.startsWith("color-"));
@@ -490,6 +500,11 @@ export default function HomePage() {
         setPetNotice("");
       }
       setSourceText("");
+      if (!data.merged && createdId) {
+        setNewTaskMotion({ id: createdId, text: createdTitle || "New task" });
+        setNewlyInsertedId(createdId);
+        window.setTimeout(() => setNewTaskMotion((prev) => (prev?.id === createdId ? null : prev)), 900);
+      }
       setBusy(false);
       releaseBusyInFinally = false;
       await loadItems();
@@ -583,7 +598,7 @@ export default function HomePage() {
     window.setTimeout(async () => {
       await deleteItem(id);
       setDeletingIds((prev) => prev.filter((v) => v !== id));
-    }, 560);
+    }, 140);
   }
 
   function hideItem(id: string) {
@@ -1017,7 +1032,9 @@ export default function HomePage() {
     return activeTagFilters.some((tag) => labels.includes(tag));
   });
 
-  const sortedItems = [...visibleItems].sort((a, b) => {
+  const sortedItems = [...visibleItems]
+    .filter((item) => !deletingIds.includes(item.id))
+    .sort((a, b) => {
     const timelineRank = (item: DbItem) => {
       if (item.kind !== "timeline") return 3;
       if (item.checked) return 2;
@@ -1034,7 +1051,7 @@ export default function HomePage() {
     const aCreated = a.created_at ? new Date(a.created_at).getTime() : 0;
     const bCreated = b.created_at ? new Date(b.created_at).getTime() : 0;
     return bCreated - aCreated;
-  });
+    });
 
   const overduePetCount = items
     .filter((item) => (showHidden || !hiddenItemIds.includes(item.id)))
@@ -1217,22 +1234,38 @@ export default function HomePage() {
           <div className="systemNotice" aria-live="polite">{systemNotice}</div>
         ) : null}
         <div className="captureBar">
-          <input
-            id="captureInput"
-            value={sourceText}
-            onChange={(event) => setSourceText(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key !== "Enter") return;
-              event.preventDefault();
-              if (captureIntent === "search") {
-                runSearch();
-                return;
-              }
-              if (!canSubmit) return;
-              void submitItem();
-            }}
-            placeholder="Add task | Search"
-          />
+          <div className="captureInputWrap">
+            <input
+              id="captureInput"
+              value={sourceText}
+              onChange={(event) => setSourceText(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                if (captureIntent === "search") {
+                  runSearch();
+                  return;
+                }
+                if (!canSubmit) return;
+                void submitItem();
+              }}
+              placeholder="Add task | Search"
+            />
+            <AnimatePresence>
+              {newTaskMotion ? (
+                <motion.span
+                  key={`ghost-${newTaskMotion.id}`}
+                  className="captureGhostText"
+                  layoutId={`task-title-${newTaskMotion.id}`}
+                  initial={{ opacity: 0.92 }}
+                  animate={{ opacity: 0.92 }}
+                  exit={{ opacity: 0 }}
+                >
+                  {newTaskMotion.text}
+                </motion.span>
+              ) : null}
+            </AnimatePresence>
+          </div>
           <div className="modeActions" aria-label="Classification mode">
             <button type="button" className={`iconAction compact${captureMode === "auto" ? " active" : ""}`} aria-label="Auto mode" data-tip="Auto mode" onClick={() => setCaptureMode("auto")}><Icon name="auto" /></button>
             <button type="button" className={`iconAction compact${captureMode === "timeline" ? " active" : ""}`} aria-label="Timeline mode" data-tip="Timeline mode" onClick={() => setCaptureMode("timeline")}><Icon name="timeline" /></button>
@@ -1258,13 +1291,16 @@ export default function HomePage() {
               </button>
               {showColorPicker ? (
                 <div className="colorPopover">
-                  <button type="button" className="colorDot clear" onClick={() => { setColorTag(""); setShowColorPicker(false); }} data-tip="No color">Ã—</button>
+                  <button type="button" className="colorDot clear staggerDot" style={{ transitionDelay: "0s" }} onClick={() => { setColorTag(""); setShowColorPicker(false); }} data-tip="No color">x</button>
                   {colorTagIds.map((c) => (
                     <button
                       type="button"
                       key={c}
-                      className={`colorDot${selectedColorTag === c ? " active" : ""}`}
-                      style={{ background: settings.color_palette[c.replace("color-", "") as keyof typeof settings.color_palette] }}
+                      className={`colorDot staggerDot${selectedColorTag === c ? " active" : ""}`}
+                      style={{
+                        transitionDelay: `${(colorTagIds.indexOf(c) + 1) * 0.05}s`,
+                        background: settings.color_palette[c.replace("color-", "") as keyof typeof settings.color_palette]
+                      }}
                       onClick={() => { setColorTag(c); setShowColorPicker(false); }}
                       data-tip={c.replace("color-", "")}
                     />
@@ -1468,8 +1504,10 @@ export default function HomePage() {
 
       <section className="feedShell" aria-label="Saved items">
         <div className="feed">
+        <LayoutGroup>
         <div className="feedCards">
         {sortedItems.length === 0 ? <p className="empty">{initialFeedLoaded ? "No items yet." : "Loading items..."}</p> : null}
+        <AnimatePresence initial={false}>
         {sortedItems.map((item) => {
           const timelineMeta = item.kind === "timeline" ? resolveTimelineMeta(item) : null;
           const journalMeta = item.kind === "journal" ? resolveJournalMeta(item) : null;
@@ -1484,17 +1522,30 @@ export default function HomePage() {
             return null;
           })();
           const timeState = item.kind === "timeline" ? timelineState(timelineTargetAt) : null;
+          const progressPct = item.kind === "timeline" && item.due_at ? timelineProgress(item.due_at, item.created_at) : 0;
           const metaDate = formatMetaDate(item);
           const isTimelineExpired = item.kind === "timeline" && !item.checked && Boolean(timeState?.done);
           const isDone = Boolean(item.checked);
           const isHiddenItem = hiddenItemIds.includes(item.id);
           const colorLabel = (item.labels || []).find((label) => label.startsWith("color-"));
           return (
-          <article key={item.id} className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}${isDone ? " item-done" : ""}${isHiddenItem ? " item-hidden" : ""}${colorLabel ? ` ${colorLabel}` : ""}${deletingIds.includes(item.id) ? " isDeleting" : ""}`}>
+          <motion.article
+            key={item.id}
+            layout
+            initial={newlyInsertedId === item.id ? { opacity: 0, scale: 0.85, y: -20 } : false}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.85, height: 0, marginTop: 0, marginBottom: 0, overflow: "hidden" }}
+            transition={{ type: "spring", stiffness: 400, damping: 28 }}
+            className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}${isDone ? " item-done" : ""}${isHiddenItem ? " item-hidden" : ""}${colorLabel ? ` ${colorLabel}` : ""}`}
+          >
             <div className="itemHead">
               <span className="kind">
                 <Icon name={item.kind} />
-                <span className="kindLabel">{item.title}</span>
+                {newlyInsertedId === item.id ? (
+                  <motion.span className="kindLabel" layoutId={`task-title-${item.id}`}>{item.title}</motion.span>
+                ) : (
+                  <span className="kindLabel">{item.title}</span>
+                )}
                 {(typeof item.classification_confidence === "number" || item.classification_reason) ? (
                   <button
                     type="button"
@@ -1795,11 +1846,11 @@ export default function HomePage() {
                   </>
                 );
               })()}
-              {item.kind === "timeline" && timelineMeta?.timeline_subtype === "stopwatch" && !item.checked && item.due_at && !timeState?.done ? (
+              {item.kind === "timeline" && timelineMeta?.timeline_subtype === "stopwatch" && !item.checked && item.due_at ? (
                 <div className="dueRailInline" aria-label="Due progress">
                   <span className="dueLabel">Time ({timeState?.label?.replace("Due in ", "") || "--"})</span>
                   <div className="dueRailWrap">
-                    <div className="dueRail" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(timelineProgress(item.due_at, item.created_at))}>
+                    <div className={`dueRail${progressPct >= 100 ? " complete-pulse" : ""}`} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progressPct)}>
                       <span className="dueRailFill" style={timelineProgressStyle(item.due_at, item.created_at)} />
                     </div>
                   </div>
@@ -1846,10 +1897,12 @@ export default function HomePage() {
                 </button>
               </div>
             )}
-          </article>
+          </motion.article>
         );
         })}
+        </AnimatePresence>
         </div>
+        </LayoutGroup>
         </div>
       </section>
       <footer className="opsNotices" aria-label="Build and PWA status">
