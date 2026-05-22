@@ -708,8 +708,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
 }
 .colorPopover .staggerDot {
   opacity: 0;
-  transform: translateY(-20px) scale(0.88);
-  animation: popoverDropIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  transform: translateY(-14px) scale(0.92);
+  animation: popoverDropIn 0.46s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 @keyframes popoverDropIn {
   to {
@@ -1338,7 +1338,7 @@ textarea { min-height: 100px; resize: vertical; }
   height: 100%;
   background: var(--due-rail-fill);
   border-radius: 999px;
-  transition: width 1s linear;
+  transition: width 1.1s ease-out;
 }
 .dueRail.complete-pulse::after {
   content: "";
@@ -1346,7 +1346,7 @@ textarea { min-height: 100px; resize: vertical; }
   inset: -5px;
   border-radius: 999px;
   border: 2px solid color-mix(in srgb, var(--due-rail-fill) 70%, #fff);
-  animation: pulseRing 900ms ease-out 1;
+  animation: pulseRing 1200ms ease-out 1;
   pointer-events: none;
 }
 @keyframes pulseRing {

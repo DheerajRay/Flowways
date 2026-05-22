@@ -1257,9 +1257,10 @@ export default function HomePage() {
                   key={`ghost-${newTaskMotion.id}`}
                   className="captureGhostText"
                   layoutId={`task-title-${newTaskMotion.id}`}
-                  initial={{ opacity: 0.92 }}
-                  animate={{ opacity: 0.92 }}
-                  exit={{ opacity: 0 }}
+                  initial={{ opacity: 0.88, y: 0 }}
+                  animate={{ opacity: 0.88, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
                 >
                   {newTaskMotion.text}
                 </motion.span>
@@ -1532,10 +1533,10 @@ export default function HomePage() {
           <motion.article
             key={item.id}
             layout
-            initial={newlyInsertedId === item.id ? { opacity: 0, scale: 0.85, y: -20 } : false}
+            initial={newlyInsertedId === item.id ? { opacity: 0, scale: 0.93, y: -12 } : false}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.85, height: 0, marginTop: 0, marginBottom: 0, overflow: "hidden" }}
-            transition={{ type: "spring", stiffness: 400, damping: 28 }}
+            exit={{ opacity: 0, scale: 0.94, y: -6, height: 0, marginTop: 0, marginBottom: 0, overflow: "hidden" }}
+            transition={{ type: "spring", stiffness: 280, damping: 26, mass: 0.95 }}
             className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}${isDone ? " item-done" : ""}${isHiddenItem ? " item-hidden" : ""}${colorLabel ? ` ${colorLabel}` : ""}`}
           >
             <div className="itemHead">
