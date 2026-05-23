@@ -31,6 +31,19 @@ describe("checklist append resolver", () => {
     expect(result?.items).toEqual(["milk", "chips"]);
   });
 
+  it("strips numbered fragment inside comma list", () => {
+    const result = resolveAmbiguousChecklistAppend("coke, 1. mike", ["shopping"], open);
+    expect(result).toBeTruthy();
+    expect(result?.items).toEqual(["coke", "mike"]);
+  });
+
+  it("falls back to single open checklist for short ambiguous list", () => {
+    const single = [open[0]];
+    const result = resolveAmbiguousChecklistAppend("maggi, chips, coke", [], single);
+    expect(result).toBeTruthy();
+    expect(result?.target.id).toBe("c1");
+  });
+
   it("does not resolve reflective journal-like text", () => {
     const result = resolveAmbiguousChecklistAppend("happy and fun", ["diary"], open);
     expect(result).toBeNull();
@@ -41,4 +54,3 @@ describe("checklist append resolver", () => {
     expect(result).toBeNull();
   });
 });
-
