@@ -94,10 +94,11 @@ export async function classifyWithAiOrFallback(
     const normalizedLabels = normalizeGeneratedLabels(parsed.labels, text, memoryLabels);
     const isIdeaLike = /\b(testing\b|test idea\b|idea\b|thought\b|hypothesis\b|explore\b)\b/i.test(text);
     const hasChecklistMarkers = /^(\[\s?\]|-|todo\b|fix\b|call\b|email\b|finish\b|buy\b|pick up\b)/i.test(text);
-    const reminderLike = /\b(remind|reminder|due|tomorrow|today|next week|(in|after|for)\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days))\b/i.test(text);
-    const timeLike = /\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b\d{2}:\d{2}\b/i.test(text);
+    const reminderLike = /\b(remind|reminder|due|alarm|timer|(in|after|for)\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days))\b/i.test(text);
+    const timeLike = /\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b([01]?\d|2[0-3]):([0-5]\d)\b|\bnoon\b|\bmidnight\b/i.test(text);
+    const dayOnlyLike = /\b(today|tomorrow|next week)\b/i.test(text);
     const weekdayLike = /\b(next\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(text);
-    const hasTemporalCue = reminderLike || timeLike || weekdayLike;
+    const hasTemporalCue = reminderLike || timeLike || weekdayLike || (dayOnlyLike && /\b(remind|reminder|alarm|timer|call|meet|book|pick up|pickup|drop off|dropoff)\b/i.test(text));
     const followupActionLike = /\b(remind|follow up|follow-up|connect|call|meet|check with|book|collect|pick up|pickup|drop off|dropoff)\b/i.test(text);
     const personLike = /\b(note from|from\s+[a-z][a-z0-9_-]{1,20}\b|[a-z][a-z0-9_-]{1,20}\s+(said|asked|called|told))\b/i.test(text);
     const directedActionLike = /\b(collect|bring|send|share|review|prepare|fix|connect|call|meet|follow up|follow-up|book|pick up|pickup)\b/i.test(text);
@@ -119,7 +120,13 @@ export async function classifyWithAiOrFallback(
       refinedReason = `${parsed.reason} | post-rule: idea-like input mapped to journal`;
     }
 
-    const deterministicDueAt = parseDueAt(text, baseDate, clientTimezoneOffsetMinutes);
+    const deterministicDueAtRaw = parseDueAt(text, baseDate, clientTimezoneOffsetMinutes);
+    const hasDayOnlyCue = /\b(today|tomorrow|next week)\b/i.test(text);
+    const hasClockCue = /\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b([01]?\d|2[0-3]):([0-5]\d)\b|\bnoon\b|\bmidnight\b|\b(in|after|for)\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/i.test(text);
+    const deterministicDueAt =
+      deterministicDueAtRaw && !(hasDayOnlyCue && !hasClockCue && !explicitReminderLike)
+        ? deterministicDueAtRaw
+        : null;
     const inferredDueAt = deterministicDueAt || parsed.due_at;
 
     if (

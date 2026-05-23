@@ -52,6 +52,9 @@ describe("classifier fallback", () => {
     const afterDaysDelta = Math.round((new Date(afterDays!).getTime() - morning.getTime()) / (24 * 60 * 60 * 1000));
     expect(afterDaysDelta).toBeGreaterThanOrEqual(28);
     expect(afterDaysDelta).toBeLessThanOrEqual(29);
+
+    expect(parseDueAt("today remind me at 32:77 to call mom", base)).toBeNull();
+    expect(parseDueAt("remind me at 13:99", base)).toBeNull();
   });
 
   it("classifies timeline items", () => {
@@ -129,6 +132,17 @@ describe("classifier fallback", () => {
 
   it("classifies reflective first-person input as journal", () => {
     const c = fallbackClassify("I feel burned out after that meeting", "auto", base);
+    expect(c.kind).toBe("journal");
+  });
+
+  it("does not force timeline for day-only phrasing without reminder intent", () => {
+    const a = fallbackClassify("today i feel tired after meetings", "auto", base);
+    expect(a.kind).toBe("journal");
+
+    const b = fallbackClassify("today buy eggs milk bread", "auto", base);
+    expect(b.kind).toBe("checklist");
+
+    const c = fallbackClassify("today was productive and calm", "auto", base);
     expect(c.kind).toBe("journal");
   });
 

@@ -140,6 +140,23 @@ export async function GET() {
   return NextResponse.json({ items });
 }
 
+function hasInvalidClockToken(value: string): boolean {
+  const text = value.toLowerCase();
+  const t24 = text.match(/\b(\d{1,2}):(\d{2})\b/);
+  if (t24) {
+    const hh = Number(t24[1]);
+    const mm = Number(t24[2]);
+    if (!Number.isFinite(hh) || !Number.isFinite(mm) || hh > 23 || mm > 59) return true;
+  }
+  const t12 = text.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/);
+  if (t12) {
+    const hh = Number(t12[1]);
+    const mm = Number(t12[2] || 0);
+    if (!Number.isFinite(hh) || !Number.isFinite(mm) || hh < 1 || hh > 12 || mm > 59) return true;
+  }
+  return false;
+}
+
 export async function POST(request: Request) {
   try {
     const auth = await requireAuth();
@@ -147,6 +164,12 @@ export async function POST(request: Request) {
 
     const raw = await request.json();
     const payload = createItemSchema.parse(raw);
+    if (
+      hasInvalidClockToken(payload.sourceText) &&
+      /\b(remind|reminder|alarm|timer|today|tomorrow|next week)\b/i.test(payload.sourceText)
+    ) {
+      return NextResponse.json({ error: "Invalid timeline input: invalid time format." }, { status: 400 });
+    }
 
     const countResult = await auth.supabase.from("items").select("id", { count: "exact", head: true });
     if (countResult.error) {

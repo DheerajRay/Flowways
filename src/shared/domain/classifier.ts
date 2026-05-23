@@ -196,6 +196,18 @@ export function inferContextLabels(text: string, kind: ItemKind): string[] {
 
 export function parseDueAt(text: string, baseDate = new Date(), clientTimezoneOffsetMinutes?: number): string | null {
   const normalized = normalizeText(text).toLowerCase();
+  const invalid24hToken = normalized.match(/\b(\d{1,2}):(\d{2})\b/);
+  if (invalid24hToken) {
+    const hh = Number(invalid24hToken[1]);
+    const mm = Number(invalid24hToken[2]);
+    if (!Number.isFinite(hh) || !Number.isFinite(mm) || hh > 23 || mm > 59) return null;
+  }
+  const invalid12hToken = normalized.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/);
+  if (invalid12hToken) {
+    const hh = Number(invalid12hToken[1]);
+    const mm = Number(invalid12hToken[2] || 0);
+    if (!Number.isFinite(hh) || !Number.isFinite(mm) || hh < 1 || hh > 12 || mm > 59) return null;
+  }
   const offsetMin = Number.isFinite(clientTimezoneOffsetMinutes as number)
     ? Number(clientTimezoneOffsetMinutes)
     : baseDate.getTimezoneOffset();
@@ -330,7 +342,12 @@ function stripSyntax(text: string): string {
 export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "auto", baseDate = new Date(), clientTimezoneOffsetMinutes?: number): ClassificationResult {
   const clean = normalizeText(text);
   const hasDiaryControlTag = /#\s*diary\b/i.test(clean);
-  const dueAt = parseDueAt(clean, baseDate, clientTimezoneOffsetMinutes);
+  const dueAtCandidate = parseDueAt(clean, baseDate, clientTimezoneOffsetMinutes);
+  const hasDayOnlyCue = /\b(today|tomorrow|next week)\b/i.test(clean);
+  const hasClockCue = /\b(\d{1,2})(?::\d{2})?\s*(am|pm)\b|\b([01]?\d|2[0-3]):([0-5]\d)\b|\bnoon\b|\bmidnight\b|\b(in|after|for)\s+\d+\s*(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours|day|days)\b/i.test(clean);
+  const dueAt = dueAtCandidate && !(hasDayOnlyCue && !hasClockCue && !/\b(remind|reminder|alarm|timer)\b/i.test(clean))
+    ? dueAtCandidate
+    : null;
   const isJournal =
     clean.length > 140 ||
     /\n/.test(text) ||
@@ -339,7 +356,7 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
   const hasJournalCue = JOURNAL_CUES.test(clean);
   const checklistSignals = Number(CHECKLIST_CUES.test(clean)) + Number(LIST_PATTERN.test(clean));
   const workflowSignals = Number(WORKFLOW_CUES.test(clean)) + Number(PROFESSIONAL_WORK_PATTERN.test(clean));
-  const temporalCue = /\b(today|tomorrow|next week|(next\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)|\d{1,2}(?::\d{2})?\s*(am|pm)|\d{2}:\d{2})\b/i.test(clean);
+  const temporalCue = /\b((next\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)|\d{1,2}(?::\d{2})?\s*(am|pm)|([01]?\d|2[0-3]):([0-5]\d)|noon|midnight)\b/i.test(clean);
   const followupActionCue = /\b(remind|follow up|follow-up|connect|call|meet|check with|book|collect|pick up|pickup|drop off|dropoff)\b/i.test(clean);
   const personCue = /\b(note from|from\s+[a-z][a-z0-9_-]{1,20}\b|[a-z][a-z0-9_-]{1,20}\s+(said|asked|called|told))\b/i.test(clean);
   const directedActionCue = /\b(collect|bring|send|share|review|prepare|fix|connect|call|meet|check|follow up|follow-up|book|pick up|pickup)\b/i.test(clean);
