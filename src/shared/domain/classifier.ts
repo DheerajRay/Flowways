@@ -355,6 +355,7 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
   const isIdeaLike = IDEA_OR_NOTE_CUES.test(clean);
   const hasJournalCue = JOURNAL_CUES.test(clean);
   const checklistSignals = Number(CHECKLIST_CUES.test(clean)) + Number(LIST_PATTERN.test(clean));
+  const checklistIntentCue = /\b(buy|pick up|pickup|get|bring|pack|shopping|grocery)\b/i.test(clean);
   const workflowSignals = Number(WORKFLOW_CUES.test(clean)) + Number(PROFESSIONAL_WORK_PATTERN.test(clean));
   const temporalCue = /\b((next\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)|\d{1,2}(?::\d{2})?\s*(am|pm)|([01]?\d|2[0-3]):([0-5]\d)|noon|midnight)\b/i.test(clean);
   const followupActionCue = /\b(remind|follow up|follow-up|connect|call|meet|check with|book|collect|pick up|pickup|drop off|dropoff)\b/i.test(clean);
@@ -364,7 +365,7 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
   const hardReminderCue = /\b(remind|reminder|alarm|timer)\b/i.test(clean);
   const multiActionWorkflowCue = /\b(action items?|assign|handoff|coordinate|dependency|blocked|milestone)\b/i.test(clean);
 
-  let kind: ItemKind = "checklist";
+  let kind: ItemKind = "journal";
   if (modeHint !== "auto") kind = modeHint;
   else if (hasDiaryControlTag) kind = "journal";
   else if (!hardReminderCue && multiActionWorkflowCue && workflowSignals >= checklistSignals) kind = "workflow";
@@ -374,6 +375,7 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
   else if (hasJournalCue && checklistSignals === 0 && workflowSignals === 0) kind = "journal";
   else if (personCue && directedActionCue && checklistSignals === 0) kind = "workflow";
   else if (isIdeaLike && checklistSignals === 0) kind = "journal";
+  else if (checklistSignals === 0 && checklistIntentCue && !hardReminderCue && !dueAt) kind = "checklist";
   else if (workflowSignals > checklistSignals) kind = "workflow";
   else if (isJournal) kind = "journal";
   else if (checklistSignals > 0) kind = "checklist";

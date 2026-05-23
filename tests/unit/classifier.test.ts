@@ -135,6 +135,14 @@ describe("classifier fallback", () => {
     expect(c.kind).toBe("journal");
   });
 
+  it("classifies plain conversational prompts as journal (not checklist)", () => {
+    const a = fallbackClassify("Are you doing good?", "auto", base);
+    expect(a.kind).toBe("journal");
+
+    const b = fallbackClassify("Why are you feeling good?", "auto", base);
+    expect(b.kind).toBe("journal");
+  });
+
   it("does not force timeline for day-only phrasing without reminder intent", () => {
     const a = fallbackClassify("today i feel tired after meetings", "auto", base);
     expect(a.kind).toBe("journal");
