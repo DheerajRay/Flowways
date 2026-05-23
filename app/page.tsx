@@ -68,6 +68,7 @@ export default function HomePage() {
   type CaptureIntent = "create" | "search";
   type SavedView = "all" | "today" | "overdue" | "reminderRecurring" | "diary";
   const APP_VERSION = "2026.05.20-phase1";
+  const DELETE_ANIMATION_MS = 240;
   const [sourceText, setSourceText] = useState("");
   const [captureIntent, setCaptureIntent] = useState<CaptureIntent>("create");
   const [captureMode, setCaptureMode] = useState<CaptureMode>("auto");
@@ -598,7 +599,7 @@ export default function HomePage() {
     window.setTimeout(async () => {
       await deleteItem(id);
       setDeletingIds((prev) => prev.filter((v) => v !== id));
-    }, 140);
+    }, DELETE_ANIMATION_MS);
   }
 
   function hideItem(id: string) {
@@ -1033,7 +1034,6 @@ export default function HomePage() {
   });
 
   const sortedItems = [...visibleItems]
-    .filter((item) => !deletingIds.includes(item.id))
     .sort((a, b) => {
     const timelineRank = (item: DbItem) => {
       if (item.kind !== "timeline") return 3;
@@ -1508,7 +1508,7 @@ export default function HomePage() {
         <LayoutGroup>
         <div className="feedCards">
         {sortedItems.length === 0 ? <p className="empty">{initialFeedLoaded ? "No items yet." : "Loading items..."}</p> : null}
-        <AnimatePresence initial={false}>
+        <AnimatePresence initial={false} mode="popLayout">
         {sortedItems.map((item) => {
           const timelineMeta = item.kind === "timeline" ? resolveTimelineMeta(item) : null;
           const journalMeta = item.kind === "journal" ? resolveJournalMeta(item) : null;
@@ -1528,6 +1528,7 @@ export default function HomePage() {
           const isTimelineExpired = item.kind === "timeline" && !item.checked && Boolean(timeState?.done);
           const isDone = Boolean(item.checked);
           const isHiddenItem = hiddenItemIds.includes(item.id);
+          const isDeleting = deletingIds.includes(item.id);
           const colorLabel = (item.labels || []).find((label) => label.startsWith("color-"));
           return (
           <motion.article
@@ -1536,8 +1537,8 @@ export default function HomePage() {
             initial={newlyInsertedId === item.id ? { opacity: 0, scale: 0.95, y: -8 } : false}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: -6, height: 0, marginTop: 0, marginBottom: 0, overflow: "hidden" }}
-            transition={{ type: "spring", stiffness: 340, damping: 28, mass: 0.86 }}
-            className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}${isDone ? " item-done" : ""}${isHiddenItem ? " item-hidden" : ""}${colorLabel ? ` ${colorLabel}` : ""}`}
+            transition={{ duration: DELETE_ANIMATION_MS / 1000, ease: [0.22, 0.61, 0.36, 1] }}
+            className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}${isDone ? " item-done" : ""}${isHiddenItem ? " item-hidden" : ""}${isDeleting ? " isDeleting" : ""}${colorLabel ? ` ${colorLabel}` : ""}`}
           >
             <div className="itemHead">
               <span className="kind">
