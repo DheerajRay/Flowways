@@ -1,5 +1,5 @@
 ﻿import { describe, expect, it } from "vitest";
-import { curateLabels, extractLabels, fallbackClassify, normalizeText, parseDueAt } from "@/shared/domain/classifier";
+import { curateLabels, extractLabels, fallbackClassify, hasInvalidTimeToken, normalizeText, parseDueAt } from "@/shared/domain/classifier";
 
 describe("classifier fallback", () => {
   const base = new Date("2026-04-24T12:00:00-04:00");
@@ -10,6 +10,12 @@ describe("classifier fallback", () => {
 
   it("extracts labels", () => {
     expect(extractLabels("Task #Launch #Ops")).toEqual(["launch", "ops"]);
+  });
+
+  it("detects invalid clock tokens", () => {
+    expect(hasInvalidTimeToken("today remind me at 32:77 to call mom")).toBe(true);
+    expect(hasInvalidTimeToken("meeting at 13:99")).toBe(true);
+    expect(hasInvalidTimeToken("meeting at 23:59")).toBe(false);
   });
 
   it("parses due dates", () => {
@@ -152,6 +158,9 @@ describe("classifier fallback", () => {
 
     const c = fallbackClassify("today was productive and calm", "auto", base);
     expect(c.kind).toBe("journal");
+
+    const d = fallbackClassify("today remind me at 32:77 to call mom", "auto", base);
+    expect(d.kind).toBe("journal");
   });
 
   it("keeps action-items style input as workflow instead of timeline coercion", () => {

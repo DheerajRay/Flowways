@@ -37,6 +37,17 @@ export function normalizeText(value: string): string {
   return String(value || "").trim().replace(/\s+/g, " ");
 }
 
+export function hasInvalidTimeToken(text: string): boolean {
+  const normalized = normalizeText(text.toLowerCase());
+  const matches = normalized.matchAll(/\b(\d{1,2}):(\d{2})\b/g);
+  for (const match of matches) {
+    const h = Number(match[1]);
+    const m = Number(match[2]);
+    if (h > 23 || m > 59) return true;
+  }
+  return false;
+}
+
 export function extractLabels(text: string): string[] {
   const matches = normalizeText(text).match(/#[a-z0-9_-]+/gi) || [];
   return matches.map((t) => t.slice(1).toLowerCase());
@@ -341,6 +352,7 @@ function stripSyntax(text: string): string {
 
 export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "auto", baseDate = new Date(), clientTimezoneOffsetMinutes?: number): ClassificationResult {
   const clean = normalizeText(text);
+  const invalidTimeToken = hasInvalidTimeToken(clean);
   const hasDiaryControlTag = /#\s*diary\b/i.test(clean);
   const dueAtCandidate = parseDueAt(clean, baseDate, clientTimezoneOffsetMinutes);
   const hasDayOnlyCue = /\b(today|tomorrow|next week)\b/i.test(clean);
@@ -370,7 +382,7 @@ export function fallbackClassify(text: string, modeHint: "auto" | ItemKind = "au
   else if (hasDiaryControlTag) kind = "journal";
   else if (!hardReminderCue && multiActionWorkflowCue && workflowSignals >= checklistSignals) kind = "workflow";
   else if (dueAt) kind = "timeline";
-  else if (temporalCue && (followupActionCue || personCue)) kind = "timeline";
+  else if (!invalidTimeToken && temporalCue && (followupActionCue || personCue)) kind = "timeline";
   else if (reflectiveCue && checklistSignals === 0 && workflowSignals === 0) kind = "journal";
   else if (hasJournalCue && checklistSignals === 0 && workflowSignals === 0) kind = "journal";
   else if (personCue && directedActionCue && checklistSignals === 0) kind = "workflow";

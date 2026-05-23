@@ -398,6 +398,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   bottom: auto;
 }
 .settingsDock :where(button, span, label)[data-tip]::after {
+  z-index: 4200;
   bottom: calc(100% + 8px);
   top: auto;
 }
@@ -886,10 +887,12 @@ textarea { min-height: 100px; resize: vertical; }
 .kindInfo {
   margin-left: 4px;
   flex: 0 0 auto;
+  position: relative;
+  z-index: 20;
 }
 .kindInfo[data-tip]::after {
-  bottom: calc(100% + 8px);
-  top: auto;
+  top: calc(100% + 8px);
+  bottom: auto;
   left: 0;
   transform: translateX(0) translateY(3px) scale(0.98);
   max-width: min(320px, 72vw);

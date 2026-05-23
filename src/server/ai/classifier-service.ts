@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { curateLabels, fallbackClassify, inferContextLabels, normalizeGeneratedLabels, normalizeText, parseDueAt } from "@/shared/domain/classifier";
+import { curateLabels, fallbackClassify, hasInvalidTimeToken, inferContextLabels, normalizeGeneratedLabels, normalizeText, parseDueAt } from "@/shared/domain/classifier";
 import { deriveTimelineMetaFromText } from "@/shared/domain/timeline";
 import { deriveJournalMetaFromText, stripDiaryControlTags } from "@/shared/domain/journal";
 import { classificationResultSchema } from "@/shared/types/schemas";
@@ -99,6 +99,7 @@ export async function classifyWithAiOrFallback(
     const dayOnlyLike = /\b(today|tomorrow|next week)\b/i.test(text);
     const weekdayLike = /\b(next\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(text);
     const hasTemporalCue = reminderLike || timeLike || weekdayLike || (dayOnlyLike && /\b(remind|reminder|alarm|timer|call|meet|book|pick up|pickup|drop off|dropoff)\b/i.test(text));
+    const invalidTimeToken = hasInvalidTimeToken(text);
     const followupActionLike = /\b(remind|follow up|follow-up|connect|call|meet|check with|book|collect|pick up|pickup|drop off|dropoff)\b/i.test(text);
     const personLike = /\b(note from|from\s+[a-z][a-z0-9_-]{1,20}\b|[a-z][a-z0-9_-]{1,20}\s+(said|asked|called|told))\b/i.test(text);
     const directedActionLike = /\b(collect|bring|send|share|review|prepare|fix|connect|call|meet|follow up|follow-up|book|pick up|pickup)\b/i.test(text);
@@ -131,6 +132,7 @@ export async function classifyWithAiOrFallback(
 
     if (
       modeHint === "auto" &&
+      !invalidTimeToken &&
       !(workflowActionItemsLike && !explicitReminderLike) &&
       (hasTemporalCue || (parsed.kind === "timeline" && hasTemporalCue) || (weekdayLike && (followupActionLike || personLike)) || Boolean(deterministicDueAt && (followupActionLike || personLike)))
     ) {
@@ -150,6 +152,11 @@ export async function classifyWithAiOrFallback(
     ) {
       refinedKind = "workflow";
       refinedReason = `${refinedReason} | post-rule: action-items text mapped to workflow`;
+    }
+
+    if (modeHint === "auto" && invalidTimeToken) {
+      refinedKind = "journal";
+      refinedReason = `${refinedReason} | post-rule: invalid time token, timeline suppressed`;
     }
 
     if (modeHint === "auto" && refinedKind === "timeline" && !deterministicDueAt && !hasTemporalCue) {
@@ -197,8 +204,16 @@ export async function classifyWithAiOrFallback(
       finalLabels = finalLabels.filter((label) => !genericTimelineLabels.has(label));
     }
 
+    const safeParsedDueAt = (() => {
+      if (!parsed.due_at) return null;
+      if (invalidTimeToken) return null;
+      if (hasDayOnlyCue && !hasClockCue && !explicitReminderLike) return null;
+      const parsedAsDate = new Date(parsed.due_at);
+      return Number.isNaN(parsedAsDate.getTime()) ? null : parsed.due_at;
+    })();
+
     const finalDueAt = refinedKind === "timeline"
-      ? (deterministicDueAt || parsed.due_at)
+      ? (deterministicDueAt || safeParsedDueAt)
       : null;
     const finalTimelineMeta = refinedKind === "timeline"
       ? deriveTimelineMetaFromText(text, finalDueAt, baseDate, clientTimezoneOffsetMinutes)

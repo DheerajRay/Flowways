@@ -615,7 +615,7 @@ export default function HomePage() {
     if (item.kind === "timeline" && item.due_at) {
       const dueMs = new Date(item.due_at).getTime();
       if (!Number.isNaN(dueMs)) {
-        const remainingMin = Math.max(1, Math.floor((dueMs - nowMs) / 60000));
+        const remainingMin = Math.max(1, Math.ceil((dueMs - nowMs) / 60000));
         setEditTimelineOffsetMin(String(remainingMin));
       } else {
         setEditTimelineOffsetMin("15");
@@ -891,7 +891,7 @@ export default function HomePage() {
     if (Number.isNaN(dueMs)) return { done: false, label: "Invalid due time" };
     const delta = dueMs - nowMs;
     if (delta <= 0) return { done: true, label: "Timer done" };
-    const mins = Math.max(1, Math.floor(delta / 60000));
+    const mins = Math.max(1, Math.ceil(delta / 60000));
     if (mins < 60) return { done: false, label: `Due in ${mins} min` };
     const hours = Math.floor(mins / 60);
     const remMins = mins % 60;
