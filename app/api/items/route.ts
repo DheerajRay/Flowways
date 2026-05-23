@@ -5,6 +5,7 @@ import { classifyWithAiOrFallback } from "@/server/ai/classifier-service";
 import { buildItem } from "@/server/db/item-builder";
 import { defaultTimelineMeta } from "@/shared/domain/timeline";
 import { defaultJournalMeta, formatDiaryEntry, stripDiaryControlTags } from "@/shared/domain/journal";
+import { resolveAmbiguousChecklistAppend } from "@/server/checklist-append-resolver";
 
 function normalizeListLine(value: string): string {
   return value
@@ -216,12 +217,7 @@ export async function POST(request: Request) {
       }
     }
 
-    if (item.kind === "checklist") {
-      const incomingList = parseListFromText(payload.sourceText);
-      if (incomingList.length) {
-        item.body = toChecklistMarkdown(incomingList);
-      }
-      const openChecklistsResult = await auth.supabase
+    const openChecklistsResult = await auth.supabase
         .from("items")
         .select("id,title,body,labels,updated_at")
         .eq("user_id", auth.user.id)
@@ -229,9 +225,45 @@ export async function POST(request: Request) {
         .eq("checked", false)
         .order("updated_at", { ascending: false })
         .limit(20);
+    const openChecklists = openChecklistsResult.error ? [] : (openChecklistsResult.data || []);
 
-      if (!openChecklistsResult.error && openChecklistsResult.data?.length) {
-        const open = openChecklistsResult.data;
+    if (item.kind !== "checklist") {
+      const resolvedAppend = resolveAmbiguousChecklistAppend(payload.sourceText, item.labels || [], openChecklists);
+      if (resolvedAppend) {
+        const mergedBody = mergeChecklistBody(resolvedAppend.target.body || "", resolvedAppend.items);
+        const mergedResult = await auth.supabase
+          .from("items")
+          .update({
+            body: mergedBody,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", resolvedAppend.target.id)
+          .eq("user_id", auth.user.id)
+          .select("*")
+          .single();
+
+        if (!mergedResult.error) {
+          return NextResponse.json({
+            item: mergedResult.data,
+            classification: {
+              ...classification,
+              reason: `${classification.reason} | context-append merged into existing checklist`
+            },
+            merged: true,
+            mergedIntoId: resolvedAppend.target.id
+          });
+        }
+      }
+    }
+
+    if (item.kind === "checklist") {
+      const incomingList = parseListFromText(payload.sourceText);
+      if (incomingList.length) {
+        item.body = toChecklistMarkdown(incomingList);
+      }
+
+      if (openChecklists.length) {
+        const open = openChecklists;
 
         if (!incomingList.length) {
           const single = isLikelySingleListItem(payload.sourceText);
