@@ -668,6 +668,210 @@
   text-transform: uppercase;
 }
 
+.plannerView {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.plannerCanvas,
+.upcomingStack {
+  border: 1px solid var(--dribble-line);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(213, 255, 95, 0.1), transparent 30%),
+    rgba(255, 255, 255, 0.04);
+  padding: 16px;
+}
+
+.plannerIntro,
+.upcomingHeader {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.plannerIntro h3,
+.upcomingHeader h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  letter-spacing: -0.04em;
+}
+
+.plannerIntro span,
+.upcomingHeader span {
+  color: var(--dribble-muted);
+  font-size: 0.86rem;
+}
+
+.timeBlocks {
+  display: grid;
+  gap: 10px;
+}
+
+.timeBlock {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.timeBlockhot {
+  border-color: rgba(255, 123, 102, 0.5);
+  background: linear-gradient(90deg, rgba(255, 123, 102, 0.14), rgba(0, 0, 0, 0.12));
+}
+
+.timeBlockactive {
+  border-color: rgba(126, 220, 255, 0.42);
+}
+
+.timeBlockquiet {
+  opacity: 0.78;
+}
+
+.timeRail {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  border-right: 1px solid var(--dribble-line);
+  padding-right: 12px;
+}
+
+.timeRail strong {
+  font-size: 1.35rem;
+  letter-spacing: -0.06em;
+}
+
+.timeRail span {
+  color: var(--dribble-muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.timeSlot {
+  display: grid;
+  gap: 10px;
+}
+
+.plannerTask,
+.plannerTaskActive,
+.upcomingCard,
+.upcomingCardActive,
+.protectedBlock {
+  display: grid;
+  gap: 7px;
+  border: 1px solid var(--dribble-line);
+  border-radius: 20px;
+  padding: 13px;
+  color: var(--dribble-ink);
+  text-align: left;
+}
+
+.plannerTask,
+.plannerTaskActive,
+.upcomingCard,
+.upcomingCardActive {
+  cursor: pointer;
+  font: inherit;
+}
+
+.plannerTask {
+  background:
+    linear-gradient(135deg, rgba(213, 255, 95, 0.14), rgba(126, 220, 255, 0.08)),
+    rgba(255, 255, 255, 0.055);
+}
+
+.plannerTaskActive {
+  border-color: rgba(213, 255, 95, 0.72);
+  background:
+    linear-gradient(135deg, rgba(213, 255, 95, 0.26), rgba(255, 123, 102, 0.14)),
+    rgba(255, 255, 255, 0.075);
+}
+
+.plannerTask span,
+.plannerTaskActive span,
+.upcomingCard span,
+.upcomingCardActive span,
+.protectedBlock span {
+  color: var(--dribble-lime);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.plannerTask strong,
+.plannerTaskActive strong,
+.upcomingCard strong,
+.upcomingCardActive strong,
+.protectedBlock strong {
+  font-size: 0.98rem;
+}
+
+.plannerTask small,
+.plannerTaskActive small,
+.upcomingCard small,
+.upcomingCardActive small {
+  color: var(--dribble-muted);
+  font-weight: 800;
+}
+
+.plannerTask i,
+.plannerTaskActive i {
+  display: block;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.plannerTask i b,
+.plannerTaskActive i b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--dribble-lime), var(--dribble-coral));
+}
+
+.protectedBlock {
+  min-height: 74px;
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.protectedBlock strong {
+  color: var(--dribble-muted);
+}
+
+.upcomingStack {
+  align-content: start;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(126, 220, 255, 0.12), transparent 42%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.upcomingCards {
+  display: grid;
+  gap: 10px;
+}
+
+.upcomingCard,
+.upcomingCardActive {
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.upcomingCardActive {
+  border-color: rgba(126, 220, 255, 0.65);
+  background: rgba(126, 220, 255, 0.12);
+}
+
 .detailPanel {
   position: sticky;
   top: 28px;
@@ -777,6 +981,10 @@
     grid-template-columns: 1fr;
   }
 
+  .plannerView {
+    grid-template-columns: 1fr;
+  }
+
   .detailPanel {
     position: static;
   }
@@ -798,6 +1006,17 @@
   .panelHeader {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .timeBlock {
+    grid-template-columns: 1fr;
+  }
+
+  .timeRail {
+    border-right: 0;
+    border-bottom: 1px solid var(--dribble-line);
+    padding-right: 0;
+    padding-bottom: 8px;
   }
 }
 

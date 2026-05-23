@@ -349,29 +349,76 @@ function CalendarView({
   selectedTask?: DribbleTask;
   onSelect: (taskId: string) => void;
 }) {
+  const scheduleBlocks = days.filter((day) => day.label !== "Upcoming");
+  const upcoming = days.find((day) => day.label === "Upcoming");
   return (
-    <div className={styles.calendarView} aria-label="Task calendar view">
-      {days.map((day) => (
-        <section className={`${styles.calendarDay} ${styles[`calendarDay${day.tone}`]}`} key={day.label}>
-          <div className={styles.calendarTop}>
-            <span>{day.date}</span>
-            <strong>{day.label}</strong>
-          </div>
-          <div className={styles.calendarTasks}>
-            {day.tasks.length ? day.tasks.map((task) => (
-              <button
-                className={selectedTask?.id === task.id ? styles.calendarTaskActive : styles.calendarTask}
-                key={task.id}
-                type="button"
-                onClick={() => onSelect(task.id)}
-              >
-                <span>{task.priority}</span>
-                {task.title}
-              </button>
-            )) : <p>No scheduled work</p>}
-          </div>
-        </section>
-      ))}
+    <div className={styles.plannerView} aria-label="Task planner calendar view">
+      <section className={styles.plannerCanvas}>
+        <div className={styles.plannerIntro}>
+          <p className={styles.eyebrow}>Calendar</p>
+          <h3>Today as a capacity map</h3>
+          <span>Drag-ready concept / blocks sized by estimated effort</span>
+        </div>
+        <div className={styles.timeBlocks}>
+          {scheduleBlocks.map((block) => (
+            <section className={`${styles.timeBlock} ${styles[`timeBlock${block.tone}`]}`} key={block.label}>
+              <div className={styles.timeRail}>
+                <strong>{block.date}:00</strong>
+                <span>{block.label}</span>
+              </div>
+              <div className={styles.timeSlot}>
+                {block.tasks.length ? block.tasks.map((task) => (
+                  <button
+                    className={selectedTask?.id === task.id ? styles.plannerTaskActive : styles.plannerTask}
+                    key={task.id}
+                    style={{ minHeight: `${Math.max(86, Math.min(170, task.estimateHours * 22))}px` }}
+                    type="button"
+                    onClick={() => onSelect(task.id)}
+                  >
+                    <span>{task.priority} / {task.estimateHours}h</span>
+                    <strong>{task.title}</strong>
+                    <small>{task.project} / {task.progress}% complete</small>
+                    <i><b style={{ width: `${task.progress}%` }} /></i>
+                  </button>
+                )) : (
+                  <div className={styles.protectedBlock}>
+                    <span>Protected focus</span>
+                    <strong>No hard-scheduled task</strong>
+                  </div>
+                )}
+              </div>
+            </section>
+          ))}
+        </div>
+      </section>
+
+      <aside className={styles.upcomingStack}>
+        <div className={styles.upcomingHeader}>
+          <p className={styles.eyebrow}>Next</p>
+          <h3>Unscheduled stack</h3>
+          <span>{upcoming?.tasks.length || 0} cards waiting for a slot</span>
+        </div>
+        <div className={styles.upcomingCards}>
+          {upcoming?.tasks.map((task) => (
+            <button
+              className={selectedTask?.id === task.id ? styles.upcomingCardActive : styles.upcomingCard}
+              key={task.id}
+              type="button"
+              onClick={() => onSelect(task.id)}
+            >
+              <span>{task.due}</span>
+              <strong>{task.title}</strong>
+              <small>{task.priority} / {task.signal}</small>
+            </button>
+          ))}
+          {!upcoming?.tasks.length ? (
+            <div className={styles.protectedBlock}>
+              <span>Clear runway</span>
+              <strong>No upcoming work</strong>
+            </div>
+          ) : null}
+        </div>
+      </aside>
     </div>
   );
 }

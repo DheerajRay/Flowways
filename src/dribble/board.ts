@@ -32,7 +32,7 @@ export interface DribbleTimelineEntry {
 export interface DribbleCalendarDay {
   label: string;
   date: string;
-  tone: "hot" | "active" | "quiet";
+  tone: "hot" | "active" | "quiet" | "upcoming";
   tasks: DribbleTask[];
 }
 
@@ -215,18 +215,25 @@ export function buildDribbleTimeline(tasks: DribbleTaskCollection): DribbleTimel
 }
 
 export function buildDribbleCalendarDays(tasks: DribbleTaskCollection): DribbleCalendarDay[] {
-  const labels = ["Today", "Tomorrow", "May 25", "May 26", "May 27", "May 28", "Later"];
-  return labels.map((label, index) => {
-    const dayTasks = tasks.filter((task) => {
-      if (label === "Later") return getDribbleDueRank(task.due) >= 5;
-      return task.due.toLowerCase() === label.toLowerCase();
-    });
-    const urgentCount = dayTasks.filter((task) => task.priority === "Urgent" || task.priority === "High").length;
+  const sorted = getDribbleSortedTasks(tasks);
+  const todayTasks = sorted.filter((task) => task.due.toLowerCase() === "today");
+  const upcomingTasks = sorted.filter((task) => task.due.toLowerCase() !== "today" && task.status !== "done");
+  const doneTasks = sorted.filter((task) => task.status === "done");
+  const blocks = [
+    { label: "Morning", date: "09", tasks: todayTasks.slice(0, 1) },
+    { label: "Midday", date: "12", tasks: todayTasks.slice(1, 2) },
+    { label: "Afternoon", date: "15", tasks: todayTasks.slice(2, 3) },
+    { label: "Evening", date: "18", tasks: todayTasks.slice(3) },
+    { label: "Upcoming", date: "Next", tasks: [...upcomingTasks, ...doneTasks] }
+  ];
+
+  return blocks.map((block) => {
+    const urgentCount = block.tasks.filter((task) => task.priority === "Urgent" || task.priority === "High").length;
     return {
-      label,
-      date: index < 6 ? String(23 + index).padStart(2, "0") : "+",
-      tone: urgentCount > 0 ? "hot" : dayTasks.length > 0 ? "active" : "quiet",
-      tasks: getDribbleSortedTasks(dayTasks)
+      label: block.label,
+      date: block.date,
+      tone: block.label === "Upcoming" ? "upcoming" : urgentCount > 0 ? "hot" : block.tasks.length > 0 ? "active" : "quiet",
+      tasks: block.tasks
     };
   });
 }

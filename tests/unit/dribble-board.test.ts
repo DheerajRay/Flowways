@@ -104,13 +104,16 @@ describe("dribble board model", () => {
     expect(timeline[1].offset).toBeGreaterThan(timeline[0].offset);
   });
 
-  it("maps tasks into calendar days", () => {
+  it("maps tasks into planner time blocks and upcoming groups", () => {
     const days = buildDribbleCalendarDays(tasks);
-    const today = days.find((day) => day.label === "Today");
-    const tomorrow = days.find((day) => day.label === "Tomorrow");
+    const morning = days.find((day) => day.label === "Morning");
+    const afternoon = days.find((day) => day.label === "Afternoon");
+    const upcoming = days.find((day) => day.label === "Upcoming");
 
-    expect(days).toHaveLength(7);
-    expect(today?.tasks.map((task) => task.id)).toEqual(["a"]);
-    expect(tomorrow?.tasks.map((task) => task.id)).toEqual(["b"]);
+    expect(days).toHaveLength(5);
+    expect(morning?.tasks.map((task) => task.id)).toEqual(["a"]);
+    expect(afternoon?.tasks).toEqual([]);
+    expect(upcoming?.tasks.map((task) => task.id)).toEqual(["b"]);
+    expect(morning?.date).toBe("09");
   });
 });
