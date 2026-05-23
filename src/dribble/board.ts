@@ -20,6 +20,21 @@ export interface DribbleTask {
 export type DribbleTaskInput = Omit<DribbleTask, "id"> & { id?: string };
 export type DribbleTaskCollection = readonly DribbleTask[];
 export type DribbleTaskGroups = Record<DribbleStatus, DribbleTask[]>;
+export type DribbleViewMode = "board" | "list" | "timeline" | "calendar";
+
+export interface DribbleTimelineEntry {
+  task: DribbleTask;
+  offset: number;
+  width: number;
+  label: string;
+}
+
+export interface DribbleCalendarDay {
+  label: string;
+  date: string;
+  tone: "hot" | "active" | "quiet";
+  tasks: DribbleTask[];
+}
 
 export const DRIBBLE_STATUS_LABELS: Record<DribbleStatus, string> = {
   backlog: "Backlog",
@@ -33,6 +48,20 @@ export const DRIBBLE_STATUS_ACCENTS: Record<DribbleStatus, string> = {
   progress: "#88d8ff",
   review: "#ff9f8f",
   done: "#9ff0b0"
+};
+
+export const DRIBBLE_VIEW_LABELS: Record<DribbleViewMode, string> = {
+  board: "Board",
+  list: "List",
+  timeline: "Timeline",
+  calendar: "Calendar"
+};
+
+const priorityRank: Record<DribblePriority, number> = {
+  Urgent: 0,
+  High: 1,
+  Medium: 2,
+  Low: 3
 };
 
 export const DRIBBLE_SEED_TASKS: DribbleTask[] = [
@@ -149,4 +178,55 @@ export function getDribbleMetrics(tasks: DribbleTaskCollection) {
     averageProgress,
     totalEstimateHours
   };
+}
+
+export function getDribbleDueRank(due: string): number {
+  const normalized = due.trim().toLowerCase();
+  if (normalized === "today") return 0;
+  if (normalized === "tomorrow") return 1;
+  if (normalized === "this week") return 3;
+  if (normalized === "done") return 8;
+  const mayMatch = normalized.match(/^may\s+(\d{1,2})$/);
+  if (mayMatch) return Math.max(0, Number(mayMatch[1]) - 23);
+  return 5;
+}
+
+export function getDribbleSortedTasks(tasks: DribbleTaskCollection): DribbleTask[] {
+  return [...tasks].sort((a, b) => {
+    const priorityDelta = priorityRank[a.priority] - priorityRank[b.priority];
+    if (priorityDelta !== 0) return priorityDelta;
+    const dueDelta = getDribbleDueRank(a.due) - getDribbleDueRank(b.due);
+    if (dueDelta !== 0) return dueDelta;
+    return b.progress - a.progress;
+  });
+}
+
+export function buildDribbleTimeline(tasks: DribbleTaskCollection): DribbleTimelineEntry[] {
+  return getDribbleSortedTasks(tasks).map((task) => {
+    const offset = Math.min(82, getDribbleDueRank(task.due) * 14);
+    const width = Math.max(14, Math.min(42, task.estimateHours * 4));
+    return {
+      task,
+      offset,
+      width,
+      label: task.due
+    };
+  });
+}
+
+export function buildDribbleCalendarDays(tasks: DribbleTaskCollection): DribbleCalendarDay[] {
+  const labels = ["Today", "Tomorrow", "May 25", "May 26", "May 27", "May 28", "Later"];
+  return labels.map((label, index) => {
+    const dayTasks = tasks.filter((task) => {
+      if (label === "Later") return getDribbleDueRank(task.due) >= 5;
+      return task.due.toLowerCase() === label.toLowerCase();
+    });
+    const urgentCount = dayTasks.filter((task) => task.priority === "Urgent" || task.priority === "High").length;
+    return {
+      label,
+      date: index < 6 ? String(23 + index).padStart(2, "0") : "+",
+      tone: urgentCount > 0 ? "hot" : dayTasks.length > 0 ? "active" : "quiet",
+      tasks: getDribbleSortedTasks(dayTasks)
+    };
+  });
 }

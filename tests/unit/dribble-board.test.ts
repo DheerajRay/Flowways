@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { createDribbleTask, getDribbleMetrics, groupDribbleTasks, moveDribbleTask } from "@/dribble/board";
+import {
+  buildDribbleCalendarDays,
+  buildDribbleTimeline,
+  createDribbleTask,
+  getDribbleMetrics,
+  getDribbleSortedTasks,
+  groupDribbleTasks,
+  moveDribbleTask
+} from "@/dribble/board";
 import type { DribbleTask } from "@/dribble/board";
 
 describe("dribble board model", () => {
@@ -65,5 +73,44 @@ describe("dribble board model", () => {
     expect(metrics.activeTasks).toBe(2);
     expect(metrics.averageProgress).toBe(38);
     expect(metrics.totalEstimateHours).toBe(12);
+  });
+
+  it("sorts list view by urgency, due rank, and progress", () => {
+    const sorted = getDribbleSortedTasks([
+      ...tasks,
+      {
+        id: "c",
+        title: "Resolve production issue",
+        status: "review",
+        priority: "Urgent",
+        progress: 80,
+        estimateHours: 1,
+        tags: ["incident"],
+        assignees: ["OP"],
+        due: "May 25",
+        project: "Reliability",
+        signal: "Customer impact"
+      }
+    ]);
+
+    expect(sorted.map((task) => task.id)).toEqual(["c", "a", "b"]);
+  });
+
+  it("builds timeline entries with deterministic offsets", () => {
+    const timeline = buildDribbleTimeline(tasks);
+
+    expect(timeline.map((entry) => entry.task.id)).toEqual(["a", "b"]);
+    expect(timeline[0].offset).toBe(0);
+    expect(timeline[1].offset).toBeGreaterThan(timeline[0].offset);
+  });
+
+  it("maps tasks into calendar days", () => {
+    const days = buildDribbleCalendarDays(tasks);
+    const today = days.find((day) => day.label === "Today");
+    const tomorrow = days.find((day) => day.label === "Tomorrow");
+
+    expect(days).toHaveLength(7);
+    expect(today?.tasks.map((task) => task.id)).toEqual(["a"]);
+    expect(tomorrow?.tasks.map((task) => task.id)).toEqual(["b"]);
   });
 });

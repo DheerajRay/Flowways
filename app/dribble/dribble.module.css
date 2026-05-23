@@ -293,6 +293,13 @@
   font-weight: 800;
 }
 
+.tab,
+.tabActive {
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.04);
+  font: inherit;
+}
+
 .tabActive {
   background: var(--dribble-ink);
   color: #10131a;
@@ -423,6 +430,244 @@
   color-scheme: dark;
 }
 
+.listView {
+  display: grid;
+  gap: 10px;
+}
+
+.listHeader,
+.listRow,
+.listRowActive {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.25fr) 150px minmax(160px, 0.6fr) 150px;
+  gap: 14px;
+  align-items: center;
+}
+
+.listHeader {
+  padding: 0 14px;
+  color: var(--dribble-muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.listRow,
+.listRowActive {
+  border: 1px solid var(--dribble-line);
+  border-radius: 24px;
+  padding: 14px;
+  background:
+    linear-gradient(110deg, rgba(255, 255, 255, 0.1), transparent),
+    rgba(255, 255, 255, 0.045);
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.listRow:hover,
+.listRowActive {
+  border-color: rgba(126, 220, 255, 0.55);
+  background:
+    linear-gradient(110deg, rgba(126, 220, 255, 0.14), rgba(213, 255, 95, 0.06)),
+    rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
+}
+
+.listRow h4,
+.listRowActive h4 {
+  margin: 8px 0 4px;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.listRow p,
+.listRowActive p {
+  margin: 0;
+  color: var(--dribble-muted);
+}
+
+.listProgress {
+  display: grid;
+  gap: 7px;
+}
+
+.listProgress strong {
+  font-size: 0.9rem;
+}
+
+.listRow select,
+.listRowActive select {
+  border: 1px solid var(--dribble-line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--dribble-ink);
+  color-scheme: dark;
+  font: inherit;
+  padding: 10px;
+}
+
+.timelineView {
+  display: grid;
+  gap: 14px;
+  overflow-x: auto;
+}
+
+.timelineScale {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  min-width: 720px;
+  color: var(--dribble-muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.timelineRail {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  min-width: 720px;
+  padding: 18px 0;
+}
+
+.timelineRail::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  top: 28px;
+  height: calc(100% - 56px);
+  border-radius: 24px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 20%),
+    rgba(255, 255, 255, 0.025);
+  pointer-events: none;
+}
+
+.timelineBar,
+.timelineBarActive {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-width: 170px;
+  gap: 5px;
+  border: 1px solid var(--dribble-line);
+  border-radius: 18px;
+  padding: 12px 14px;
+  color: var(--dribble-ink);
+  text-align: left;
+  cursor: pointer;
+  background: linear-gradient(135deg, rgba(213, 255, 95, 0.2), rgba(126, 220, 255, 0.1));
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.22);
+}
+
+.timelineBarActive {
+  border-color: rgba(213, 255, 95, 0.72);
+  background: linear-gradient(135deg, rgba(213, 255, 95, 0.34), rgba(255, 123, 102, 0.14));
+}
+
+.timelineBar span,
+.timelineBarActive span {
+  font-weight: 900;
+}
+
+.timelineBar small,
+.timelineBarActive small {
+  color: var(--dribble-muted);
+  font-weight: 800;
+}
+
+.calendarView {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(150px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.calendarDay {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  min-height: 300px;
+  border: 1px solid var(--dribble-line);
+  border-radius: 26px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.calendarDayhot {
+  border-color: rgba(255, 123, 102, 0.54);
+  background: linear-gradient(180deg, rgba(255, 123, 102, 0.14), rgba(255, 255, 255, 0.035));
+}
+
+.calendarDayactive {
+  border-color: rgba(126, 220, 255, 0.48);
+  background: linear-gradient(180deg, rgba(126, 220, 255, 0.12), rgba(255, 255, 255, 0.035));
+}
+
+.calendarDayquiet {
+  opacity: 0.78;
+}
+
+.calendarTop {
+  display: grid;
+  gap: 5px;
+}
+
+.calendarTop span {
+  font-size: 2.2rem;
+  font-weight: 950;
+  letter-spacing: -0.08em;
+}
+
+.calendarTop strong {
+  color: var(--dribble-muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.calendarTasks {
+  display: grid;
+  gap: 9px;
+}
+
+.calendarTasks p {
+  margin: 0;
+  color: var(--dribble-muted);
+  font-size: 0.9rem;
+}
+
+.calendarTask,
+.calendarTaskActive {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--dribble-line);
+  border-radius: 16px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--dribble-ink);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.calendarTaskActive {
+  border-color: rgba(213, 255, 95, 0.65);
+  background: rgba(213, 255, 95, 0.14);
+}
+
+.calendarTask span,
+.calendarTaskActive span {
+  color: var(--dribble-lime);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .detailPanel {
   position: sticky;
   top: 28px;
@@ -523,6 +768,12 @@
   .contentGrid,
   .hero,
   .bottomGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .listHeader,
+  .listRow,
+  .listRowActive {
     grid-template-columns: 1fr;
   }
 

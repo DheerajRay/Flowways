@@ -6,12 +6,17 @@ import {
   DRIBBLE_STATUS_ACCENTS,
   DRIBBLE_STATUS_LABELS,
   DRIBBLE_STATUSES,
+  DRIBBLE_VIEW_LABELS,
+  buildDribbleCalendarDays,
+  buildDribbleTimeline,
   createDribbleTask,
   getDribbleMetrics,
+  getDribbleSortedTasks,
   groupDribbleTasks,
   moveDribbleTask,
   type DribbleStatus,
-  type DribbleTask
+  type DribbleTask,
+  type DribbleViewMode
 } from "@/dribble/board";
 import styles from "./dribble.module.css";
 
@@ -35,6 +40,7 @@ export default function DribblePage() {
   const [tasks, setTasks] = useState<DribbleTask[]>(DRIBBLE_SEED_TASKS);
   const [selectedId, setSelectedId] = useState(DRIBBLE_SEED_TASKS[1]?.id || "");
   const [draftTitle, setDraftTitle] = useState("");
+  const [viewMode, setViewMode] = useState<DribbleViewMode>("board");
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -61,6 +67,9 @@ export default function DribblePage() {
 
   const grouped = useMemo(() => groupDribbleTasks(tasks), [tasks]);
   const metrics = useMemo(() => getDribbleMetrics(tasks), [tasks]);
+  const sortedTasks = useMemo(() => getDribbleSortedTasks(tasks), [tasks]);
+  const timeline = useMemo(() => buildDribbleTimeline(tasks), [tasks]);
+  const calendarDays = useMemo(() => buildDribbleCalendarDays(tasks), [tasks]);
   const selectedTask = tasks.find((task) => task.id === selectedId) || tasks[0];
 
   function moveTask(taskId: string, nextStatus: DribbleStatus) {
@@ -140,34 +149,31 @@ export default function DribblePage() {
                 <h2>Execution lanes</h2>
               </div>
               <div className={styles.viewTabs} aria-label="View switcher">
-                {["Board", "List", "Timeline", "Calendar"].map((view, index) => (
-                  <span className={index === 0 ? styles.tabActive : styles.tab} key={view}>{view}</span>
+                {Object.entries(DRIBBLE_VIEW_LABELS).map(([mode, label]) => (
+                  <button
+                    className={viewMode === mode ? styles.tabActive : styles.tab}
+                    key={mode}
+                    type="button"
+                    onClick={() => setViewMode(mode as DribbleViewMode)}
+                  >
+                    {label}
+                  </button>
                 ))}
               </div>
             </div>
 
-            <div className={styles.board}>
-              {DRIBBLE_STATUSES.map((status) => (
-                <section className={styles.lane} key={status}>
-                  <div className={styles.laneHeader}>
-                    <span className={styles.laneDot} style={{ background: DRIBBLE_STATUS_ACCENTS[status] }} />
-                    <h3>{DRIBBLE_STATUS_LABELS[status]}</h3>
-                    <b>{grouped[status].length}</b>
-                  </div>
-                  <div className={styles.cards}>
-                    {grouped[status].map((task) => (
-                      <TaskCard
-                        key={task.id}
-                        task={task}
-                        selected={selectedTask?.id === task.id}
-                        onSelect={() => setSelectedId(task.id)}
-                        onMove={moveTask}
-                      />
-                    ))}
-                  </div>
-                </section>
-              ))}
-            </div>
+            {viewMode === "board" ? (
+              <BoardView grouped={grouped} selectedTask={selectedTask} onSelect={setSelectedId} onMove={moveTask} />
+            ) : null}
+            {viewMode === "list" ? (
+              <ListView tasks={sortedTasks} selectedTask={selectedTask} onSelect={setSelectedId} onMove={moveTask} />
+            ) : null}
+            {viewMode === "timeline" ? (
+              <TimelineView entries={timeline} selectedTask={selectedTask} onSelect={setSelectedId} />
+            ) : null}
+            {viewMode === "calendar" ? (
+              <CalendarView days={calendarDays} selectedTask={selectedTask} onSelect={setSelectedId} />
+            ) : null}
           </div>
 
           <aside className={styles.detailPanel} id="signals">
@@ -211,6 +217,162 @@ export default function DribblePage() {
         </section>
       </section>
     </main>
+  );
+}
+
+function BoardView({
+  grouped,
+  selectedTask,
+  onSelect,
+  onMove
+}: {
+  grouped: Record<DribbleStatus, DribbleTask[]>;
+  selectedTask?: DribbleTask;
+  onSelect: (taskId: string) => void;
+  onMove: (taskId: string, nextStatus: DribbleStatus) => void;
+}) {
+  return (
+    <div className={styles.board}>
+      {DRIBBLE_STATUSES.map((status) => (
+        <section className={styles.lane} key={status}>
+          <div className={styles.laneHeader}>
+            <span className={styles.laneDot} style={{ background: DRIBBLE_STATUS_ACCENTS[status] }} />
+            <h3>{DRIBBLE_STATUS_LABELS[status]}</h3>
+            <b>{grouped[status].length}</b>
+          </div>
+          <div className={styles.cards}>
+            {grouped[status].map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                selected={selectedTask?.id === task.id}
+                onSelect={() => onSelect(task.id)}
+                onMove={onMove}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function ListView({
+  tasks,
+  selectedTask,
+  onSelect,
+  onMove
+}: {
+  tasks: DribbleTask[];
+  selectedTask?: DribbleTask;
+  onSelect: (taskId: string) => void;
+  onMove: (taskId: string, nextStatus: DribbleStatus) => void;
+}) {
+  return (
+    <div className={styles.listView} aria-label="Task list view">
+      <div className={styles.listHeader}>
+        <span>Task</span>
+        <span>Owner</span>
+        <span>Progress</span>
+        <span>Status</span>
+      </div>
+      {tasks.map((task) => (
+        <article
+          className={selectedTask?.id === task.id ? styles.listRowActive : styles.listRow}
+          key={task.id}
+          onClick={() => onSelect(task.id)}
+        >
+          <div>
+            <span className={styles.priority}>{task.priority}</span>
+            <h4>{task.title}</h4>
+            <p>{task.project} / {task.signal}</p>
+          </div>
+          <div className={styles.assigneeRow}>{task.assignees.map((person) => <span key={person}>{person}</span>)}</div>
+          <div className={styles.listProgress}>
+            <strong>{task.progress}%</strong>
+            <div className={styles.cardProgress}><span style={{ width: `${task.progress}%` }} /></div>
+          </div>
+          <select
+            aria-label={`Move ${task.title}`}
+            value={task.status}
+            onClick={(event) => event.stopPropagation()}
+            onChange={(event) => onMove(task.id, event.target.value as DribbleStatus)}
+          >
+            {DRIBBLE_STATUSES.map((status) => (
+              <option value={status} key={status}>{DRIBBLE_STATUS_LABELS[status]}</option>
+            ))}
+          </select>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function TimelineView({
+  entries,
+  selectedTask,
+  onSelect
+}: {
+  entries: ReturnType<typeof buildDribbleTimeline>;
+  selectedTask?: DribbleTask;
+  onSelect: (taskId: string) => void;
+}) {
+  return (
+    <div className={styles.timelineView} aria-label="Task timeline view">
+      <div className={styles.timelineScale}>
+        {["Today", "Tomorrow", "May 25", "May 26", "Later"].map((label) => <span key={label}>{label}</span>)}
+      </div>
+      <div className={styles.timelineRail}>
+        {entries.map((entry) => (
+          <button
+            className={selectedTask?.id === entry.task.id ? styles.timelineBarActive : styles.timelineBar}
+            key={entry.task.id}
+            style={{ marginLeft: `${entry.offset}%`, width: `${entry.width}%` }}
+            type="button"
+            onClick={() => onSelect(entry.task.id)}
+          >
+            <span>{entry.task.title}</span>
+            <small>{entry.label} / {entry.task.estimateHours}h</small>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CalendarView({
+  days,
+  selectedTask,
+  onSelect
+}: {
+  days: ReturnType<typeof buildDribbleCalendarDays>;
+  selectedTask?: DribbleTask;
+  onSelect: (taskId: string) => void;
+}) {
+  return (
+    <div className={styles.calendarView} aria-label="Task calendar view">
+      {days.map((day) => (
+        <section className={`${styles.calendarDay} ${styles[`calendarDay${day.tone}`]}`} key={day.label}>
+          <div className={styles.calendarTop}>
+            <span>{day.date}</span>
+            <strong>{day.label}</strong>
+          </div>
+          <div className={styles.calendarTasks}>
+            {day.tasks.length ? day.tasks.map((task) => (
+              <button
+                className={selectedTask?.id === task.id ? styles.calendarTaskActive : styles.calendarTask}
+                key={task.id}
+                type="button"
+                onClick={() => onSelect(task.id)}
+              >
+                <span>{task.priority}</span>
+                {task.title}
+              </button>
+            )) : <p>No scheduled work</p>}
+          </div>
+        </section>
+      ))}
+    </div>
   );
 }
 
