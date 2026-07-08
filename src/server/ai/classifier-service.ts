@@ -102,11 +102,17 @@ export async function classifyWithAiOrFallback(
     const invalidTimeToken = hasInvalidTimeToken(text);
     const followupActionLike = /\b(remind|follow up|follow-up|connect|call|meet|check with|book|collect|pick up|pickup|drop off|dropoff)\b/i.test(text);
     const personLike = /\b(note from|from\s+[a-z][a-z0-9_-]{1,20}\b|[a-z][a-z0-9_-]{1,20}\s+(said|asked|called|told))\b/i.test(text);
-    const directedActionLike = /\b(collect|bring|send|share|review|prepare|fix|connect|call|meet|follow up|follow-up|book|pick up|pickup)\b/i.test(text);
+    const directedActionLike = /\b(collect|bring|send|share|review|prepare|fix|connect|call|meet|check|follow up|follow-up|book|pick up|pickup)\b/i.test(text);
+    const commaActionBatchLike = (() => {
+      const parts = text.split(",").map((part) => normalizeText(part)).filter(Boolean);
+      if (parts.length < 2 || parts.length > 5) return false;
+      return parts.filter((part) => /^(fix|update|publish|buy|call|email|send|review|check|pick up|pickup|collect|book|pack|bring)\b/i.test(part)).length >= 2;
+    })();
     const structuredListLike =
       ((text.match(/\d+\.\s+[^0-9]+(?=(\d+\.\s+)|$)/g)?.length || 0) >= 2) ||
-      (text.split("\n").filter((line) => /^[-*]\s+/.test(line.trim())).length >= 2);
-    const hardWorkflowLike = /\b(blocked|review|in progress|handoff|dependency|milestone|jira|kanban)\b/i.test(text);
+      (text.split("\n").filter((line) => /^[-*]\s+/.test(line.trim())).length >= 2) ||
+      commaActionBatchLike;
+    const hardWorkflowLike = /\b(blocked|review|in progress|handoff|dependency|milestone|jira|kanban|rollout|assign|coordinate)\b/i.test(text);
     const explicitReminderLike = /\b(remind|reminder|alarm|timer)\b/i.test(text);
     const workflowActionItemsLike = /\b(action items?|assign|handoff|coordinate|dependency|blocked|milestone)\b/i.test(text);
 
@@ -187,9 +193,14 @@ export async function classifyWithAiOrFallback(
       refinedReason = `${refinedReason} | post-rule: structured list mapped to checklist`;
     }
 
-    if (modeHint === "auto" && refinedKind === "checklist" && personLike && directedActionLike && !structuredListLike) {
+    if (modeHint === "auto" && refinedKind !== "timeline" && personLike && directedActionLike && !structuredListLike) {
       refinedKind = "workflow";
       refinedReason = `${refinedReason} | post-rule: directed request mapped to workflow`;
+    }
+
+    if (modeHint !== "auto") {
+      refinedKind = modeHint;
+      refinedReason = `${refinedReason} | post-rule: manual mode override applied`;
     }
 
     const inferredLabels = inferContextLabels(text, refinedKind);
@@ -227,6 +238,10 @@ export async function classifyWithAiOrFallback(
       ? stripDiaryControlTags(refinedBody || text)
       : refinedBody;
 
+    const finalWorkflowStatus = refinedKind === "workflow"
+      ? (parsed.workflow_status || "Backlog")
+      : null;
+
     return {
       ...parsed,
       kind: refinedKind,
@@ -236,6 +251,7 @@ export async function classifyWithAiOrFallback(
       due_at: finalDueAt,
       timeline_meta: finalTimelineMeta,
       journal_meta: finalJournalMeta,
+      workflow_status: finalWorkflowStatus,
       labels: finalLabels,
       reason: refinedReason
     };

@@ -169,7 +169,7 @@ export function inferContextLabels(text: string, kind: ItemKind): string[] {
   }
 
   if (kind === "timeline") {
-    if (/\bbook(ing)?\s+tickets?\b/.test(lower)) inferred.push("booking", "tickets");
+    if (/\bbook(?:ing)?\s+(?:[a-z][a-z0-9_-]*\s+){0,2}tickets?\b/.test(lower)) inferred.push("booking", "tickets");
     if (/\bcollect\b/.test(lower)) inferred.push("collect");
     if (/\bbook\b/.test(lower)) inferred.push("book");
     if (/\b(call|meeting|doctor|flight|train|bill|payment|pickup|dropoff)\b/.test(lower)) {
