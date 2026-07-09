@@ -6,6 +6,7 @@ import { buildItem } from "@/server/db/item-builder";
 import { defaultTimelineMeta } from "@/shared/domain/timeline";
 import { defaultJournalMeta, formatDiaryEntry, stripDiaryControlTags } from "@/shared/domain/journal";
 import { resolveAmbiguousChecklistAppend } from "@/server/checklist-append-resolver";
+import { parseListFromText } from "@/server/checklist-parser";
 
 function normalizeListLine(value: string): string {
   return value
@@ -15,29 +16,6 @@ function normalizeListLine(value: string): string {
     .replace(/[.,!?;:()[\]{}"']/g, "")
     .replace(/\s+/g, " ")
     .trim();
-}
-
-function parseListFromText(value: string): string[] {
-  const source = value.trim();
-  if (!source) return [];
-
-  const numbered = source.match(/\d+\.\s+[^\n]+/g)?.map((entry) => entry.replace(/^\d+\.\s+/, "").trim()) || [];
-  if (numbered.length >= 2) return numbered;
-
-  const lines = source
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => line.replace(/^[-*]\s+/, "").trim());
-
-  if (lines.length >= 2) return lines;
-
-  if (source.includes(",")) {
-    const comma = source.split(",").map((token) => token.trim()).filter(Boolean);
-    if (comma.length >= 2) return comma;
-  }
-
-  return [];
 }
 
 function isLikelySingleListItem(value: string): string | null {
