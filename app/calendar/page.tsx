@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import styles from "./page.module.css";
+import { authenticatedFetch } from "@/shared/authenticated-fetch";
 
 type DbItem = {
   id: string;
@@ -117,7 +118,7 @@ export default function CalendarPage() {
       setLoading(true);
       setLoadError("");
       try {
-        const response = await fetch("/api/items", { cache: "no-store" });
+        const response = await authenticatedFetch("/api/items", { cache: "no-store" });
         if (!response.ok) {
           if (response.status === 401) {
             throw new Error("Sign in required to load calendar items.");

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { getSupabaseBrowserClient } from "@/shared/supabase-browser";
+import { authenticatedFetch } from "@/shared/authenticated-fetch";
 import { DEFAULT_USER_SETTINGS, type UserSettings } from "@/shared/types/settings";
 import { defaultTimelineMeta, nextOccurrenceFromRule, type RecurrenceRule, type TimelineMeta, type TimelineSubtype } from "@/shared/domain/timeline";
 import { defaultJournalMeta, type JournalMeta, type JournalSubtype } from "@/shared/domain/journal";
@@ -150,7 +151,7 @@ export default function HomePage() {
 
   async function loadItems() {
     if (!initialFeedLoaded) setSubmitMessage("Loading items...");
-    const response = await fetch("/api/items", { cache: "no-store" });
+    const response = await authenticatedFetch("/api/items", { cache: "no-store" });
     if (response.status === 401) {
       setAuthRequired(true);
       setInitialFeedLoaded(true);
@@ -169,7 +170,7 @@ export default function HomePage() {
   }
 
   async function loadSettings() {
-    const response = await fetch("/api/settings", { cache: "no-store" });
+    const response = await authenticatedFetch("/api/settings", { cache: "no-store" });
     if (!response.ok) return;
     const data = await response.json().catch(() => ({}));
     const next = data?.settings || DEFAULT_USER_SETTINGS;
@@ -376,7 +377,7 @@ export default function HomePage() {
     setSettingsBusy(true);
     setSettingsError("");
     try {
-      const response = await fetch("/api/settings", {
+      const response = await authenticatedFetch("/api/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(next)
@@ -452,7 +453,7 @@ export default function HomePage() {
     setPetNotice("");
     setPetNoticeTone("info");
     try {
-      const response = await fetch("/api/items", {
+      const response = await authenticatedFetch("/api/items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -525,7 +526,7 @@ export default function HomePage() {
   }
 
   async function updateItem(id: string, patch: Record<string, unknown>): Promise<boolean> {
-    const response = await fetch(`/api/items/${id}`, {
+    const response = await authenticatedFetch(`/api/items/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch)
@@ -545,7 +546,7 @@ export default function HomePage() {
     setSubmitMessage("");
     try {
       const source = `${item.title}\n${item.body || ""}`.trim();
-      const classifyResponse = await fetch("/api/classify", {
+      const classifyResponse = await authenticatedFetch("/api/classify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -584,7 +585,7 @@ export default function HomePage() {
   }
 
   async function deleteItem(id: string) {
-    const response = await fetch(`/api/items/${id}`, { method: "DELETE" });
+    const response = await authenticatedFetch(`/api/items/${id}`, { method: "DELETE" });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
       setSubmitMessage(body.error || "Delete failed.");
