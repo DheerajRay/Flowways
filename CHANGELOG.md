@@ -7,7 +7,6 @@ Format follows Keep a Changelog style with practical engineering detail for this
 ## [Unreleased]
 
 ### Changed
-- Settings now open as a responsive in-page column, keeping the complete control rail visible in standalone and embedded desktop viewports.
 - Browser authentication now uses Supabase JS session persistence instead of depending on SSR cookies, so sign-in works consistently in standalone and embedded presentation contexts.
 - Protected browser requests now attach the active Supabase access token as a bearer credential.
 - Server API authentication validates bearer credentials while retaining the previous cookie-based fallback for compatibility.
