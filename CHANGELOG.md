@@ -11,6 +11,12 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - Protected browser requests now attach the active Supabase access token as a bearer credential.
 - Server API authentication validates bearer credentials while retaining the previous cookie-based fallback for compatibility.
 
+### Fixed
+- Task feed now owns the remaining viewport height and stops with the final card fully visible instead of scrolling into empty space.
+- Long task content expands its card rather than overflowing below the card boundary.
+- Classification confidence tooltips use a readable structured width and predictable wrapping.
+- Mobile capture controls and task action buttons stay contained in stable single-row layouts, including narrow 320px viewports.
+
 ## [2026-05-15] - v1.1.0 stabilization release
 
 ### Added

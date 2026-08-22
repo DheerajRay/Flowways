@@ -2097,3 +2097,103 @@ textarea { min-height: 100px; resize: vertical; }
 .page.theme-sunset .item.item-done .actions .iconAction:hover {
   background: color-mix(in srgb, #2f9e66 18%, #fff3ea);
 }
+
+
+/* Viewport, card containment, tooltip, and mobile action hardening. */
+.page {
+  overflow: hidden;
+}
+
+.feedShell {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+}
+
+.feed {
+  height: 100%;
+  max-height: none;
+}
+
+.item {
+  max-height: none;
+}
+
+.opsNotices {
+  margin-top: 0;
+  position: relative;
+  bottom: auto;
+  flex: 0 0 auto;
+}
+
+.kindInfo[data-tip]::after {
+  top: calc(100% + 8px);
+  bottom: auto;
+  left: 50%;
+  width: min(320px, calc(100vw - 48px));
+  max-width: none;
+  transform: translateX(-50%) translateY(3px) scale(0.98);
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+  text-align: left;
+  line-height: 1.35;
+  z-index: 2500;
+}
+
+.kindInfo[data-tip]:hover::after,
+.kindInfo[data-tip]:focus-visible::after {
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+@media (max-width: 700px) {
+  .modeActions,
+  .captureActions {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  .modeActions {
+    display: grid;
+    grid-template-columns: repeat(5, 34px);
+  }
+
+  .captureActions {
+    display: grid;
+    grid-template-columns: repeat(4, 40px);
+  }
+
+  .item {
+    --icon-size: 34px;
+    --icon-font-size: 16px;
+  }
+
+  .itemHead {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: flex-start;
+  }
+
+  .kind {
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .kindLabel {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .actions {
+    width: auto;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    flex: 0 0 auto;
+    gap: 6px;
+  }
+}
