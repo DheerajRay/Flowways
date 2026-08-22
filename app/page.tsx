@@ -69,7 +69,7 @@ export default function HomePage() {
   type CaptureIntent = "create" | "search";
   type SavedView = "all" | "today" | "overdue" | "reminderRecurring" | "diary";
   const APP_VERSION = "2026.05.20-phase1";
-  const DELETE_ANIMATION_MS = 240;
+  const DELETE_ANIMATION_MS = 420;
   const [sourceText, setSourceText] = useState("");
   const [captureIntent, setCaptureIntent] = useState<CaptureIntent>("create");
   const [captureMode, setCaptureMode] = useState<CaptureMode>("auto");
@@ -1306,7 +1306,7 @@ export default function HomePage() {
                   initial={{ opacity: 0.88, y: 0 }}
                   animate={{ opacity: 0.88, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.2, ease: [0.22, 0.61, 0.36, 1] }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 >
                   {newTaskMotion.text}
                 </motion.span>
@@ -1584,7 +1584,7 @@ export default function HomePage() {
             initial={newlyInsertedId === item.id ? { opacity: 0, scale: 0.95, y: -8 } : false}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: -6, height: 0, marginTop: 0, marginBottom: 0, overflow: "hidden" }}
-            transition={{ duration: DELETE_ANIMATION_MS / 1000, ease: [0.22, 0.61, 0.36, 1] }}
+            transition={{ duration: DELETE_ANIMATION_MS / 1000, ease: [0.22, 1, 0.36, 1] }}
             className={`item item-${item.kind}${isTimelineExpired ? " item-timeline-alert" : ""}${isDone ? " item-done" : ""}${isHiddenItem ? " item-hidden" : ""}${isDeleting ? " isDeleting" : ""}${colorLabel ? ` ${colorLabel}` : ""}`}
           >
             <div className="itemHead">

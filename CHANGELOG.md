@@ -7,6 +7,7 @@ Format follows Keep a Changelog style with practical engineering detail for this
 ## [Unreleased]
 
 ### Changed
+- Motion now uses shared feedback, control, panel, and structural timing tiers with a softer easing curve across cards, menus, settings, tooltips, and task-state changes.
 - Browser authentication now uses Supabase JS session persistence instead of depending on SSR cookies, so sign-in works consistently in standalone and embedded presentation contexts.
 - Protected browser requests now attach the active Supabase access token as a bearer credential.
 - Server API authentication validates bearer credentials while retaining the previous cookie-based fallback for compatibility.
