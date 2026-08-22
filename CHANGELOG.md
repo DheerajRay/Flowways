@@ -12,6 +12,7 @@ Format follows Keep a Changelog style with practical engineering detail for this
 - Server API authentication validates bearer credentials while retaining the previous cookie-based fallback for compatibility.
 
 ### Fixed
+- Color and change-type toolbars now close when clicking outside them or pressing Escape.
 - Desktop settings controls remain visible above the task frame instead of being clipped by viewport containment.
 - Mobile capture modes reserve a slot for every control, preventing the color selector from wrapping underneath the add button.
 - Task feed now owns the remaining viewport height and stops with the final card fully visible instead of scrolling into empty space.

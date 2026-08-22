@@ -220,6 +220,30 @@ export default function HomePage() {
     return () => window.removeEventListener("resize", applyCompact);
   }, []);
 
+  useEffect(() => {
+    if (!showColorPicker && !recastMenuItemId) return;
+
+    const dismissTransientToolbars = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (showColorPicker && !target.closest(".colorPickerWrap")) setShowColorPicker(false);
+      if (recastMenuItemId && !target.closest(".recastMenuWrap")) setRecastMenuItemId(null);
+    };
+
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setShowColorPicker(false);
+      setRecastMenuItemId(null);
+    };
+
+    document.addEventListener("pointerdown", dismissTransientToolbars, true);
+    document.addEventListener("keydown", dismissOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", dismissTransientToolbars, true);
+      document.removeEventListener("keydown", dismissOnEscape);
+    };
+  }, [showColorPicker, recastMenuItemId]);
+
   function toggleSettingsDock() {
     setSettingsError("");
     setShowSettings((prev) => {
