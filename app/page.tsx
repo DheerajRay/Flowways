@@ -95,6 +95,7 @@ export default function HomePage() {
   const settingsColorInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [recastMenuItemId, setRecastMenuItemId] = useState<string | null>(null);
+  const [kindTooltip, setKindTooltip] = useState<{ itemId: string; text: string; left: number; top: number; maxHeight: number; placement: "above" | "below" } | null>(null);
   const [showTagWindow, setShowTagWindow] = useState(false);
   const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
   const [tagMatchMode, setTagMatchMode] = useState<"AND" | "OR">("AND");
@@ -221,28 +222,36 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    if (!showColorPicker && !recastMenuItemId) return;
+    if (!showColorPicker && !recastMenuItemId && !kindTooltip) return;
 
     const dismissTransientToolbars = (event: PointerEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
       if (showColorPicker && !target.closest(".colorPickerWrap")) setShowColorPicker(false);
       if (recastMenuItemId && !target.closest(".recastMenuWrap")) setRecastMenuItemId(null);
+      if (kindTooltip && !target.closest(".kindInfo") && !target.closest(".kindTooltipLayer")) setKindTooltip(null);
     };
 
     const dismissOnEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       setShowColorPicker(false);
       setRecastMenuItemId(null);
+      setKindTooltip(null);
     };
+
+    const dismissTooltipOnViewportChange = () => setKindTooltip(null);
 
     document.addEventListener("pointerdown", dismissTransientToolbars, true);
     document.addEventListener("keydown", dismissOnEscape);
+    document.addEventListener("scroll", dismissTooltipOnViewportChange, true);
+    window.addEventListener("resize", dismissTooltipOnViewportChange);
     return () => {
       document.removeEventListener("pointerdown", dismissTransientToolbars, true);
       document.removeEventListener("keydown", dismissOnEscape);
+      document.removeEventListener("scroll", dismissTooltipOnViewportChange, true);
+      window.removeEventListener("resize", dismissTooltipOnViewportChange);
     };
-  }, [showColorPicker, recastMenuItemId]);
+  }, [showColorPicker, recastMenuItemId, kindTooltip]);
 
   function toggleSettingsDock() {
     setSettingsError("");
@@ -1178,6 +1187,18 @@ export default function HomePage() {
       : settings.pet_mode === "meh"
         ? "meh"
         : "sweet";
+  function showKindTooltip(itemId: string, text: string, target: HTMLElement) {
+    const rect = target.getBoundingClientRect();
+    const tooltipWidth = Math.min(320, window.innerWidth - 24);
+    const halfWidth = tooltipWidth / 2;
+    const left = Math.min(Math.max(rect.left + rect.width / 2, halfWidth + 12), window.innerWidth - halfWidth - 12);
+    const spaceBelow = Math.max(0, window.innerHeight - rect.bottom - 12);
+    const spaceAbove = Math.max(0, rect.top - 12);
+    const placement = spaceBelow >= Math.min(180, spaceAbove) ? "below" : "above";
+    const top = placement === "below" ? rect.bottom + 8 : rect.top - 8;
+    const maxHeight = Math.max(80, placement === "below" ? spaceBelow : spaceAbove);
+    setKindTooltip({ itemId, text, left, top, maxHeight, placement });
+  }
   const themeStyle = {
     ["--tag-red" as string]: settings.color_palette.red,
     ["--tag-blue" as string]: settings.color_palette.blue,
@@ -1555,6 +1576,7 @@ export default function HomePage() {
           const isHiddenItem = hiddenItemIds.includes(item.id);
           const isDeleting = deletingIds.includes(item.id);
           const colorLabel = (item.labels || []).find((label) => label.startsWith("color-"));
+          const classificationTooltipText = `confidence ${typeof item.classification_confidence === "number" ? `${Math.round(item.classification_confidence * 100)}%` : "n/a"}${item.classification_reason ? ` | why: ${item.classification_reason}` : ""}`;
           return (
           <motion.article
             key={item.id}
@@ -1577,8 +1599,19 @@ export default function HomePage() {
                   <button
                     type="button"
                     className="confidenceInfo kindInfo"
-                    data-tip={`confidence ${typeof item.classification_confidence === "number" ? `${Math.round(item.classification_confidence * 100)}%` : "n/a"}${item.classification_reason ? ` | why: ${item.classification_reason}` : ""}`}
                     aria-label="Classification info"
+                    aria-expanded={kindTooltip?.itemId === item.id}
+                    aria-describedby={kindTooltip?.itemId === item.id ? "classification-tooltip" : undefined}
+                    onPointerEnter={(event) => {
+                      if (event.pointerType === "mouse") showKindTooltip(item.id, classificationTooltipText, event.currentTarget);
+                    }}
+                    onPointerLeave={(event) => {
+                      if (event.pointerType === "mouse") setKindTooltip(null);
+                    }}
+                    onClick={(event) => {
+                      if (kindTooltip?.itemId === item.id) setKindTooltip(null);
+                      else showKindTooltip(item.id, classificationTooltipText, event.currentTarget);
+                    }}
                   >
                     i
                   </button>
@@ -1950,6 +1983,16 @@ export default function HomePage() {
           </span>
         ) : null}
       </footer>
+      {kindTooltip ? (
+        <div
+          id="classification-tooltip"
+          role="tooltip"
+          className={`kindTooltipLayer is-${kindTooltip.placement}`}
+          style={{ left: kindTooltip.left, top: kindTooltip.top, maxHeight: kindTooltip.maxHeight }}
+        >
+          {kindTooltip.text}
+        </div>
+      ) : null}
     </main>
   );
 }
