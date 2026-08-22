@@ -2101,7 +2101,15 @@ textarea { min-height: 100px; resize: vertical; }
 
 /* Viewport, card containment, tooltip, and mobile action hardening. */
 .page {
-  overflow: hidden;
+  overflow: visible;
+}
+
+.captureShell {
+  z-index: 70;
+}
+
+.settingsDock {
+  z-index: 120;
 }
 
 .feedShell {
@@ -2158,12 +2166,16 @@ textarea { min-height: 100px; resize: vertical; }
 
   .modeActions {
     display: grid;
-    grid-template-columns: repeat(5, 34px);
+    grid-template-columns: repeat(6, 34px);
+    align-items: center;
+    justify-items: center;
   }
 
   .captureActions {
     display: grid;
     grid-template-columns: repeat(4, 40px);
+    align-items: center;
+    justify-items: center;
   }
 
   .item {
